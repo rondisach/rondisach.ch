@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>rondisach – Pizza Catering in Luzern</title>
+  <meta name="description" content="rondisach Pizza Catering: handgemachter Teig, frische Zutaten und Pizza direkt vor Ort gebacken – für Feste, Firmen und private Anlässe in Luzern und Umgebung." />
+  <style>
+    :root{
+      --cream:#f3eee4;
+      --paper:#fbf8f1;
+      --ink:#121212;
+      --muted:#68625a;
+      --accent:#bd3c2d;
+      --line:rgba(18,18,18,.16);
+      --soft:#e7dfd2;
+      --radius:26px;
+      --max:1200px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--cream);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    button,input,select,textarea{font:inherit}
+    .wrap{width:min(var(--max),calc(100% - 36px));margin-inline:auto}
+    .kicker{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+    .nav{position:sticky;top:0;z-index:20;background:rgba(243,238,228,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+    .navin{height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{font-size:24px;font-weight:950;letter-spacing:-.055em}
+    .navlinks{display:flex;gap:26px;font-size:13px;font-weight:800}
+    .navlinks a:hover{text-decoration:underline;text-underline-offset:5px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:2px solid var(--ink);border-radius:999px;background:var(--ink);color:#fff;font-weight:900;cursor:pointer;transition:.18s ease}
+    .btn:hover{transform:translateY(-2px)}
+    .btn.outline{background:transparent;color:var(--ink)}
+
+    .hero{padding:54px 0 26px}
+    .heroGrid{display:grid;grid-template-columns:1.08fr .92fr;gap:34px;align-items:center}
+    h1{font-size:clamp(58px,9.5vw,126px);line-height:.82;letter-spacing:-.075em;margin:14px 0 28px;font-weight:950;max-width:760px}
+    .heroLead{font-size:clamp(19px,2.1vw,25px);line-height:1.35;max-width:680px;margin:0 0 28px;color:#2c2925}
+    .heroActions{display:flex;gap:12px;flex-wrap:wrap}
+    .logoCard{background:var(--paper);border:2px solid var(--ink);border-radius:34px;padding:18px;box-shadow:10px 10px 0 var(--ink);transform:rotate(1deg)}
+    .logoCard img{border-radius:22px}
+    .factbar{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);margin-top:42px}
+    .fact{padding:18px 20px;border-right:1px solid var(--ink)}
+    .fact:last-child{border-right:0}
+    .fact strong{display:block;font-size:25px;line-height:1;margin-bottom:4px;letter-spacing:-.04em}
+    .fact span{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:800}
+
+    section{padding:84px 0}
+    .sectionGrid{display:grid;grid-template-columns:.72fr 1.28fr;gap:44px;align-items:start}
+    .sectionLabel{position:sticky;top:110px}
+    .sectionTitle{font-size:clamp(42px,6vw,76px);line-height:.9;letter-spacing:-.06em;margin:10px 0 0;font-weight:950}
+    .sectionLead{font-size:20px;color:var(--muted);max-width:760px;margin:0 0 34px}
+    .story{font-size:clamp(25px,3.5vw,42px);line-height:1.14;letter-spacing:-.035em;font-weight:800;margin:0 0 34px}
+    .story em{font-style:normal;text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:5px}
+
+    .values{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .value{border-top:2px solid var(--ink);padding-top:18px}
+    .value .no{font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+    .value h3{font-size:26px;line-height:1.05;letter-spacing:-.04em;margin:9px 0 9px}
+    .value p{margin:0;color:#4e4943}
+
+    .process{background:var(--ink);color:#fff}
+    .process .sectionLead{color:#cfc8bd}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#484848;border:1px solid #484848}
+    .step{background:var(--ink);padding:26px;min-height:205px}
+    .step span{display:inline-grid;place-items:center;width:38px;height:38px;border:1px solid #fff;border-radius:50%;font-weight:900}
+    .step h3{font-size:23px;margin:28px 0 8px;letter-spacing:-.03em}
+    .step p{color:#cfc8bd;margin:0}
+
+    .gallery{display:grid;grid-template-columns:1.25fr .75fr .75fr;grid-template-rows:235px 235px;gap:14px}
+    .ph{border:2px dashed var(--ink);border-radius:24px;background:rgba(255,255,255,.27);display:grid;place-items:center;text-align:center;padding:22px;color:#5d564e;font-weight:800}
+    .ph.big{grid-row:1/3}
+    .galleryNote{font-size:13px;color:var(--muted);margin-top:14px}
+
+    .priceIntro{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:28px}
+    .priceIntro .sectionLead{margin:0}
+    .pricingTop{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .package{border:2px solid var(--ink);border-radius:28px;background:var(--paper);padding:28px;display:flex;flex-direction:column;min-height:330px}
+    .package.dark{background:var(--ink);color:white}
+    .package h3{font-size:32px;margin:0;letter-spacing:-.045em}
+    .package .desc{color:var(--muted);margin:8px 0 22px}
+    .package.dark .desc{color:#cbc3b7}
+    .price{font-size:55px;font-weight:950;letter-spacing:-.07em;line-height:1;margin-bottom:20px}
+    .price small{font-size:15px;letter-spacing:0;font-weight:700}
+    .ticks{display:grid;gap:10px;margin-top:auto}
+    .tick{display:flex;gap:10px;align-items:flex-start}
+    .tick:before{content:"✓";font-weight:900}
+    .modules{border:2px solid var(--ink);border-radius:28px;overflow:hidden;background:var(--paper)}
+    .moduleHead{padding:22px 24px;background:var(--soft);font-weight:900;font-size:19px}
+    .moduleRow{display:grid;grid-template-columns:1fr auto;gap:22px;padding:17px 24px;border-top:1px solid var(--line);align-items:center}
+    .moduleRow strong{white-space:nowrap}
+    .moduleRow small{display:block;color:var(--muted);margin-top:3px}
+    .travel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+    .travelBox{border:1px solid var(--line);border-radius:20px;padding:20px;background:rgba(255,255,255,.35)}
+    .travelBox strong{display:block;font-size:18px;margin-bottom:5px}
+    .fineprint{font-size:13px;color:var(--muted);margin-top:14px}
+
+    .booking{padding-top:32px}
+    .bookingBox{border-radius:34px;background:var(--accent);color:white;padding:clamp(28px,5vw,58px)}
+    .bookingGrid{display:grid;grid-template-columns:.78fr 1.22fr;gap:42px}
+    .booking h2{font-size:clamp(46px,6vw,78px);line-height:.88;letter-spacing:-.06em;margin:10px 0 18px}
+    .booking p{font-size:18px;max-width:440px;margin:0;color:#f5ddd8}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:grid;gap:6px;font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+    input,select,textarea{width:100%;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);color:white;border-radius:14px;padding:14px 15px;outline:none}
+    input::placeholder,textarea::placeholder{color:#f6cdc5}
+    select option{color:#111}
+    textarea{min-height:118px;resize:vertical}
+    .full{grid-column:1/-1}
+    .submit{background:white;color:var(--ink);border-color:white}
+    .formHint{font-size:12px;color:#f5d7d1;text-transform:none;letter-spacing:0;font-weight:600}
+
+    footer{padding:42px 0 58px}
+    .foot{border-top:1px solid var(--line);padding-top:22px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+    .foot strong{color:var(--ink);font-size:17px}
+
+
+    .heroVisual{position:relative;min-height:560px;display:grid;place-items:center}
+    .heroPizza{position:absolute;width:min(86%,520px);right:-3%;top:3%;filter:drop-shadow(0 28px 30px rgba(0,0,0,.16));transform:rotate(7deg);z-index:2}
+    .heroVisual .logoCard{position:absolute;width:54%;left:0;bottom:5%;z-index:3;transform:rotate(-2deg);box-shadow:8px 8px 0 var(--ink)}
+    .heroStamp{position:absolute;right:3%;bottom:4%;z-index:4;background:var(--accent);color:#fff;border:2px solid var(--ink);border-radius:999px;padding:12px 16px;font-size:12px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;transform:rotate(4deg)}
+
+    .eventShowcase{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:center;margin-top:34px}
+    .eventPhoto{border:2px solid var(--ink);border-radius:30px;overflow:hidden;background:#fff;box-shadow:8px 8px 0 var(--ink)}
+    .eventPhoto img{width:100%;height:100%;object-fit:cover}
+    .eventCopy{padding:12px 4px 12px 10px}
+    .eventCopy h3{font-size:clamp(30px,4vw,50px);line-height:.95;letter-spacing:-.05em;margin:0 0 16px}
+    .eventCopy p{font-size:18px;color:var(--muted);margin:0 0 18px}
+    .miniFacts{display:flex;flex-wrap:wrap;gap:8px}
+    .miniFacts span{border:1px solid var(--ink);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:800;background:var(--paper)}
+
+    .pizzaGallery{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:24px}
+    .pizzaCard{position:relative;background:#fff;border:2px solid var(--ink);border-radius:28px;overflow:hidden;min-height:280px}
+    .pizzaCard img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+    .pizzaCard:hover img{transform:scale(1.03)}
+    .pizzaCard .tag{position:absolute;left:14px;bottom:14px;background:var(--paper);border:1.5px solid var(--ink);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .pizzaCard.a{grid-column:span 7;min-height:440px}
+    .pizzaCard.b{grid-column:span 5;min-height:440px}
+    .pizzaCard.c,.pizzaCard.d,.pizzaCard.e{grid-column:span 4;min-height:300px}
+    .pizzaCard.f,.pizzaCard.g{grid-column:span 6;min-height:330px}
+
+    .photoBreak{padding:0 0 84px}
+    .photoBand{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);overflow:hidden;max-height:680px;background:#000}
+    .photoBand img{width:100%;height:100%;max-height:680px;object-fit:cover;display:block}
+
+    @media(max-width:920px){
+      .heroGrid,.sectionGrid,.bookingGrid,.pricingTop,.eventShowcase{grid-template-columns:1fr}
+      .sectionLabel{position:static}
+      .values{grid-template-columns:1fr}
+      .steps{grid-template-columns:1fr 1fr}
+      .gallery{grid-template-columns:1fr 1fr;grid-template-rows:220px 220px}.ph.big{grid-row:auto;grid-column:1/-1}
+      .factbar{grid-template-columns:1fr 1fr}.fact:nth-child(2){border-right:0}.fact:nth-child(-n+2){border-bottom:1px solid var(--ink)}
+      .navlinks{display:none}.heroVisual{min-height:500px}.heroPizza{right:3%}.heroVisual .logoCard{width:48%}.pizzaCard.a,.pizzaCard.b{grid-column:span 6}.pizzaCard.c,.pizzaCard.d,.pizzaCard.e{grid-column:span 4}
+    }
+    @media(max-width:620px){
+      .wrap{width:min(100% - 24px,var(--max))}
+      .navin{height:64px}.nav .btn{display:none}
+      .hero{padding-top:36px}.logoCard{padding:10px;box-shadow:6px 6px 0 var(--ink)}
+      section{padding:60px 0}.fact{padding:15px 13px}.fact strong{font-size:21px}
+      .steps{grid-template-columns:1fr}.gallery{grid-template-columns:1fr;grid-template-rows:auto}.ph{min-height:200px}.ph.big{grid-column:auto}
+      .travel,form{grid-template-columns:1fr}.full{grid-column:auto}.heroVisual{min-height:390px}.heroPizza{width:88%;right:1%;top:0}.heroVisual .logoCard{width:52%;left:2%;bottom:0}.heroStamp{right:0;bottom:2%;font-size:10px}.pizzaGallery{grid-template-columns:1fr}.pizzaCard.a,.pizzaCard.b,.pizzaCard.c,.pizzaCard.d,.pizzaCard.e,.pizzaCard.f,.pizzaCard.g{grid-column:auto;min-height:300px}
+      .moduleRow{grid-template-columns:1fr}.moduleRow strong{white-space:normal}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap navin">
+      <a class="brand" href="#top">rondisach</a>
+      <div class="navlinks">
+        <a href="#wir">über uns</a>
+        <a href="#ablauf">ablauf</a>
+        <a href="#bilder">bilder</a>
+        <a href="#preise">preise</a>
+      </div>
+      <a class="btn" href="#anfrage">Catering anfragen</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap heroGrid">
+        <div>
+          <div class="kicker">Pizza Catering · Luzern & Umgebung</div>
+          <h1>einfach<br>e rondi sach.</h1>
+          <p class="heroLead">Pizza, wie wir sie selber am liebsten essen: handgemachter Teig, gute Zutaten und direkt vor euren Gästen gebacken.</p>
+          <div class="heroActions">
+            <a class="btn" href="#anfrage">Unverbindlich anfragen</a>
+            <a class="btn outline" href="#preise">Preise & Pakete</a>
+          </div>
+        </div>
+        <div class="heroVisual">
+          <img class="heroPizza" src="assets/pizza-margherita.jpeg" alt="Neapolitanische Margherita von rondisach">
+          <div class="logoCard"><img src="assets/rondisach-logo.png" alt="rondisach Pizza Catering"></div>
+          <div class="heroStamp">handgemacht · vor ort</div>
+        </div>
+      </div>
+      <div class="wrap factbar" aria-label="Unsere wichtigsten Fakten">
+        <div class="fact"><strong>2</strong><span>Jungs</span></div>
+        <div class="fact"><strong>48 h</strong><span>Teigruhe</span></div>
+        <div class="fact"><strong>500 °C</strong><span>Ofentemperatur</span></div>
+        <div class="fact"><strong>~90 sek.</strong><span>Backzeit</span></div>
+      </div>
+    </section>
+
+    <section id="wir">
+      <div class="wrap sectionGrid">
+        <div class="sectionLabel">
+          <div class="kicker">01 · über uns</div>
+          <h2 class="sectionTitle">zwei jungs.<br>eine rondi sach.</h2>
+        </div>
+        <div>
+          <p class="story">Wir sind zu zweit und machen unser Catering so, wie wir es mögen: <em>unkompliziert, persönlich und von Hand.</em></p>
+          <p class="sectionLead">Vom Teig über die Vorbereitung bis zum Backen vor Ort machen wir alles selbst. Wir bringen Ofen und Setup mit, backen laufend frisch und servieren direkt aus dem Ofen.</p>
+          <div class="values">
+            <article class="value"><div class="no">01 · Teig</div><h3>Zeit statt Abkürzung.</h3><p>Unser Teig bekommt rund 48 Stunden Zeit. Dadurch wird er aromatisch, locker und schön leicht.</p></article>
+            <article class="value"><div class="no">02 · Ofen</div><h3>Heiss. Sehr heiss.</h3><p>Bei rund 500 °C entsteht in etwa 90 Sekunden ein luftiger Rand mit Röstaromen und weicher Mitte.</p></article>
+            <article class="value"><div class="no">03 · Anlass</div><h3>Direkt bei euch.</h3><p>Geburtstag, Firmenfest oder Gartenparty: Wir backen vor Ort und passen Menge und Menü an euren Anlass an.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ablauf" class="process">
+      <div class="wrap">
+        <div class="kicker">02 · so läuft's</div>
+        <h2 class="sectionTitle">ihr feiert.<br>wir machen pizza.</h2>
+        <p class="sectionLead">Ihr gebt uns die Eckdaten, wir planen den Rest mit euch. Am Anlass bauen wir auf, heizen ein und backen laufend frisch.</p>
+        <div class="steps">
+          <div class="step"><span>1</span><h3>Anfrage</h3><p>Datum, Ort, Personenzahl und ungefährer Umfang reichen für den Start.</p></div>
+          <div class="step"><span>2</span><h3>Offerte</h3><p>Ihr bekommt ein passendes Angebot – nur Pizza oder mit Apéro, Beilagen, Dessert und Getränken.</p></div>
+          <div class="step"><span>3</span><h3>Aufbau</h3><p>Wir kommen rechtzeitig, richten unseren Arbeitsplatz ein und bringen den Ofen auf Temperatur.</p></div>
+          <div class="step"><span>4</span><h3>Pizza</h3><p>Wir backen laufend frisch, schneiden auf und servieren – unkompliziert und direkt vor euren Gästen.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="bilder">
+      <div class="wrap sectionGrid">
+        <div class="sectionLabel">
+          <div class="kicker">03 · einblicke</div>
+          <h2 class="sectionTitle">so sieht<br>rondisach aus.</h2>
+        </div>
+        <div>
+          <p class="sectionLead">Von der ersten Schale Apéro bis zur letzten Pizza: Wir bringen nicht nur den Ofen, sondern auf Wunsch den ganzen Abend mit.</p>
+          <div class="eventShowcase">
+            <div class="eventPhoto"><img src="assets/catering-event.png" alt="rondisach Catering mit Apéro, Getränken und Gästen"></div>
+            <div class="eventCopy">
+              <div class="kicker">mehr als nur pizza</div>
+              <h3>apéro, getränke, pizza – alles aus einer hand.</h3>
+              <p>Wenn ihr möchtet, kümmern wir uns nicht nur ums Backen. Wir stellen den Apéro zusammen, organisieren Getränke und ergänzen den Abend mit Salat, Beilagen oder Dessert.</p>
+              <div class="miniFacts"><span>Apéro</span><span>Getränke</span><span>Pizza live</span><span>Dessert</span></div>
+            </div>
+          </div>
+
+          <div class="pizzaGallery" aria-label="Auswahl unserer Pizzen">
+            <figure class="pizzaCard a"><img src="assets/pizza-mortadella.jpeg" alt="Pizza Mortadella mit Burrata und Pistazien"><figcaption class="tag">Mortadella</figcaption></figure>
+            <figure class="pizzaCard b"><img src="assets/pizza-crudo.jpeg" alt="Pizza Crudo mit Rucola und Rohschinken"><figcaption class="tag">Crudo</figcaption></figure>
+            <figure class="pizzaCard c"><img src="assets/pizza-margherita.jpeg" alt="Pizza Margherita"><figcaption class="tag">Margherita</figcaption></figure>
+            <figure class="pizzaCard d"><img src="assets/pizza-salsiccia.jpeg" alt="Pizza Salsiccia"><figcaption class="tag">Salsiccia</figcaption></figure>
+            <figure class="pizzaCard e"><img src="assets/pizza-vegi.jpeg" alt="Pizza Vegi Grill"><figcaption class="tag">Vegi Grill</figcaption></figure>
+            <figure class="pizzaCard f"><img src="assets/pizza-marinara.jpeg" alt="Pizza Marinara"><figcaption class="tag">Marinara</figcaption></figure>
+            <figure class="pizzaCard g"><img src="assets/pizza-salami.jpeg" alt="Pizza Salami"><figcaption class="tag">Salami</figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="preise">
+      <div class="wrap">
+        <div class="priceIntro">
+          <div>
+            <div class="kicker">04 · preise</div>
+            <h2 class="sectionTitle">so viel oder<br>so wenig ihr wollt.</h2>
+          </div>
+          <p class="sectionLead">Von reinem Pizza-Catering bis zum ganzen Abend. Die Beträge unten sind Richtpreise; eure definitive Offerte hängt von Personenzahl, Menü, Ort und Aufwand ab.</p>
+        </div>
+
+        <div class="pricingTop">
+          <article class="package">
+            <h3>nur pizza.</h3>
+            <p class="desc">Für alle, die den Rest des Anlasses selber organisieren.</p>
+            <div class="price">CHF 22–28 <small>/ Person</small></div>
+            <div class="ticks">
+              <div class="tick">Mehrere Pizzasorten zur Auswahl</div>
+              <div class="tick">Frisch vor Ort gebacken</div>
+              <div class="tick">Ofen, Setup und Service inklusive</div>
+            </div>
+          </article>
+          <article class="package dark">
+            <h3>rundum.</h3>
+            <p class="desc">Vom ersten Apéro bis zum Dessert – individuell zusammengestellt.</p>
+            <div class="price">ab CHF 55 <small>/ Person</small></div>
+            <div class="ticks">
+              <div class="tick">Apéro nach Wunsch</div>
+              <div class="tick">Pizza als Hauptgang</div>
+              <div class="tick">Salate / Beilagen</div>
+              <div class="tick">Dessert, auf Wunsch Getränke</div>
+            </div>
+          </article>
+        </div>
+
+        <div class="modules">
+          <div class="moduleHead">Bausteine · Richtpreise pro Person</div>
+          <div class="moduleRow"><div><b>Pizza Catering</b><small>Mehrere Sorten, frisch vor Ort gebacken</small></div><strong>CHF 22–28</strong></div>
+          <div class="moduleRow"><div><b>Apéro</b><small>Kleine Häppchen und Snacks vor dem Essen</small></div><strong>CHF 10–16</strong></div>
+          <div class="moduleRow"><div><b>Salat & Beilagen</b><small>Je nach Auswahl ein oder mehrere Begleiter</small></div><strong>CHF 6–10</strong></div>
+          <div class="moduleRow"><div><b>Dessert</b><small>Zum Beispiel Lemon Posset oder saisonales Dessert</small></div><strong>CHF 7–10</strong></div>
+          <div class="moduleRow"><div><b>Alkoholfreie Getränke</b><small>Wasser und Softdrinks</small></div><strong>CHF 4–7</strong></div>
+          <div class="moduleRow"><div><b>Wein & Bier</b><small>Auswahl und Menge nach Absprache</small></div><strong>CHF 12–22</strong></div>
+        </div>
+
+        <div class="travel">
+          <div class="travelBox"><strong>Anfahrt bis 15 km</strong>Richtwert CHF 40 pauschal.</div>
+          <div class="travelBox"><strong>Weitere Distanz</strong>Richtwert CHF 1.20 pro zusätzlichem Kilometer.</div>
+        </div>
+        <p class="fineprint">Alle Preise verstehen sich als unverbindliche Richtwerte für die Planung. Je nach Anlass, Gästezahl, Menü und örtlichen Bedingungen können sie abweichen. Die definitive Leistung und der Preis stehen in der persönlichen Offerte.</p>
+      </div>
+    </section>
+
+    <section id="anfrage" class="booking">
+      <div class="wrap bookingBox">
+        <div class="bookingGrid">
+          <div>
+            <div class="kicker">05 · anfrage</div>
+            <h2>wann wird's rund?</h2>
+            <p>Schickt uns kurz die wichtigsten Eckdaten. Danach können wir einschätzen, welches Paket und welche Menge für euren Anlass Sinn machen.</p>
+          </div>
+          <form onsubmit="event.preventDefault(); document.getElementById('done').hidden=false;">
+            <label>Name<input required name="name" placeholder="Vor- und Nachname"></label>
+            <label>E-Mail<input required type="email" name="email" placeholder="name@beispiel.ch"></label>
+            <label>Datum<input type="date" name="date"></label>
+            <label>Gäste<input type="number" min="1" name="people" placeholder="z. B. 40"></label>
+            <label>Ort<input name="place" placeholder="Ort / Location"></label>
+            <label>Gewünschter Umfang<select name="package"><option>Nur Pizza</option><option>Pizza + Apéro</option><option>Komplettes Catering</option><option>Noch offen / beraten lassen</option></select></label>
+            <label class="full">Was plant ihr?<textarea name="message" placeholder="Anlass, ungefährer Zeitplan, Wünsche, Besonderheiten …"></textarea></label>
+            <button class="btn submit full" type="submit">Unverbindliche Anfrage senden</button>
+            <div class="formHint full">Hinweis für die aktuelle Entwurfsseite: Das Formular muss vor dem Livegang noch mit eurer E-Mail- oder Formularlösung verbunden werden.</div>
+            <div id="done" class="full" hidden style="font-weight:900">Sieht gut aus – das Formular ist im Entwurf erfasst.</div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <strong>rondisach · pizza catering</strong>
+      <span>Luzern & Umgebung · rondisach.ch</span>
+      <span>einfach e rondi sach.</span>
+    </div>
+  </footer>
+</body>
+</html>
