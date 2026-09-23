@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+
+<html lang="de-CH">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Pizza Catering Luzern | rondisach</title>
+<meta content="rondisach Pizza Catering: handgemachter Teig, Pizza à discrétion und Catering für private Feste und Firmenanlässe in Luzern und Umgebung." name="description"/>
+<meta content="#f3eee4" name="theme-color"/>
+<link href="/favicon.ico" rel="icon" sizes="any"/>
+<link href="/favicon-48.png" rel="icon" sizes="48x48" type="image/png"/>
+<link href="/favicon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<meta content="rondisach – Pizza Catering in Luzern" property="og:title"/>
+<meta content="Handgemachte Pizza à discrétion und Catering – frisch vor Ort gebacken in Luzern und Umgebung." property="og:description"/>
+<meta content="website" property="og:type"/>
+<meta content="https://rondisach.ch/" property="og:url"/>
+<meta content="https://rondisach.ch/assets/og-image.jpg" property="og:image"/>
+<meta content="1200" property="og:image:width"/>
+<meta content="630" property="og:image:height"/>
+<meta content="rondisach Pizza Catering bei einem Anlass" property="og:image:alt"/>
+<link href="https://rondisach.ch/" rel="canonical"/>
+<link href="/site.webmanifest" rel="manifest"/>
+<meta content="index,follow" name="robots"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Caterer",
+  "name": "rondisach Pizza Catering",
+  "url": "https://rondisach.ch/",
+  "logo": "https://rondisach.ch/favicon-512.png",
+  "image": "https://rondisach.ch/assets/og-image.jpg",
+  "email": "rondisachpizzacatering@gmail.com",
+  "telephone": "+41 77 403 64 66",
+  "priceRange": "CHF 28–79+",
+  "areaServed": "Luzern und Umgebung",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Sentistrasse 26",
+    "postalCode": "6010",
+    "addressLocality": "Kriens",
+    "addressCountry": "CH"
+  }
+}
+</script>
+<style>
+
+    :root{
+      --cream:#f3eee4;
+      --ink:#121212;
+      --muted:#665f56;
+      --accent:#b83c2e;
+      --line:rgba(18,18,18,.18);
+      --panel:#e9e1d5;
+      --soft:#ddd3c4;
+      --max:1200px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--cream);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    button,input,select,textarea{font:inherit}
+    figure{margin:0}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin-inline:auto}
+    .kicker{font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+    .nav{position:sticky;top:0;z-index:20;background:rgba(243,238,228,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+    .navin{height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{font-size:24px;font-weight:950;letter-spacing:-.055em}
+    .navlinks{display:flex;gap:26px;font-size:13px;font-weight:800}
+    .navlinks a:hover{text-decoration:underline;text-underline-offset:5px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:2px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--cream);font-weight:900;cursor:pointer;transition:.18s ease}
+    .btn:hover{transform:translateY(-2px)}
+    .btn.outline{background:transparent;color:var(--ink)}
+    .contactQuick{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+    .contactQuick a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1.5px solid var(--ink);border-radius:999px;font-size:13px;font-weight:900;transition:.18s ease}
+    .contactQuick a:hover{background:var(--ink);color:var(--cream);transform:translateY(-1px)}
+    .mobileContact{display:none}
+
+    .hero{padding:54px 0 26px}
+    .heroGrid{display:grid;grid-template-columns:1.03fr .97fr;gap:34px;align-items:center}
+    h1{font-size:clamp(58px,9.5vw,126px);line-height:.82;letter-spacing:-.075em;margin:14px 0 28px;font-weight:950;max-width:760px}
+    .heroLead{font-size:clamp(19px,2.1vw,25px);line-height:1.35;max-width:680px;margin:0 0 28px;color:#2c2925}
+    .heroActions{display:flex;gap:12px;flex-wrap:wrap}
+    .heroVisual{position:relative;min-height:560px;display:grid;place-items:center}
+    .heroPizza{position:absolute;width:min(88%,540px);right:-1%;top:1%;filter:drop-shadow(0 24px 24px rgba(0,0,0,.15));transform:rotate(5deg);z-index:2}
+    .logoCard{position:absolute;width:43%;left:2%;bottom:5%;z-index:3;padding:0;background:transparent;transform:rotate(-2deg)}
+    .logoCard img{width:100%;height:auto;filter:drop-shadow(0 10px 12px rgba(18,18,18,.08))}
+    .heroStamp{position:absolute;right:2%;bottom:3%;z-index:4;background:var(--accent);color:#fff;border:2px solid var(--ink);border-radius:999px;padding:12px 16px;font-size:12px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;transform:rotate(3deg)}
+    .factbar{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);margin-top:42px}
+    .fact{padding:18px 20px;border-right:1px solid var(--ink)}
+    .fact:last-child{border-right:0}
+    .fact strong{display:block;font-size:25px;line-height:1;margin-bottom:4px;letter-spacing:-.04em}
+    .fact span{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:800}
+
+    section{padding:84px 0}
+    .sectionGrid{display:grid;grid-template-columns:.72fr 1.28fr;gap:48px;align-items:start}
+    #bilder .sectionGrid{grid-template-columns:.9fr 1.1fr;gap:56px;margin-bottom:44px}
+    #bilder .insightsTitle{font-size:clamp(44px,5.2vw,68px);line-height:.94;max-width:520px}
+    #bilder .insightsLead{font-size:clamp(18px,1.7vw,23px);line-height:1.45;max-width:690px;margin-top:2px}
+
+    .sectionLabel{position:sticky;top:110px}
+    .sectionTitle{font-size:clamp(42px,6vw,76px);line-height:.9;letter-spacing:-.06em;margin:10px 0 0;font-weight:950}
+    .sectionLead{font-size:19px;line-height:1.55;color:var(--muted);max-width:760px;margin:0 0 34px}
+    .story{font-size:clamp(25px,3.5vw,42px);line-height:1.14;letter-spacing:-.035em;font-weight:800;margin:0 0 34px}
+    .story em{font-style:normal;text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:5px}
+    .values{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .value{border-top:2px solid var(--ink);padding-top:18px}
+    .value .no{font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+    .value h3{font-size:25px;line-height:1.05;letter-spacing:-.04em;margin:9px 0 9px}
+    .value p{margin:0;color:#4e4943}
+
+    .process{background:var(--ink);color:var(--cream)}
+    .process .sectionLead{color:#cfc8bd}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#47433f;border:1px solid #47433f}
+    .step{background:var(--ink);padding:26px;min-height:205px}
+    .step span{display:inline-grid;place-items:center;width:38px;height:38px;border:1px solid var(--cream);border-radius:50%;font-weight:900}
+    .step h3{font-size:23px;margin:28px 0 8px;letter-spacing:-.03em}
+    .step p{color:#cfc8bd;margin:0}
+
+
+
+    .pizzaIntro{display:grid;grid-template-columns:minmax(0,.85fr) minmax(300px,1.15fr);gap:42px;align-items:end;margin:74px 0 4px}
+    .pizzaIntro h3{font-size:clamp(38px,5vw,64px);line-height:.94;letter-spacing:-.055em;margin:8px 0 0;font-weight:950}
+    .pizzaIntroText{max-width:650px;margin:0 0 3px;color:var(--muted);font-size:18px;line-height:1.55}
+    .pizzaIntroText strong{color:var(--ink);font-weight:850}
+    .pizzaGallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 22px;margin-top:46px;align-items:start}
+    .pizzaCard{display:flex;flex-direction:column;min-width:0}
+    .pizzaImage{width:100%;aspect-ratio:1/1;display:grid;place-items:center;background:transparent;padding:0;overflow:visible}
+    .pizzaCard img{width:96%;height:96%;object-fit:contain;display:block;filter:drop-shadow(0 18px 22px rgba(32,25,18,.12));transition:transform .28s ease}
+    .pizzaCard:hover img{transform:translateY(-4px) rotate(.35deg)}
+    .pizzaCard .tag{width:100%;margin-top:10px;border-top:2px solid var(--ink);padding-top:9px;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.10em;text-align:center}
+
+
+
+    /* v39 – bewegte Marken-Zeile + Zutaten-Hover */
+
+    .pizzaCard{position:relative;cursor:default}
+    .pizzaImage{position:relative}
+    .pizzaIngredients{margin:7px auto 0;max-width:95%;min-height:38px;color:var(--muted);font-size:14px;line-height:1.35;text-align:center;opacity:0;transform:translateY(-5px);transition:opacity .22s ease,transform .22s ease}
+    .pizzaCard:hover .pizzaIngredients,.pizzaCard:focus-within .pizzaIngredients,.pizzaCard.is-open .pizzaIngredients{opacity:1;transform:translateY(0)}
+    .pizzaCard:hover img,.pizzaCard:focus-within img,.pizzaCard.is-open img{transform:translateY(-7px) scale(1.025) rotate(.35deg)}
+    .pizzaTap{position:absolute;inset:0;border:0;background:transparent;padding:0;cursor:pointer;z-index:2;font:inherit}
+    .pizzaTap:focus-visible{outline:2px solid var(--ink);outline-offset:5px;border-radius:50%}
+    @media(max-width:720px){
+      .pizzaIngredients{opacity:1;transform:none;min-height:0;margin-top:5px;font-size:13px}
+      .pizzaTap{display:none}
+    }
+
+    .priceIntro{display:flex;justify-content:space-between;gap:30px;align-items:end;margin-bottom:28px}
+    .priceIntro .sectionLead{margin:0}
+    .pricingTop{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+    .package{border:2px solid var(--ink);border-radius:28px;background:transparent;padding:28px;display:flex;flex-direction:column;min-height:330px}
+    .package.dark{background:var(--ink);color:var(--cream)}
+    .package h3{font-size:32px;margin:0;letter-spacing:-.045em}
+    .package .desc{color:var(--muted);margin:8px 0 22px}
+    .package.dark .desc{color:#cbc3b7}
+    .price{font-size:55px;font-weight:950;letter-spacing:-.07em;line-height:1;margin-bottom:20px}
+    .price small{font-size:15px;letter-spacing:0;font-weight:700}
+    .ticks{display:grid;gap:10px;margin-top:auto}
+    .tick{display:flex;gap:10px;align-items:flex-start}
+    .tick:before{content:"✓";font-weight:900}
+    .modules{border:2px solid var(--ink);border-radius:28px;overflow:hidden;background:transparent}
+    .moduleHead{padding:22px 24px;background:var(--panel);font-weight:900;font-size:19px}
+    .moduleRow{display:grid;grid-template-columns:1fr auto;gap:22px;padding:17px 24px;border-top:1px solid var(--line);align-items:center}
+    .moduleRow strong{white-space:nowrap}
+    .moduleRow small{display:block;color:var(--muted);margin-top:3px}
+    .travel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+    .travelBox{border:1px solid var(--line);border-radius:20px;padding:20px;background:transparent}
+    .travelBox strong{display:block;font-size:18px;margin-bottom:5px}
+    .fineprint{font-size:13px;color:var(--muted);margin-top:14px}
+
+    .reviews{background:var(--panel)}
+    .reviewsIntro{display:grid;grid-template-columns:.72fr 1.28fr;gap:48px;align-items:end;margin-bottom:36px}
+    .reviewsIntro .sectionLead{margin:0}
+    .reviewWidget{min-height:260px}
+    .reviewWidget noscript{display:block;border:2px solid var(--ink);border-radius:28px;padding:28px;background:var(--cream)}
+    .reviewWidget noscript a{font-weight:900;text-decoration:underline;text-underline-offset:4px}
+
+    .booking{padding-top:32px}
+    .bookingBox{border-radius:34px;background:var(--accent);color:white;padding:clamp(28px,5vw,58px)}
+    .bookingGrid{display:grid;grid-template-columns:.78fr 1.22fr;gap:42px}
+    .booking h2{font-size:clamp(46px,6vw,78px);line-height:.88;letter-spacing:-.06em;margin:10px 0 18px}
+    .booking p{font-size:17px;line-height:1.55;max-width:440px;margin:0;color:#f5ddd8}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:grid;gap:6px;font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+    input,select,textarea{width:100%;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);color:white;border-radius:14px;padding:14px 15px;outline:none}
+    input::placeholder,textarea::placeholder{color:#f6cdc5}
+    select option{color:#111}
+    textarea{min-height:118px;resize:vertical}
+    .full{grid-column:1/-1}
+    .submit{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+    .formHint{font-size:12px;color:#f5d7d1;text-transform:none;letter-spacing:0;font-weight:600}
+
+    footer{padding:42px 0 58px}
+    .foot{border-top:1px solid var(--line);padding-top:22px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+    .foot strong{color:var(--ink);font-size:17px}
+
+    @media(max-width:920px){
+      .heroGrid,.sectionGrid,.bookingGrid,.pricingTop,.reviewsIntro{grid-template-columns:1fr}
+      .sectionLabel{position:static}
+      .values{grid-template-columns:1fr}
+      .steps{grid-template-columns:1fr 1fr}
+      .factbar{grid-template-columns:1fr 1fr}.fact:nth-child(2){border-right:0}.fact:nth-child(-n+2){border-bottom:1px solid var(--ink)}
+      .navlinks{display:none}
+      .heroVisual{min-height:500px}
+      .heroPizza{right:4%;width:min(82%,500px)}
+      .logoCard{width:44%}
+      .pizzaIntro{grid-template-columns:1fr;gap:18px;margin-top:58px}
+      .pizzaGallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:620px){
+      .wrap{width:min(100% - 24px,var(--max))}
+      .navin{height:64px}.nav .btn{display:none}
+      .mobileContact{display:inline-flex;position:fixed;right:16px;bottom:16px;z-index:30;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border:2px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--cream);font-size:13px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.16)}
+      .contactQuick{gap:8px}.contactQuick a{min-height:42px;padding:0 14px}
+      .hero{padding-top:36px}
+      section{padding:60px 0}
+      .fact{padding:15px 13px}.fact strong{font-size:21px}
+      .steps{grid-template-columns:1fr}
+      .travel,form{grid-template-columns:1fr}.full{grid-column:auto}
+      .heroVisual{min-height:410px}
+      .heroPizza{width:91%;right:-1%;top:0}
+      .logoCard{width:46%;left:2%;bottom:1%;padding:0;box-shadow:none}
+      .heroStamp{right:0;bottom:2%;font-size:10px}
+      .pizzaGallery{grid-template-columns:1fr;gap:28px}
+      .moduleRow{grid-template-columns:1fr}.moduleRow strong{white-space:normal}
+      .priceIntro{display:block}.priceIntro .sectionLead{margin-top:24px}
+    }
+
+  
+    .contactStrip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:28px}
+    .contactItem{border-top:2px solid var(--ink);padding-top:14px}
+    .contactItem span{display:block;font-size:11px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .contactItem a,.contactItem strong{font-size:17px;font-weight:900;overflow-wrap:anywhere}
+
+
+    .legal{padding-top:34px}
+    .legalGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .legalBlock{border-top:2px solid var(--ink);padding-top:18px}
+    .legalBlock h3{font-size:22px;letter-spacing:-.03em;margin:0 0 12px}
+    .legalBlock p,.legalBlock li{font-size:14px;color:#514c45}
+    .legalBlock ul{padding-left:18px;margin:10px 0 0}
+    .legalBlock a{text-decoration:underline;text-underline-offset:3px}
+    .legalSmall{font-size:12px;color:var(--muted);margin-top:22px}
+
+    .footerLinks{display:flex;gap:16px;flex-wrap:wrap}
+    .footerLinks a{text-decoration:underline;text-underline-offset:4px}
+
+    /* Bildlook: keine Karten, keine weissen Hintergründe, keine dekorativen Rahmen */
+    .pizzaCard,.pizzaImage,.logoCard{background:transparent!important;border:0!important;box-shadow:none!important}
+    .pizzaCard img,.logoCard img{background:transparent!important;border:0!important;outline:0!important}
+    .pizzaCard .tag{border-top:0!important;margin-top:4px!important;padding-top:4px!important}
+    @media(max-width:920px){
+      .contactStrip,.legalGrid{grid-template-columns:1fr}
+    }
+
+  
+    .restoredShowcase{display:grid;grid-template-columns:.82fr 1.18fr;gap:34px;align-items:center;margin:38px auto 42px;max-width:1040px}
+    .restoredShowcase .eventPhoto{border:0;border-radius:18px;overflow:hidden;background:transparent;box-shadow:none;aspect-ratio:4/3}
+    .restoredShowcase .eventPhoto img{width:100%;height:100%;object-fit:cover;border-radius:18px}
+    .restoredShowcase .eventCopy{padding:8px 0}
+    .restoredShowcase .eventCopy h3{font-size:clamp(30px,4vw,50px);line-height:.95;letter-spacing:-.05em;margin:8px 0 16px}
+    .restoredShowcase .eventCopy p{font-size:17px;line-height:1.55;color:var(--muted);margin:0 0 18px}
+    .restoredShowcase .miniFacts{display:flex;flex-wrap:wrap;gap:8px}
+    .restoredShowcase .miniFacts span{border:1px solid var(--ink);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:800}
+    @media(max-width:920px){.restoredShowcase{grid-template-columns:1fr}}
+
+  
+    .eventGallery{
+      display:grid;
+      grid-template-columns:repeat(6,minmax(0,1fr));
+      gap:12px;
+      margin-top:30px;
+    }
+    .eventGallery figure{
+      margin:0;
+      overflow:hidden;
+      border-radius:18px;
+      background:transparent;
+    }
+    .eventGallery img{
+      display:block;
+      width:calc(100% + 4px);
+      height:calc(100% + 4px);
+      margin:-2px;
+      object-fit:cover;
+      border:0;
+      outline:0;
+      background:transparent;
+    }
+    .eventGallery .wide{
+      grid-column:span 3;
+      aspect-ratio:16/10;
+    }
+    .eventGallery .third{
+      grid-column:span 2;
+      aspect-ratio:4/3;
+    }
+    @media(max-width:920px){
+      .eventGallery .wide{grid-column:span 3}
+      .eventGallery .third{grid-column:span 3}
+    }
+    @media(max-width:620px){
+      .eventGallery{grid-template-columns:1fr}
+      .eventGallery .wide,.eventGallery .third{grid-column:auto;aspect-ratio:4/3}
+    }
+
+  
+    .dessertFeature{
+      display:grid;
+      grid-template-columns:.88fr 1.12fr;
+      gap:36px;
+      align-items:center;
+      margin:54px 0 50px;
+      max-width:none;
+      width:100%;
+    }
+    .dessertImage{
+      overflow:hidden;
+      border-radius:22px;
+      background:transparent;
+    }
+    .dessertImage img{
+      width:100%;
+      display:block;
+      aspect-ratio:4/3;
+      object-fit:cover;
+      border:0;
+      background:transparent;
+    }
+    .dessertCopy h3{
+      font-size:clamp(34px,4vw,54px);
+      line-height:.95;
+      letter-spacing:-.05em;
+      margin:8px 0 14px;
+    }
+    .dessertCopy p{
+      margin:0;
+      font-size:18px;
+      color:var(--muted);
+      max-width:540px;
+    }
+    @media(max-width:920px){
+      .dessertFeature{grid-template-columns:1fr}
+    }
+
+  
+    /* v15: ruhigere, kompaktere Bildsprache */
+    .eventGallery figure,.dessertImage,.restoredShowcase .eventPhoto{
+      line-height:0;
+      isolation:isolate;
+    }
+    .eventGallery{background:transparent}
+    .dessertCopy{padding-right:32px}
+    @media(max-width:920px){
+      .restoredShowcase,.dessertFeature{max-width:none}
+      .dessertCopy{padding-right:0}
+    }
+
+  
+    /* v17 definitive layout fixes */
+    .restoredShowcase{
+      display:grid !important;
+      grid-template-columns:340px minmax(0,1fr) !important;
+      gap:34px !important;
+      align-items:center !important;
+      max-width:980px !important;
+      margin:32px auto 38px !important;
+    }
+    .restoredShowcase .eventPhoto{
+      width:340px !important;
+      height:230px !important;
+      aspect-ratio:auto !important;
+      margin:0 !important;
+      overflow:hidden !important;
+      border:0 !important;
+      border-radius:16px !important;
+      background:transparent !important;
+      box-shadow:none !important;
+    }
+    .restoredShowcase .eventPhoto img{
+      display:block !important;
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+      border:0 !important;
+      border-radius:0 !important;
+      margin:0 !important;
+    }
+
+    .eventGallery{
+      display:grid !important;
+      grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+      gap:10px !important;
+      margin-top:26px !important;
+      background:transparent !important;
+    }
+    .eventGallery figure,
+    .eventGallery .wide,
+    .eventGallery .third{
+      grid-column:span 2 !important;
+      aspect-ratio:4/3 !important;
+      margin:0 !important;
+      overflow:hidden !important;
+      border:0 !important;
+      outline:0 !important;
+      border-radius:16px !important;
+      background:transparent !important;
+      box-shadow:none !important;
+    }
+    .eventGallery img{
+      display:block !important;
+      width:102% !important;
+      height:102% !important;
+      max-width:none !important;
+      margin:-1% !important;
+      object-fit:cover !important;
+      border:0 !important;
+      outline:0 !important;
+      box-shadow:none !important;
+      background:transparent !important;
+    }
+    .eventGallery figure:nth-child(n+4){
+      grid-column:span 3 !important;
+      aspect-ratio:16/10 !important;
+    }
+    .eventGallery figure:nth-child(4) img{
+      object-position:center 56% !important;
+    }
+    @media(max-width:920px){
+      .restoredShowcase{
+        grid-template-columns:1fr !important;
+        max-width:680px !important;
+      }
+      .restoredShowcase .eventPhoto{
+        width:100% !important;
+        height:auto !important;
+        aspect-ratio:16/9 !important;
+      }
+      .eventGallery{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+      .eventGallery figure,
+      .eventGallery figure:nth-child(n+4){grid-column:auto !important;aspect-ratio:4/3 !important}
+    }
+    @media(max-width:620px){
+      .eventGallery{grid-template-columns:1fr !important}
+    }
+
+
+    /* v18: Apéro-Block sichtbar und links bündig mit der Galerie */
+    .restoredShowcase{
+      display:grid !important;
+      grid-template-columns:42% minmax(0,1fr) !important;
+      gap:30px !important;
+      align-items:center !important;
+      width:100% !important;
+      max-width:none !important;
+      margin:34px 0 44px !important;
+    }
+    .restoredShowcase .eventPhoto{
+      width:100% !important;
+      height:auto !important;
+      aspect-ratio:4/3 !important;
+      margin:0 !important;
+      overflow:hidden !important;
+      border:0 !important;
+      border-radius:18px !important;
+      background:transparent !important;
+      box-shadow:none !important;
+    }
+    .restoredShowcase .eventPhoto img{
+      display:block !important;
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+      border:0 !important;
+      margin:0 !important;
+    }
+    .restoredShowcase .eventCopy{
+      padding:0 !important;
+    }
+    @media(max-width:920px){
+      .restoredShowcase{
+        grid-template-columns:1fr !important;
+        width:100% !important;
+      }
+      .restoredShowcase .eventPhoto{
+        aspect-ratio:16/9 !important;
+      }
+    }
+
+    /* finaler Feinschliff */
+    :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+    .nav a,.btn{touch-action:manipulation}
+    .processShot{aspect-ratio:16/10 !important}
+    .processShot img{object-position:center center !important}
+    .privacyCheck{display:flex;grid-template-columns:20px 1fr;align-items:start;gap:10px;text-transform:none;letter-spacing:0;font-size:13px;line-height:1.4;font-weight:700;color:#ffe9e4}
+    .privacyCheck input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--cream)}
+    .privacyCheck a{text-decoration:underline;text-underline-offset:3px}
+    .legalLead{max-width:900px;margin-top:24px}
+    .legalGrid{display:grid;grid-template-columns:1fr;gap:42px;margin-top:42px}
+    .legalBlock{border-top:2px solid var(--ink);padding-top:24px}
+    .legalBlock h3{font-size:clamp(28px,3.5vw,42px);letter-spacing:-.045em;margin:0 0 22px}
+    .legalBlock h4{font-size:16px;letter-spacing:-.01em;margin:0 0 8px}
+    .legalBlock p,.legalBlock li{font-size:14px;line-height:1.65;color:#514c45}
+    .legalBlock ul{padding-left:20px;margin:8px 0 12px}
+    .legalColumns{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+    .termsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 34px}
+    .termsGrid>div{border-top:1px solid var(--line);padding-top:15px}
+    .legalSmall{font-size:12px!important;color:var(--muted)!important;margin-top:24px}
+    @media(max-width:920px){
+      .legalColumns,.termsGrid{grid-template-columns:1fr}
+      .processShot{aspect-ratio:4/3 !important}
+    }
+
+
+.aboutFacts{margin-top:28px;display:flex;flex-wrap:wrap;align-items:center;gap:0}.aboutFacts span{display:inline-flex;align-items:center;white-space:nowrap;font-size:15px;font-weight:600}.aboutFacts span+span::before{content:"·";margin:0 10px;color:var(--muted)}.aboutSlogan{margin-top:34px;font-size:clamp(28px,3vw,44px)}
+</style>
+</head>
+<body>
+<nav class="nav">
+<div class="wrap navin">
+<a class="brand" href="#top">rondisach</a>
+<div class="navlinks">
+<a href="#wir">über uns</a>
+<a href="#ablauf">ablauf</a>
+<a href="#bilder">bilder</a>
+<a href="#preise">preise</a>
+<a href="#stimmen">stimmen</a>
+<a href="#anfrage">kontakt</a>
+</div>
+<a class="btn" href="#anfrage">Catering anfragen</a>
+</div>
+</nav>
+<main id="top">
+<section class="hero">
+<div class="wrap heroGrid">
+<div>
+<div class="kicker">pizza catering · luzern &amp; umgebung</div>
+<h1>eifach<br/>e rondi sach.</h1>
+<p class="heroLead">Pizza, wie wir sie selber am liebsten essen: handgemachter Teig, sorgfältig ausgewählte Zutaten und direkt vor euren Gästen gebacken.</p>
+<div class="heroActions">
+<a class="btn" href="#anfrage">Unverbindlich anfragen</a>
+<a class="btn outline" href="#preise">Preise &amp; Pakete</a>
+</div>
+</div>
+<div class="heroVisual">
+<img alt="Neapolitanische Margherita von rondisach" class="heroPizza" decoding="async" fetchpriority="high" src="assets/pizza-margherita.webp"/>
+<div class="logoCard"><img alt="rondisach Pizza Catering" decoding="async" src="assets/rondisach-logo.webp"/></div>
+<div class="heroStamp">handgemacht · vor ort</div>
+</div>
+</div>
+<div aria-label="Unsere wichtigsten Fakten" class="wrap factbar">
+<div class="fact"><strong>2</strong><span>jungs</span></div>
+<div class="fact"><strong>48 h</strong><span>teigruhe</span></div>
+<div class="fact"><strong>500 °C</strong><span>ofentemperatur</span></div>
+<div class="fact"><strong>~90 Sek.</strong><span>backzeit</span></div>
+</div>
+</section>
+<section id="wir">
+<div class="wrap sectionGrid">
+<div class="sectionLabel"><div class="kicker">01 · über uns</div><h2 class="sectionTitle">zwei jungs.<br/>eine gemeinsame leidenschaft.</h2></div>
+<div><p class="story">Wir sind <em>Maurice und Andrin</em> – zwei Jungs aus der Region Luzern, die gerne kochen und Menschen damit eine Freude machen.</p><p class="sectionLead">Was mit gemeinsamem Kochen, Ausprobieren und Essen für Freunde und Familie angefangen hat, wurde mit der Zeit zu einer echten Leidenschaft. Vieles haben wir uns selbst beigebracht, immer wieder getestet und Schritt für Schritt verbessert.</p><p class="sectionLead">Besonders hängen geblieben ist die Pizza. Für uns braucht guter Teig vor allem Zeit, gute Zutaten und etwas Geduld. Deshalb bereiten wir unseren Teig selbst zu, lassen ihn lange reifen und backen jede Pizza direkt vor Ort bei hoher Temperatur.</p><p class="sectionLead">Mit <strong>rondisach</strong> möchten wir genau das an euren Anlass bringen: ehrliches, unkompliziertes Essen, sorgfältig vorbereitet und frisch für eure Gäste gemacht. Ohne unnötigen Schnickschnack – dafür mit viel Freude an dem, was wir tun.</p><div class="miniFacts aboutFacts"><span>selbst erlernt</span><span>von Hand gemacht</span><span>aus Luzern</span></div><p class="story aboutSlogan"><em>eifach e rondi sach.</em></p></div>
+</div>
+</section>
+<section class="process" id="ablauf">
+<div class="wrap">
+<div class="kicker">02 · so läuft's</div>
+<h2 class="sectionTitle">ihr feiert.<br/>wir machen pizza.</h2>
+<p class="sectionLead">Ihr gebt uns die Eckdaten, wir planen den Rest mit euch. Am Anlass bauen wir auf, heizen ein und backen laufend frisch.</p>
+<div class="steps">
+<div class="step"><span>1</span><h3>Anfrage</h3><p>Datum, Ort, Gästezahl und gewünschter Umfang reichen für eine erste Einschätzung.</p></div>
+<div class="step"><span>2</span><h3>Offerte</h3><p>Ihr bekommt ein passendes Angebot – nur Pizza oder mit Apéro, Beilagen, Dessert und Getränken.</p></div>
+<div class="step"><span>3</span><h3>Aufbau</h3><p>Wir kommen rechtzeitig, bauen unser Setup auf und bringen den Ofen auf Temperatur.</p></div>
+<div class="step"><span>4</span><h3>Pizza</h3><p>Wir backen laufend frisch, schneiden auf und servieren – unkompliziert und direkt vor euren Gästen.</p></div>
+</div>
+</div>
+</section>
+<section id="bilder">
+<div class="wrap">
+<div class="sectionGrid">
+<div class="sectionLabel">
+<div class="kicker">03 · einblicke</div>
+<h2 class="sectionTitle insightsTitle">so sieht rondisach aus.</h2>
+</div>
+<div>
+<p class="sectionLead insightsLead">Pizza ist unser Kern. Wir bauen vor Ort auf, bereiten frisch zu und backen laufend – direkt, unkompliziert und handgemacht. Auf Wunsch ergänzen wir euren Anlass mit Apéro, Getränken, Beilagen und Dessert.</p>
+</div>
+</div>
+<div class="eventShowcase restoredShowcase">
+<figure class="eventPhoto">
+<img alt="Apéro, Getränke und Gäste bei einem rondisach Catering" decoding="async" loading="lazy" src="assets/catering-event.webp"/>
+</figure>
+<div class="eventCopy">
+<div class="kicker">mehr als pizza</div>
+<h3>vom apéro bis zum dessert.</h3>
+<p>Auf Wunsch übernehmen wir mehr als den Pizza-Part: Apéro, Getränke, Salate, Beilagen und Dessert stimmen wir auf euren Anlass ab.</p>
+<div class="miniFacts">
+<span>Apéro</span><span>Pizza à discrétion</span><span>Beilagen</span><span>Dessert</span><span>Getränke</span>
+</div>
+</div>
+</div>
+<div aria-label="Weitere Einblicke in unsere Caterings" class="eventGallery">
+<figure class="wide">
+<img alt="Pizza Catering beim Backen im Garten am Abend" decoding="async" loading="lazy" src="assets/event-edited-01.webp"/>
+</figure>
+<figure class="wide">
+<img alt="Pizza wird beim Catering frisch von Hand vorbereitet" decoding="async" loading="lazy" src="assets/event-edited-02.webp"/>
+</figure>
+<figure class="third">
+<img alt="Buffet und Mise en Place beim Pizza-Catering" decoding="async" loading="lazy" src="assets/event-edited-04.webp"/>
+</figure>
+<figure class="third">
+<img alt="Gäste beim Pizza Catering am Abend" decoding="async" loading="lazy" src="assets/event-edited-05.webp"/>
+</figure>
+<figure class="third processShot">
+<img alt="Rohe Pizza wird frisch belegt und für den Ofen vorbereitet" loading="lazy" src="assets/process-1.jpg"/>
+</figure>
+<figure class="third processShot">
+<img alt="Pizza wird frisch aus dem Ofen geholt" loading="lazy" src="assets/process-2.jpg"/>
+</figure>
+<figure class="third processShot">
+<img alt="Pizza backt bei hoher Temperatur im Ofen" loading="lazy" src="assets/process-3.jpg"/>
+</figure>
+</div>
+<div class="dessertFeature">
+<div class="dessertCopy">
+<div class="kicker">dessert</div>
+<h3>etwas süsses zum schluss.</h3>
+<p>Auf Wunsch bringen wir auch das Dessert mit und stimmen es passend auf euren Anlass und das restliche Catering ab.</p>
+</div>
+<div class="dessertImage">
+<img alt="Lemon Posset in Zitronenhälften mit Himbeeren – als Dreier-Collage" decoding="async" loading="lazy" src="assets/lemon-posset.webp"/>
+</div>
+</div>
+<div class="pizzaIntro">
+<div>
+<div class="kicker">unsere pizzen</div>
+<h3>was kommt auf<br/>euren teller?</h3>
+</div>
+<p class="pizzaIntroText">Hier seht ihr einige unserer Favoriten. <strong>Ihr habt eine Lieblingspizza oder einen besonderen Wunsch?</strong> Sagt uns einfach, worauf ihr Lust habt – die Auswahl stellen wir passend zu eurem Anlass zusammen.</p>
+</div>
+<div aria-label="Auswahl unserer Pizzen" class="pizzaGallery">
+<figure class="pizzaCard"><div class="pizzaImage"><img alt="Pizza Mortadella mit Burrata und Pistazien" decoding="async" loading="lazy" src="assets/pizza-mortadella.webp"/><button aria-expanded="false" class="pizzaTap" type="button" aria-label="Zutaten für Mortadella und Burrata anzeigen"></button></div><figcaption class="tag">Mortadella &amp; Burrata</figcaption><div class="pizzaIngredients">Crème · Fior di Latte · Mortadella · Burrata · Pistazien</div></figure>
+<figure class="pizzaCard"><div class="pizzaImage"><img alt="Pizza Prosciutto Crudo mit Rucola" decoding="async" loading="lazy" src="assets/pizza-crudo.webp"/><button aria-expanded="false" class="pizzaTap" type="button" aria-label="Zutaten für Prosciutto Crudo anzeigen"></button></div><figcaption class="tag">Prosciutto Crudo</figcaption><div class="pizzaIngredients">Tomate · Fior di Latte · Rohschinken · Rucola · Parmesan · Cherrytomaten</div></figure>
+<figure class="pizzaCard"><div class="pizzaImage"><img alt="Pizza Margherita mit Fior di Latte und Basilikum" decoding="async" loading="lazy" src="assets/pizza-margherita.webp"/><button aria-expanded="false" class="pizzaTap" type="button" aria-label="Zutaten für Margherita anzeigen"></button></div><figcaption class="tag">Margherita</figcaption><div class="pizzaIngredients">Tomate · Fior di Latte · Basilikum · Olivenöl</div></figure>
+<figure class="pizzaCard"><div class="pizzaImage"><img alt="Pizza Salsiccia mit roten Zwiebeln und Ricotta" decoding="async" loading="lazy" src="assets/pizza-salsiccia.webp"/><button aria-expanded="false" class="pizzaTap" type="button" aria-label="Zutaten für Salsiccia anzeigen"></button></div><figcaption class="tag">Salsiccia</figcaption><div class="pizzaIngredients">Tomate · Pecorino · Fior di Latte · Salsiccia · rote Zwiebeln · Ricotta</div></figure>
+<figure class="pizzaCard"><div class="pizzaImage"><img alt="Pizza Vegetariana mit grilliertem Gemüse" decoding="async" loading="lazy" src="assets/pizza-vegi.webp"/><button aria-expanded="false" class="pizzaTap" type="button" aria-label="Zutaten für Vegetariana anzeigen"></button></div><figcaption class="tag">Vegetariana</figcaption><div class="pizzaIngredients">Tomate · Fior di Latte · Aubergine · Zucchetti · Cherrytomaten</div></figure>
+<figure class="pizzaCard"><div class="pizzaImage"><img alt="Pizza Marinara mit Knoblauch und Oregano" decoding="async" loading="lazy" src="assets/pizza-marinara.webp"/><button aria-expanded="false" class="pizzaTap" type="button" aria-label="Zutaten für Marinara anzeigen"></button></div><figcaption class="tag">Marinara</figcaption><div class="pizzaIngredients">Tomate · Knoblauch · Oregano · Olivenöl</div></figure>
+<figure class="pizzaCard"><div class="pizzaImage"><img alt="Pizza Salami mit Fior di Latte" decoding="async" loading="lazy" src="assets/pizza-salami.webp"/><button aria-expanded="false" class="pizzaTap" type="button" aria-label="Zutaten für Salami anzeigen"></button></div><figcaption class="tag">Salami</figcaption><div class="pizzaIngredients">Tomate · Fior di Latte · Salami · Olivenöl</div></figure>
+</div>
+</div>
+</section>
+<section id="preise">
+<div class="wrap">
+<div class="priceIntro">
+<div>
+<div class="kicker">04 · preise</div>
+<h2 class="sectionTitle">so viel oder<br/>so wenig ihr wollt.</h2>
+</div>
+<p class="sectionLead">Von Pizza à discrétion bis zum ganzen Abend. Wo möglich setzen wir auf Zutaten aus der Schweiz, teilweise lokal und in Bio-Qualität. Caterings sind ab 15 Personen möglich. Die ausgewiesenen Ab-Preise gelten je nach Leistungsumfang und Gruppengrösse; bei kleineren Aufträgen kann aufgrund des Mindestauftragswerts ein höherer effektiver Preis pro Person entstehen. Für euren Anlass erstellen wir eine individuelle Offerte.</p>
+</div>
+<div class="pricingTop">
+<article class="package">
+<h3>pizza à discrétion.</h3>
+<p class="desc">Laufend frisch gebackene Pizza direkt bei euch vor Ort – ihr organisiert den Rest des Anlasses.</p>
+<div class="price">ab CHF 28 <small>/ Person</small></div>
+<div class="ticks">
+<div class="tick">Ab 15 Personen</div>
+<div class="tick">Mehrere Standardsorten, laufend frisch gebacken</div>
+<div class="tick">Ofen, Setup und Service inklusive</div>
+</div>
+</article>
+<article class="package dark">
+<h3>rundum.</h3>
+<p class="desc">Vom Apéro bis zum Dessert – inklusive umfassender Betreuung und alkoholfreier Basisgetränke.</p>
+<div class="price">ab CHF 79 <small>/ Person</small></div>
+<div class="ticks">
+<div class="tick">Ab 15 Personen</div>
+<div class="tick">Pizza à discrétion als Hauptgang</div>
+<div class="tick">Apéro, Pizza à discrétion, Salat/Beilage und Dessert inklusive</div>
+<div class="tick">Wasser &amp; Softdrinks in Basisauswahl inklusive · Wein &amp; Bier zusätzlich</div>
+</div>
+</article>
+</div>
+<div class="modules">
+<div class="moduleHead">Bausteine · Ab-Preise pro Person · Basis ab 15 Personen</div>
+<div class="moduleRow"><div><b>Pizza à discrétion</b><small>Mehrere Standardsorten, Ofen, Setup &amp; Service inklusive</small></div><strong>ab CHF 28</strong></div>
+<div class="moduleRow"><div><b>Apéro</b><small>Basisauswahl kleiner Häppchen, in Kombination mit dem Pizza-Catering</small></div><strong>ab CHF 16</strong></div>
+<div class="moduleRow"><div><b>Salat &amp; Beilagen</b><small>Eine abgestimmte Basisauswahl als Ergänzung zum Hauptgang</small></div><strong>ab CHF 8</strong></div>
+<div class="moduleRow"><div><b>Dessert</b><small>Ein vorbereitetes Dessert, passend zum Anlass und restlichen Catering</small></div><strong>ab CHF 9</strong></div>
+<div class="moduleRow"><div><b>Alkoholfreie Getränke</b><small>Basisauswahl Wasser und Softdrinks gemäss Offerte</small></div><strong>ab CHF 6</strong></div>
+<div class="moduleRow"><div><b>Wein &amp; Bier</b><small>Abgestimmte Auswahl und Menge gemäss Offerte</small></div><strong>ab CHF 18</strong></div>
+</div>
+<div class="travel">
+<div class="travelBox"><strong>Anfahrt bis 15 km</strong>CHF 50 pauschal ab 6010 Kriens.</div>
+<div class="travelBox"><strong>Weitere Distanz</strong>CHF 1.50 pro zusätzlichem Kilometer der einfachen Strecke; die Rückfahrt ist im Tarif berücksichtigt.</div>
+</div>
+<p class="fineprint"><strong>Caterings sind ab 15 Personen möglich. Mindestauftragswert: CHF 600.</strong> Bei kleinen Pizza-Caterings kann der effektive Preis pro Person deshalb über dem ausgewiesenen Ab-Preis liegen. Umfangreichere Caterings liegen in der Regel ohnehin über diesem Mindestbetrag. Die genannten Preise verstehen sich in CHF als Endpreise; allfällige gesetzlich geschuldete Abgaben sind darin enthalten. Zusatzwünsche, besondere Menükomponenten, erschwerte örtliche Bedingungen oder kleinere Gruppen können den Preis verändern. Verbindlich sind ausschliesslich Leistungsumfang und Gesamtpreis der persönlichen Offerte.</p>
+</div>
+</section>
+<section class="reviews" id="stimmen">
+<div class="wrap">
+<div class="reviewsIntro">
+<div>
+<div class="kicker">05 · kundenstimmen</div>
+<h2 class="sectionTitle">das sagen<br/>unsere gäste.</h2>
+</div>
+<p class="sectionLead">Echte Rückmeldungen unserer Gäste – direkt von Google und automatisch aktualisiert.</p>
+</div>
+<div class="reviewWidget">
+<!-- Elfsight Google Reviews | Untitled Google Reviews -->
+<script src="https://elfsightcdn.com/platform.js" async></script>
+<div class="elfsight-app-449bd837-c39e-47e0-b83e-8479d730f377" data-elfsight-app-lazy></div>
+<noscript><a href="https://www.google.com/maps/search/?api=1&amp;query=rondisach%20Pizza%20Catering%20Luzern" target="_blank" rel="noopener noreferrer">Google-Rezensionen ansehen</a></noscript>
+</div>
+</div>
+</section>
+<section class="booking" id="anfrage">
+<div class="wrap bookingBox">
+<div class="bookingGrid">
+<div>
+<div class="kicker">06 · anfrage</div>
+<h2>wann wird's rund?</h2>
+<p>Habt ihr eine Frage oder schon einen Anlass im Kopf? Schreibt uns unverbindlich über das Formular oder meldet euch direkt bei uns. Wir antworten so schnell wie möglich.</p>
+<div class="contactQuick">
+<a href="mailto:rondisachpizzacatering@gmail.com">E-Mail schreiben</a>
+<a href="tel:+41774036466">077 403 64 66</a>
+<a href="https://wa.me/41774036466" target="_blank" rel="noopener">WhatsApp</a>
+</div>
+</div>
+<form action="https://formsubmit.co/rondisachpizzacatering@gmail.com" id="bookingForm" method="POST">
+<input name="_subject" type="hidden" value="Neue Catering-Anfrage über rondisach.ch"/>
+<input name="_template" type="hidden" value="table"/>
+<input name="_next" type="hidden" value="https://rondisach.ch/?anfrage=gesendet#anfrage"/>
+<input name="_honey" style="display:none" type="text"/>
+<label>Name<input name="name" placeholder="Vor- und Nachname" required=""/></label>
+<label>E-Mail<input name="email" placeholder="name@beispiel.ch" required="" type="email"/></label>
+<label>Telefon<input name="phone" placeholder="+41 ..." type="tel"/></label>
+<label>Datum<input name="date" required="" type="date"/></label>
+<label>Gäste<input min="15" name="people" placeholder="mindestens 15" required="" type="number"/></label>
+<label>Ort<input name="place" placeholder="Ort / Location" required=""/></label>
+<label>Gewünschter Umfang<select name="package"><option>Pizza à discrétion</option><option>Pizza + Apéro</option><option>Komplettes Catering</option><option>Noch offen / beraten lassen</option></select></label>
+<label class="full">Was plant ihr?<textarea name="message" placeholder="Anlass, ungefährer Zeitplan, Wünsche, Besonderheiten …"></textarea></label>
+<label class="privacyCheck full"><input name="datenschutz" required="" type="checkbox" value="gelesen"/><span>Ich habe die <a href="datenschutz.html">Datenschutzerklärung</a> zur Kenntnis genommen.</span></label>
+<button class="btn submit full" type="submit">Unverbindliche Anfrage senden</button>
+<div class="formHint full">Das Formular ist noch keine Buchung. Verbindlich wird ein Auftrag erst nach schriftlicher Bestätigung bzw. Annahme unserer Offerte. Alternativ: <a href="mailto:rondisachpizzacatering@gmail.com" style="text-decoration:underline">rondisachpizzacatering@gmail.com</a></div>
+<div class="full" hidden="" id="done" style="font-weight:900">Danke! Eure Anfrage wurde erfolgreich gesendet. Wir melden uns so bald wie möglich.</div>
+</form>
+</div>
+</div>
+</section>
+
+</main>
+<a class="mobileContact" href="#anfrage">Anfragen</a>
+<footer>
+<div class="wrap foot">
+<strong>rondisach · pizza catering</strong>
+<span><a href="mailto:rondisachpizzacatering@gmail.com">rondisachpizzacatering@gmail.com</a></span>
+<div class="footerLinks">
+<a href="impressum.html">Impressum</a>
+<a href="datenschutz.html">Datenschutz</a>
+<a href="buchung-storno.html">Buchung &amp; Storno</a>
+</div>
+</div>
+</footer>
+<script>
+    const dateField = document.querySelector('input[type="date"]');
+    if (dateField) {
+      const today = new Date();
+      const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0,10);
+      dateField.min = local;
+    }
+
+
+
+    document.querySelectorAll('.pizzaTap').forEach((button) => {
+      button.addEventListener('click', () => {
+        const card = button.closest('.pizzaCard');
+        const open = card.classList.toggle('is-open');
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('anfrage') === 'gesendet') {
+      const done = document.getElementById('done');
+      if (done) {
+        done.hidden = false;
+        done.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+      if (history.replaceState) {
+        history.replaceState({}, document.title, window.location.pathname + '#anfrage');
+      }
+    }
+  </script>
+</body>
+</html>
