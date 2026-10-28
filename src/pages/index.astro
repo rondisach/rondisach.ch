@@ -1,0 +1,1005 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import PizzaMenu from '../components/PizzaMenu.astro';
+import { upload } from '../lib/images';
+import pizzen from '../data/pizzen.json';
+import preise from '../data/preise.json';
+import rezensionen from '../data/rezensionen.json';
+import kontakt from '../data/kontakt.json';
+import termine from '../data/termine.json';
+
+const chf = (n: number) => `CHF ${n.toLocaleString('de-CH')}`;
+const facts = [
+  { value: '2', label: 'Jungs' },
+  { value: '48 h', label: 'Teigruhe' },
+  { value: '500 °C', label: 'Ofentemperatur' },
+  { value: '~90 Sek.', label: 'Backzeit' },
+];
+const steps = [
+  { title: 'Anfrage', text: 'Datum, Ort, Gästezahl und gewünschter Umfang reichen für eine erste Einschätzung.' },
+  { title: 'Offerte', text: 'Ihr bekommt ein passendes Angebot – nur Pizza oder mit Apéro, Beilagen, Dessert und Getränken.' },
+  { title: 'Aufbau', text: 'Wir kommen rechtzeitig, bauen unser Setup auf und bringen den Ofen auf Temperatur.' },
+  { title: 'Pizza', text: 'Wir backen laufend frisch, schneiden auf und servieren – unkompliziert und direkt vor euren Gästen.' },
+];
+const pizzas = pizzen.pizzas.map((p) => ({ ...p, src: upload(p.image) }));
+
+// Nur kommende Termine; vergangene blendet zusätzlich ein Skript im Browser aus.
+const today = new Date().toISOString().slice(0, 10);
+const events = termine.events
+  .filter((e) => e.title && e.start && (e.end || e.start) >= today)
+  .sort((a, b) => a.start.localeCompare(b.start))
+  .map((e) => {
+    const d = new Date(e.start);
+    const end = e.end && e.end !== e.start ? new Date(e.end) : null;
+    const fmt = (x: Date, o: Intl.DateTimeFormatOptions) => x.toLocaleDateString('de-CH', o);
+    return {
+      ...e,
+      day: end && end.getMonth() === d.getMonth() ? `${d.getDate()}.–${end.getDate()}.` : fmt(d, { day: 'numeric' }) + '.',
+      month: fmt(d, { month: 'short' }).replace('.', ''),
+      long: end ? `${fmt(d, { day: 'numeric', month: 'long' })} – ${fmt(end, { day: 'numeric', month: 'long', year: 'numeric' })}` : fmt(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    };
+  });
+---
+
+<Layout
+  title="Pizza Catering Luzern | rondisach"
+  description="rondisach Pizza Catering: handgemachter Teig, Pizza à discrétion und Catering für private Feste und Firmenanlässe in Luzern und Umgebung."
+  schema
+>
+  <Hero />
+
+  <div class="wrap factbar" aria-label="Unsere wichtigsten Fakten">
+    {facts.map((f) => <div class="fact"><strong>{f.value}</strong><span>{f.label}</span></div>)}
+  </div>
+
+  {
+    events.length > 0 && (
+      <section class="wrap termine" id="termine" aria-labelledby="termine-title">
+        <div class="termineHead">
+          <div class="kicker">nächste termine</div>
+          <h2 id="termine-title" class="termineTitle">hier findet ihr uns.</h2>
+        </div>
+        <ul class="eventList">
+          {events.map((e) => (
+            <li class="event" data-end={e.end || e.start}>
+              <div class="eventDate">
+                <strong>{e.day}</strong>
+                <span>{e.month}</span>
+              </div>
+              <div class="eventBody">
+                <h3>{e.title}</h3>
+                <p class="eventMeta">{[e.long, e.time, e.place].filter(Boolean).map((m) => <span>{m}</span>)}</p>
+                {e.text && <p class="eventText">{e.text}</p>}
+                {e.link && <a class="textLink" href={e.link} target="_blank" rel="noopener">Mehr erfahren</a>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- 01 Über uns -->
+  <section class="section" id="wir">
+    <div class="wrap split">
+      <div class="sticky">
+        <div class="kicker">01 · über uns</div>
+        <h2 class="title">zwei jungs.<br />eine gemeinsame leidenschaft.</h2>
+      </div>
+      <div>
+        <p class="story">Wir sind <em>Maurice und Andrin</em> – zwei Jungs aus der Region Luzern, die gerne kochen und Menschen damit eine Freude machen.</p>
+        <p class="lead">Was mit gemeinsamem Kochen, Ausprobieren und Essen für Freunde und Familie angefangen hat, wurde mit der Zeit zu einer echten Leidenschaft. Vieles haben wir uns selbst beigebracht, immer wieder getestet und Schritt für Schritt verbessert.</p>
+        <details class="fold" open>
+          <summary>Mehr über uns lesen</summary>
+        <p class="lead">Besonders hängen geblieben ist die Pizza. Für uns braucht guter Teig vor allem Zeit, gute Zutaten und etwas Geduld. Deshalb bereiten wir unseren Teig selbst zu, lassen ihn lange reifen und backen jede Pizza direkt vor Ort bei hoher Temperatur.</p>
+        <p class="lead">Mit <strong>rondisach</strong> möchten wir genau das an euren Anlass bringen: ehrliches, unkompliziertes Essen, sorgfältig vorbereitet und frisch für eure Gäste gemacht. Ohne unnötigen Schnickschnack – dafür mit viel Freude an dem, was wir tun.</p>
+        <ul class="dots">
+          <li>selbst erlernt</li>
+          <li>von Hand gemacht</li>
+          <li>aus Luzern</li>
+        </ul>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 Ablauf -->
+  <section class="section process" id="ablauf">
+    <div class="wrap">
+      <div class="kicker">02 · so läuft's</div>
+      <h2 class="title">ihr feiert.<br />wir machen pizza.</h2>
+      <p class="lead processLead">Ihr gebt uns die Eckdaten, wir planen den Rest mit euch. Am Anlass bauen wir auf, heizen ein und backen laufend frisch.</p>
+      <ol class="steps swipeRow" aria-label="Ablauf, seitlich wischen">
+        {steps.map((s, i) => (
+          <li class="step">
+            <span class="stepNo">{i + 1}</span>
+            <h3>{s.title}</h3>
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="swipeDots swipeDots--light" aria-hidden="true"></div>
+      <div class="processMore">
+        <a class="btn btn--light" href="/impressionen.html">Impressionen ansehen →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 Pizzen -->
+  <section class="section" id="pizzen">
+    <div class="wrap">
+      <div class="split splitEnd">
+        <div>
+          <div class="kicker">03 · unsere pizzen</div>
+          <h2 class="title">was kommt auf<br />euren teller?</h2>
+        </div>
+        <p class="lead">Hier seht ihr einige unserer Favoriten. <strong>Ihr habt eine Lieblingspizza oder einen besonderen Wunsch?</strong> Sagt uns einfach, worauf ihr Lust habt – die Auswahl stellen wir passend zu eurem Anlass zusammen.</p>
+      </div>
+      <PizzaMenu pizzas={pizzas} />
+    </div>
+  </section>
+
+  <!-- 04 Preise -->
+  <section class="section" id="preise">
+    <div class="wrap">
+      <div class="split splitEnd">
+        <div>
+          <div class="kicker">04 · preise</div>
+          <h2 class="title">so viel oder<br />so wenig ihr wollt.</h2>
+        </div>
+        <p class="lead">{preise.lead}</p>
+      </div>
+
+      <div class="packages swipeRow" aria-label="Pakete, seitlich wischen">
+        {preise.packages.map((pk) => (
+          <article class:list={['package', { 'package--dark': pk.highlight }]}>
+            <h3>{pk.name}</h3>
+            <p class="pkDesc">{pk.description}</p>
+            <div class="price">ab {chf(pk.price)} <small>/ Person</small></div>
+            <ul class="ticks">{pk.features.map((f) => <li>{f}</li>)}</ul>
+          </article>
+        ))}
+      </div>
+      <div class="swipeDots" aria-hidden="true"></div>
+
+      <details class="fold fold--box" open>
+        <summary>Alle Bausteine &amp; Preise anzeigen</summary>
+      <div class="modules">
+        <div class="modulesHead">Bausteine · Ab-Preise pro Person · ab {preise.minGuests} Personen</div>
+        {preise.modules.map((m) => (
+          <div class="moduleRow">
+            <div><b>{m.name}</b><small>{m.description}</small></div>
+            <strong>ab {chf(m.price)}</strong>
+          </div>
+        ))}
+      </div>
+
+      </details>
+
+      <details class="fold fold--box" open>
+        <summary>Anfahrt &amp; Bedingungen</summary>
+      <div class="travel">
+        {preise.travel.map((t) => <div class="travelBox"><strong>{t.title}</strong>{t.text}</div>)}
+      </div>
+      <p class="fineprint"><strong>Caterings sind ab {preise.minGuests} Personen möglich. Mindestauftragswert: {chf(preise.minOrder)}.</strong> {preise.fineprint}</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- 05 Anfrage -->
+  <section class="section booking" id="anfrage">
+    <div class="wrap bookingBox">
+      <div class="bookingGrid">
+        <div>
+          <div class="kicker">05 · anfrage</div>
+          <h2 class="bookingTitle">wann wird's rund?</h2>
+          <p>Habt ihr eine Frage oder schon einen Anlass im Kopf? Schreibt uns unverbindlich über das Formular oder meldet euch direkt bei uns. Wir antworten so schnell wie möglich.</p>
+          <div class="quick">
+            <a href={`mailto:${kontakt.email}`}>E-Mail schreiben</a>
+            <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`}>{kontakt.phoneDisplay}</a>
+            <a href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>
+          </div>
+        </div>
+        <form action={`https://formsubmit.co/${kontakt.email}`} method="POST" class="form">
+          <input type="hidden" name="_subject" value="Neue Catering-Anfrage über rondisach.ch" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_next" value="https://rondisach.ch/?anfrage=gesendet#anfrage" />
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
+          <label>Name<input name="name" placeholder="Vor- und Nachname" autocomplete="name" required /></label>
+          <label>E-Mail<input name="email" type="email" placeholder="name@beispiel.ch" autocomplete="email" required /></label>
+          <label>Telefon<input name="phone" type="tel" placeholder="+41 …" autocomplete="tel" /></label>
+          <label>Datum<input name="date" type="date" required /></label>
+          <label>Gäste<input name="people" type="number" min={preise.minGuests} placeholder={`mindestens ${preise.minGuests}`} required /></label>
+          <label>Ort<input name="place" placeholder="Ort / Location" required /></label>
+          <label class="full">Gewünschter Umfang
+            <select name="package">
+              <option>Pizza à discrétion</option>
+              <option>Pizza + Apéro</option>
+              <option>Komplettes Catering</option>
+              <option>Noch offen / beraten lassen</option>
+            </select>
+          </label>
+          <label class="full">Was plant ihr?<textarea name="message" placeholder="Anlass, ungefährer Zeitplan, Wünsche, Besonderheiten …"></textarea></label>
+          <label class="check full"><input type="checkbox" name="datenschutz" value="gelesen" required /><span>Ich habe die <a href="/datenschutz.html">Datenschutzerklärung</a> zur Kenntnis genommen.</span></label>
+          <button class="btn btn--light full" type="submit">Unverbindliche Anfrage senden</button>
+          <p class="formHint full">Das Formular ist noch keine Buchung. Verbindlich wird ein Auftrag erst nach schriftlicher Bestätigung bzw. Annahme unserer Offerte.</p>
+          <p class="done full" id="done" hidden role="status">Danke! Eure Anfrage wurde erfolgreich gesendet. Wir melden uns so bald wie möglich.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 Stimmen: ganz unten und zentriert -->
+  <section class="section reviews" id="stimmen">
+    <div class="wrap reviewsIn">
+      <div class="kicker">06 · kundenstimmen</div>
+      <h2 class="title">das sagen unsere gäste.</h2>
+      <div class="ratingCard">
+        <div class="ratingScore">{rezensionen.rating.toFixed(1).replace('.', ',')}</div>
+        <div>
+          <div class="stars" aria-label={`${rezensionen.rating} von 5 Sternen`}>★★★★★</div>
+          <div class="ratingMeta">{rezensionen.count} Bewertungen auf Google</div>
+        </div>
+      </div>
+      {rezensionen.reviews.length > 0 && (
+        <ul class="reviewList">
+          {rezensionen.reviews.map((r: { name: string; text: string }) => (
+            <li class="review">
+              <div class="stars" aria-hidden="true">★★★★★</div>
+              <blockquote>«{r.text}»</blockquote>
+              <cite>{r.name}</cite>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div class="reviewActions">
+        <a class="btn" href={rezensionen.googleUrl} target="_blank" rel="noopener">Alle Bewertungen auf Google</a>
+        <a class="btn btn--outline" href={rezensionen.writeReviewUrl} target="_blank" rel="noopener">Bewertung schreiben</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Auf dem Handy sind Details zugeklappt, auf grossen Bildschirmen immer offen.
+  const small = window.matchMedia('(max-width: 620px)');
+  const folds = document.querySelectorAll<HTMLDetailsElement>('details.fold');
+  const syncFolds = () => folds.forEach((d) => (d.open = !small.matches));
+  syncFolds();
+  small.addEventListener('change', syncFolds);
+
+  // Punkte unter den seitlich wischbaren Reihen zeigen, welche Karte gerade sichtbar ist.
+  document.querySelectorAll<HTMLElement>('.swipeRow').forEach((row) => {
+    const dotsBox = row.nextElementSibling as HTMLElement | null;
+    if (!dotsBox?.classList.contains('swipeDots')) return;
+    const items = Array.from(row.children) as HTMLElement[];
+    const dots = items.map(() => dotsBox.appendChild(document.createElement('span')));
+    const update = () => {
+      const i = Math.round(row.scrollLeft / Math.max(1, items[0].offsetWidth));
+      dots.forEach((d, k) => d.classList.toggle('on', k === Math.min(i, dots.length - 1)));
+    };
+    update();
+    row.addEventListener('scroll', update, { passive: true });
+  });
+
+  // Vergangene Termine ausblenden (die Seite wird nicht jeden Tag neu gebaut)
+  const todayIso = new Date().toISOString().slice(0, 10);
+  document.querySelectorAll<HTMLElement>('.event').forEach((el) => {
+    if ((el.dataset.end || '') < todayIso) el.remove();
+  });
+  const termineSection = document.getElementById('termine');
+  if (termineSection && !termineSection.querySelector('.event')) termineSection.remove();
+
+  const dateField = document.querySelector<HTMLInputElement>('.form input[type="date"]');
+  if (dateField) {
+    const now = new Date();
+    dateField.min = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }
+  const params = new URLSearchParams(location.search);
+  if (params.get('anfrage') === 'gesendet') {
+    const done = document.getElementById('done');
+    if (done) {
+      done.hidden = false;
+      done.scrollIntoView({ block: 'center' });
+    }
+    history.replaceState({}, document.title, location.pathname + '#anfrage');
+  }
+</script>
+
+<style>
+  .sticky {
+    position: sticky;
+    top: calc(var(--nav-h) + 32px);
+  }
+  .splitEnd {
+    align-items: end;
+    margin-bottom: clamp(32px, 5vw, 48px);
+  }
+  @media (max-width: 920px) {
+    .sticky {
+      position: static;
+    }
+  }
+
+  /* Fakten */
+  .factbar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-block: 2px solid var(--ink);
+    margin-top: clamp(40px, 6vw, 72px);
+  }
+  .fact {
+    padding: 18px 20px;
+    border-right: 1px solid var(--ink);
+  }
+  .fact:last-child {
+    border-right: 0;
+  }
+  .fact strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.4vw, 28px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+  .fact span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 760px) {
+    .factbar {
+      grid-template-columns: 1fr 1fr;
+    }
+    .fact:nth-child(2) {
+      border-right: 0;
+    }
+    .fact:nth-child(-n + 2) {
+      border-bottom: 1px solid var(--ink);
+    }
+  }
+
+  /* Über uns */
+  .story {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.4vw, 42px);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    margin: 0 0 32px;
+  }
+  .story em {
+    font-style: normal;
+    text-decoration: underline;
+    text-decoration-thickness: 4px;
+    text-underline-offset: 6px;
+    text-decoration-color: var(--accent);
+  }
+  .dots {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 600;
+  }
+  .dots li + li::before {
+    content: '·';
+    margin: 0 10px;
+    color: var(--muted);
+  }
+
+  /* Ablauf */
+  .process {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .processMore {
+    display: flex;
+    justify-content: center;
+    margin-top: clamp(28px, 4vw, 44px);
+  }
+  .processLead {
+    color: #cfc8bd;
+    margin: 24px 0 40px;
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #47433f;
+    border: 1px solid #47433f;
+  }
+  .step {
+    background: var(--ink);
+    padding: 26px;
+    min-height: 210px;
+  }
+  .stepNo {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1.5px solid var(--cream);
+    border-radius: 50%;
+    font-weight: 700;
+  }
+  .step h3 {
+    font-size: 24px;
+    margin: 28px 0 8px;
+  }
+  .step p {
+    color: #cfc8bd;
+    margin: 0;
+  }
+  @media (max-width: 920px) {
+    .steps {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 620px) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+    .step {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      column-gap: 16px;
+      padding: 18px;
+    }
+    .stepNo {
+      grid-row: span 2;
+    }
+    .step h3 {
+      margin: 6px 0 4px;
+      font-size: 21px;
+    }
+    .processLead {
+      margin-bottom: 28px;
+    }
+    .processMore .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  /* Zuklappbare Details: Knopf nur auf dem Handy sichtbar */
+  .fold > summary {
+    display: none;
+  }
+  .swipeDots {
+    display: none;
+  }
+  @media (max-width: 620px) {
+    .fold > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+      padding: 14px 0;
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+      border-top: 1px solid var(--line);
+    }
+    .fold > summary::-webkit-details-marker {
+      display: none;
+    }
+    .fold > summary::after {
+      content: '+';
+      font-size: 22px;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+    .fold[open] > summary::after {
+      transform: rotate(45deg);
+    }
+    .fold--box > summary {
+      margin-top: 12px;
+      padding: 16px 20px;
+      border: 2px solid var(--ink);
+      border-radius: 18px;
+    }
+    .fold--box[open] > summary {
+      margin-bottom: 12px;
+    }
+
+    /* Seitlich wischen statt untereinander */
+    .swipeRow {
+      display: flex !important;
+      gap: 12px !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      margin-inline: calc(-1 * var(--gutter));
+      padding-inline: var(--gutter);
+      scroll-padding-inline: var(--gutter);
+    }
+    .swipeRow::-webkit-scrollbar {
+      display: none;
+    }
+    .swipeRow > * {
+      flex: 0 0 84%;
+      scroll-snap-align: start;
+    }
+    .swipeDots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+    }
+    .swipeDots :global(span) {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--soft);
+      transition: background-color 0.2s ease, width 0.2s ease;
+    }
+    .swipeDots :global(span.on) {
+      width: 20px;
+      border-radius: 4px;
+      background: var(--ink);
+    }
+    .swipeDots--light :global(span) {
+      background: #5a5550;
+    }
+    .swipeDots--light :global(span.on) {
+      background: var(--cream);
+    }
+    .packages.swipeRow .price {
+      font-size: 34px;
+    }
+    .packages.swipeRow .price small {
+      font-size: 13px;
+    }
+    .price small {
+      white-space: nowrap;
+    }
+    .steps.swipeRow {
+      background: none;
+      border: 0;
+    }
+    .steps.swipeRow .step {
+      border: 1px solid #47433f;
+      border-radius: 18px;
+    }
+  }
+
+  /* Preise */
+  .packages {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .package {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    padding: clamp(22px, 3vw, 32px);
+  }
+  .package--dark {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .package h3 {
+    font-size: 34px;
+  }
+  .pkDesc {
+    color: var(--muted);
+    margin: 8px 0 22px;
+  }
+  .package--dark .pkDesc {
+    color: #cbc3b7;
+  }
+  .price {
+    font-family: var(--font-display);
+    font-size: clamp(42px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .price small {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+  .ticks {
+    display: grid;
+    gap: 10px;
+    margin: auto 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ticks li {
+    display: flex;
+    gap: 10px;
+  }
+  .ticks li::before {
+    content: '✓';
+    font-weight: 700;
+  }
+  .modules {
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .modulesHead {
+    padding: 20px 24px;
+    background: var(--panel);
+    font-weight: 700;
+  }
+  .moduleRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+  }
+  .moduleRow small {
+    display: block;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 2px;
+  }
+  .moduleRow strong {
+    white-space: nowrap;
+  }
+  .travel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .travelBox {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 20px;
+  }
+  .travelBox strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .fineprint {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 16px 0 0;
+    max-width: 110ch;
+  }
+  @media (max-width: 920px) {
+    .packages {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 620px) {
+    .travel {
+      grid-template-columns: 1fr;
+    }
+    .moduleRow {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+
+  /* Stimmen */
+  .reviews {
+    background: var(--panel);
+  }
+  .reviewsIn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .reviewsIn .title {
+    margin-bottom: 32px;
+  }
+  .ratingCard {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-align: left;
+    margin-bottom: 28px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    background: var(--cream);
+    padding: 20px 28px;
+  }
+  .ratingScore {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+  .stars {
+    color: var(--accent);
+    font-size: 22px;
+    letter-spacing: 2px;
+  }
+  .ratingMeta {
+    font-weight: 600;
+  }
+  .reviewList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 0 0 28px;
+    padding: 0;
+    list-style: none;
+  }
+  .review {
+    background: var(--cream);
+    border-radius: var(--radius-sm);
+    padding: 24px;
+  }
+  .review blockquote {
+    margin: 10px 0 14px;
+    font-size: 18px;
+    line-height: 1.45;
+  }
+  .review cite {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .reviewList {
+    width: 100%;
+    text-align: left;
+  }
+  .reviewActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  .reviews {
+    margin-top: clamp(64px, 9vw, 112px);
+  }
+
+  /* Nächste Termine */
+  .termine {
+    display: grid;
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+    gap: clamp(20px, 4vw, 48px);
+    align-items: start;
+    padding-top: clamp(48px, 7vw, 80px);
+  }
+  .termineTitle {
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 0.95;
+    margin-top: 10px;
+  }
+  .eventList {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .event {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+  }
+  .eventDate {
+    flex: none;
+    display: grid;
+    place-items: center;
+    min-width: 84px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    text-align: center;
+    line-height: 1.05;
+  }
+  .eventDate strong {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: -0.03em;
+  }
+  .eventDate span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .event h3 {
+    font-size: 24px;
+  }
+  .eventMeta {
+    margin: 4px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .eventMeta span + span::before {
+    content: ' · ';
+  }
+  .eventText {
+    margin: 8px 0 0;
+  }
+  .event .textLink {
+    display: inline-block;
+    margin-top: 8px;
+  }
+  @media (max-width: 760px) {
+    .termine {
+      grid-template-columns: 1fr;
+    }
+    /* Datum als Band oben, darunter der Text in voller Breite */
+    .event {
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+    }
+    .eventDate {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+      padding: 8px 14px;
+    }
+    .eventDate strong {
+      font-size: 20px;
+    }
+    .event h3 {
+      font-size: 22px;
+      line-height: 1.1;
+    }
+    .eventMeta {
+      margin-top: 8px;
+      display: grid;
+      gap: 2px;
+    }
+    .eventMeta span + span::before {
+      content: none;
+    }
+  }
+
+  /* Anfrage */
+  .booking {
+    padding-bottom: 0;
+  }
+  .bookingBox {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 34px;
+    padding: clamp(24px, 5vw, 58px);
+  }
+  .bookingGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 4vw, 48px);
+  }
+  .bookingTitle {
+    font-size: clamp(46px, 6vw, 78px);
+    line-height: 0.9;
+    margin: 12px 0 18px;
+  }
+  .bookingGrid p {
+    color: var(--accent-ink);
+    max-width: 44ch;
+    margin: 0;
+  }
+  .quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  .quick a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid #fff;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+  .quick a:hover {
+    background: #fff;
+    color: var(--accent);
+  }
+  .form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .form label {
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .form input:not([type='checkbox']),
+  .form select,
+  .form textarea {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 14px;
+    padding: 13px 15px;
+    font-size: 16px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+  .form input:focus,
+  .form select:focus,
+  .form textarea:focus {
+    outline: 2px solid #fff;
+    outline-offset: 1px;
+  }
+  .form ::placeholder {
+    color: #f6cdc5;
+  }
+  .form select option {
+    color: var(--ink);
+  }
+  .form textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+  .full {
+    grid-column: 1 / -1;
+  }
+  .form .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .check input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--cream);
+  }
+  .formHint {
+    font-size: 13px;
+  }
+  .bookingGrid .done {
+    font-weight: 700;
+    color: #fff;
+  }
+  @media (max-width: 920px) {
+    .bookingGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 620px) {
+    .form {
+      grid-template-columns: 1fr;
+    }
+    .bookingBox {
+      border-radius: 24px;
+    }
+  }
+</style>

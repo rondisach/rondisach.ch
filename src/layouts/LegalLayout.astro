@@ -1,0 +1,76 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+  title: string;
+  heading: string;
+  lead: string;
+}
+const { title, heading, lead } = Astro.props;
+---
+
+<Layout title={`${title} · rondisach`} description={`${title} von rondisach Pizza-Catering, Kriens/Luzern.`}>
+  <header class="wrap legalHead">
+    <div class="kicker">rechtliches</div>
+    <h1 class="title">{heading}</h1>
+    <p class="lead">{lead}</p>
+  </header>
+  <article class="wrap legal">
+    <slot />
+  </article>
+</Layout>
+
+<style>
+  .legalHead {
+    padding-block: clamp(48px, 8vw, 88px) 32px;
+  }
+  .legalHead .lead {
+    margin-top: 20px;
+  }
+  .legal {
+    border-top: 2px solid var(--ink);
+    padding-top: 32px;
+  }
+  .legal :global(.cols) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 44px;
+  }
+  .legal :global(.cols > div) {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+  .legal :global(h2) {
+    font-size: clamp(26px, 3vw, 36px);
+    margin-bottom: 24px;
+  }
+  .legal :global(h3) {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-bottom: 8px;
+  }
+  .legal :global(p),
+  .legal :global(li) {
+    color: #403d38;
+    line-height: 1.65;
+    font-size: 16px;
+  }
+  .legal :global(p) {
+    margin: 0 0 12px;
+  }
+  .legal :global(ul) {
+    padding-left: 20px;
+  }
+  .legal :global(.small) {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 32px;
+  }
+  @media (max-width: 760px) {
+    .legal :global(.cols) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

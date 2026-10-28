@@ -1,0 +1,338 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import { albums, formatMonth } from '../lib/albums';
+import { upload } from '../lib/images';
+import cateringEvent from '../assets/uploads/catering-event.webp';
+import dessert from '../assets/uploads/lemon-posset.webp';
+
+const prepared = await Promise.all(
+  albums.map(async (album) => ({
+    ...album,
+    month: formatMonth(album.date),
+    photos: await Promise.all(
+      album.photos
+        .map((p) => ({ ...p, src: upload(p.image) }))
+        .filter((p) => p.src)
+        .map(async (p) => ({ ...p, full: (await getImage({ src: p.src!, width: 1800, format: 'webp' })).src })),
+    ),
+  })),
+);
+---
+
+<Layout title="Impressionen | rondisach Pizza Catering" description="Bilder von vergangenen Anlässen mit rondisach Pizza Catering in Luzern und Umgebung.">
+  <header class="wrap pageHead">
+    <div class="kicker">impressionen</div>
+    <h1 class="title">so war's bei euch.</h1>
+    {
+      prepared.length > 0 ? (
+        <p class="lead">Pizza ist unser Kern. Wir bauen vor Ort auf, bereiten frisch zu und backen laufend – direkt, unkompliziert und handgemacht. Auf Wunsch ergänzen wir euren Anlass mit Apéro, Getränken, Beilagen und Dessert.</p>
+      ) : (
+        <p class="lead">Hier zeigen wir bald Bilder von unseren Anlässen – vom Aufbau über den ersten Teig bis zur letzten Pizza. Wir sind gerade dabei, die schönsten Momente zusammenzustellen. Schaut also bald wieder vorbei!</p>
+      )
+    }
+  </header>
+
+  <div class="wrap">
+    <div class="feature">
+      <Image class="featureImg" src={cateringEvent} alt="Apéro, Getränke und Gäste bei einem rondisach Catering" widths={[480, 800, 1100]} sizes="(max-width: 920px) 100vw, 520px" />
+      <div>
+        <div class="kicker">mehr als pizza</div>
+        <h2 class="featureTitle">vom apéro bis zum dessert.</h2>
+        <p class="lead">Auf Wunsch übernehmen wir mehr als den Pizza-Part: Apéro, Getränke, Salate, Beilagen und Dessert stimmen wir auf euren Anlass ab.</p>
+        <ul class="chips">
+          <li>Apéro</li><li>Pizza à discrétion</li><li>Beilagen</li><li>Dessert</li><li>Getränke</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap albums" hidden={prepared.length === 0}>
+    {
+      prepared.map((album) => (
+        <section class="album" id={album.slug} aria-labelledby={`${album.slug}-title`}>
+          <div class="albumHead">
+            <h2 id={`${album.slug}-title`}>{album.title}</h2>
+            <p class="meta">
+              {[album.month, album.guests ? `${album.guests} Gäste` : null, `${album.photos.length} Bilder`].filter(Boolean).join(' · ')}
+            </p>
+            {album.description && <p class="lead">{album.description}</p>}
+          </div>
+          <ul class="grid">
+            {album.photos.map((p, i) => (
+              <li>
+                <button type="button" class="thumb" data-full={p.full} data-alt={p.alt ?? ''} aria-label={`Bild ${i + 1} gross anzeigen${p.alt ? `: ${p.alt}` : ''}`}>
+                  <Image src={p.src!} alt={p.alt ?? ''} widths={[360, 640, 900]} sizes="(max-width: 620px) 50vw, (max-width: 920px) 33vw, 300px" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+
+  <div class="wrap">
+    <div class="feature feature--reverse">
+      <div>
+        <div class="kicker">dessert</div>
+        <h2 class="featureTitle">etwas süsses zum schluss.</h2>
+        <p class="lead">Auf Wunsch bringen wir auch das Dessert mit und stimmen es passend auf euren Anlass und das restliche Catering ab.</p>
+      </div>
+      <Image class="featureImg" src={dessert} alt="Lemon Posset in Zitronenhälften mit Himbeeren" widths={[480, 800, 1100]} sizes="(max-width: 920px) 100vw, 600px" />
+    </div>
+  </div>
+
+  <div class="wrap cta">
+    <h2>euer anlass als nächstes?</h2>
+    <a class="btn" href="/#anfrage">Unverbindlich anfragen</a>
+  </div>
+
+  <dialog class="lightbox" aria-label="Bildansicht">
+    <img alt="" />
+    <p class="caption"></p>
+    <button type="button" class="lbBtn lbClose" aria-label="Schliessen">✕</button>
+    <button type="button" class="lbBtn lbPrev" aria-label="Vorheriges Bild">←</button>
+    <button type="button" class="lbBtn lbNext" aria-label="Nächstes Bild">→</button>
+  </dialog>
+</Layout>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('.lightbox')!;
+  const img = dialog.querySelector('img')!;
+  const caption = dialog.querySelector<HTMLElement>('.caption')!;
+  let group: HTMLButtonElement[] = [];
+  let index = 0;
+
+  function show(i: number) {
+    index = (i + group.length) % group.length;
+    const btn = group[index];
+    img.src = btn.dataset.full!;
+    img.alt = btn.dataset.alt || '';
+    caption.textContent = `${btn.dataset.alt ? btn.dataset.alt + ' · ' : ''}${index + 1} / ${group.length}`;
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.thumb').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      group = Array.from(btn.closest('.album')!.querySelectorAll<HTMLButtonElement>('.thumb'));
+      show(group.indexOf(btn));
+      dialog.showModal();
+    });
+  });
+
+  dialog.querySelector('.lbClose')!.addEventListener('click', () => dialog.close());
+  dialog.querySelector('.lbPrev')!.addEventListener('click', () => show(index - 1));
+  dialog.querySelector('.lbNext')!.addEventListener('click', () => show(index + 1));
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') show(index - 1);
+    if (e.key === 'ArrowRight') show(index + 1);
+  });
+
+  // Wischen auf dem Handy
+  let startX = 0;
+  dialog.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX), { passive: true });
+  dialog.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
+  });
+</script>
+
+<style>
+  .pageHead {
+    padding-block: clamp(48px, 8vw, 96px) clamp(32px, 5vw, 56px);
+  }
+  .pageHead .lead {
+    margin-top: 20px;
+  }
+  .feature {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(24px, 4vw, 48px);
+    align-items: center;
+    margin-bottom: clamp(56px, 8vw, 96px);
+  }
+  .feature--reverse {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    margin: clamp(56px, 8vw, 96px) 0 0;
+  }
+  .featureImg {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+  .featureTitle {
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 0.95;
+    margin: 10px 0 16px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .chips li {
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  @media (max-width: 920px) {
+    .feature,
+    .feature--reverse {
+      grid-template-columns: 1fr;
+    }
+    .feature--reverse .featureImg {
+      order: -1;
+    }
+  }
+  .albums {
+    display: grid;
+    gap: clamp(56px, 8vw, 96px);
+  }
+  .album {
+    border-top: 2px solid var(--ink);
+    padding-top: 24px;
+  }
+  .albumHead {
+    margin-bottom: 24px;
+  }
+  .albumHead h2 {
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 1;
+  }
+  .meta {
+    margin: 8px 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    cursor: zoom-in;
+    background: var(--panel);
+  }
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .thumb:hover img {
+    transform: scale(1.04);
+  }
+  @media (max-width: 620px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .thumb {
+      aspect-ratio: 1;
+      border-radius: 10px;
+    }
+  }
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: clamp(64px, 9vw, 112px);
+    padding: clamp(24px, 4vw, 40px);
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .cta h2 {
+    font-size: clamp(32px, 4vw, 52px);
+  }
+  .cta .btn {
+    background: var(--cream);
+    color: var(--ink);
+    border-color: var(--cream);
+  }
+
+  .lightbox {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 56px 16px 64px;
+    border: 0;
+    background: rgba(18, 18, 18, 0.94);
+    color: var(--cream);
+  }
+  .lightbox[open] {
+    display: grid;
+    place-items: center;
+  }
+  .lightbox::backdrop {
+    background: transparent;
+  }
+  .lightbox img {
+    max-width: 100%;
+    max-height: calc(100dvh - 140px);
+    object-fit: contain;
+    border-radius: 8px;
+  }
+  .caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 20px;
+    margin: 0;
+    text-align: center;
+    font-size: 14px;
+    color: #cfc8bd;
+  }
+  .lbBtn {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border: 1.5px solid rgba(243, 238, 228, 0.5);
+    border-radius: 50%;
+    background: rgba(18, 18, 18, 0.6);
+    color: var(--cream);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .lbClose {
+    top: 12px;
+    right: 12px;
+  }
+  .lbPrev,
+  .lbNext {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .lbPrev {
+    left: 12px;
+  }
+  .lbNext {
+    right: 12px;
+  }
+</style>

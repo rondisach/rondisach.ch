@@ -1,0 +1,429 @@
+---
+// Pizzakarte: links die Karte wie im Restaurant, rechts eine grosse, langsam drehende Pizza.
+// Auf dem Handy: grosse Pizzen zum Wischen.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Pizza {
+  name: string;
+  ingredients: string;
+  alt: string;
+  src?: ImageMetadata;
+  tags?: string[];
+}
+interface Props {
+  pizzas: Pizza[];
+}
+const { pizzas } = Astro.props;
+const list = pizzas.filter((p) => p.src);
+const no = (i: number) => String(i + 1).padStart(2, '0');
+const TAG_LABEL: Record<string, string> = { vegi: 'vegi', vegan: 'vegan', favorit: 'favorit', scharf: 'scharf' };
+---
+
+<div class="menu" data-active="0">
+  <!-- Karte (Desktop) -->
+  <ol class="card">
+    {
+      list.map((p, i) => (
+        <li>
+          <button type="button" class="item" data-index={i} aria-pressed={i === 0 ? 'true' : 'false'}>
+            <span class="no">{no(i)}</span>
+            <span class="body">
+              <span class="name">
+                {p.name}
+                {p.tags?.map((t) => <span class={`tag tag--${t}`}>{TAG_LABEL[t] ?? t}</span>)}
+              </span>
+              <span class="ingr">{p.ingredients}</span>
+            </span>
+          </button>
+        </li>
+      ))
+    }
+    <li>
+      <a class="item item--wish" href="#anfrage">
+        <span class="no">{no(list.length)}</span>
+        <span class="body">
+          <span class="name">Eure Wunschpizza?</span>
+          <span class="ingr">Sagt uns, worauf ihr Lust habt – wir stellen die Auswahl für euren Anlass zusammen. →</span>
+        </span>
+      </a>
+    </li>
+  </ol>
+
+  <!-- Grosse Pizza (Desktop) -->
+  <div class="stage" aria-live="polite">
+    {
+      list.map((p, i) => (
+        <figure class:list={['plate', { active: i === 0 }]} data-index={i}>
+          <div class="board" aria-hidden="true" />
+          <div class="spin">
+            <Image src={p.src!} alt={p.alt} widths={[480, 720, 1000]} sizes="(max-width: 1100px) 45vw, 520px" loading={i === 0 ? 'eager' : 'lazy'} />
+          </div>
+          <figcaption>
+            <span class="no">{no(i)}</span> {p.name}
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+
+  <!-- Zum Wischen (Handy) -->
+  <div class="swipe" tabindex="0" aria-label="Unsere Pizzen, seitlich wischen">
+    {
+      list.map((p, i) => (
+        <article class="slide">
+          <div class="slideImg">
+            <div class="board" aria-hidden="true" />
+            <Image src={p.src!} alt={p.alt} widths={[360, 560, 800]} sizes="80vw" />
+          </div>
+          <div class="slideText">
+            <span class="no">{no(i)}</span>
+            <h3>
+              {p.name}
+              {p.tags?.map((t) => <span class={`tag tag--${t}`}>{TAG_LABEL[t] ?? t}</span>)}
+            </h3>
+            <p>{p.ingredients}</p>
+          </div>
+        </article>
+      ))
+    }
+    <a class="slide slide--wish" href="#anfrage">
+      <span class="no">{no(list.length)}</span>
+      <h3>Eure Wunschpizza?</h3>
+      <p>Sagt uns, worauf ihr Lust habt – wir stellen die Auswahl für euren Anlass zusammen.</p>
+      <span class="btn">Anfragen →</span>
+    </a>
+  </div>
+  <div class="dots" aria-hidden="true">
+    {[...list, null].map((_, i) => <span class:list={{ on: i === 0 }} />)}
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.menu').forEach((menu) => {
+    const items = Array.from(menu.querySelectorAll<HTMLButtonElement>('.item[data-index]'));
+    const plates = Array.from(menu.querySelectorAll<HTMLElement>('.plate'));
+    const select = (i: number) => {
+      if (menu.dataset.active === String(i)) return;
+      menu.dataset.active = String(i);
+      items.forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+      plates.forEach((p, k) => p.classList.toggle('active', k === i));
+    };
+    items.forEach((b, i) => {
+      b.addEventListener('mouseenter', () => select(i));
+      b.addEventListener('focus', () => select(i));
+      b.addEventListener('click', () => select(i));
+    });
+
+    // Punkte unter dem Wisch-Karussell
+    const swipe = menu.querySelector<HTMLElement>('.swipe')!;
+    const dots = Array.from(menu.querySelectorAll<HTMLElement>('.dots span'));
+    swipe.addEventListener(
+      'scroll',
+      () => {
+        const slide = swipe.firstElementChild as HTMLElement | null;
+        if (!slide) return;
+        const i = Math.round(swipe.scrollLeft / (slide.offsetWidth + 14));
+        dots.forEach((d, k) => d.classList.toggle('on', k === i));
+      },
+      { passive: true },
+    );
+  });
+</script>
+
+<style>
+  .menu {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 72px);
+    align-items: start;
+  }
+
+  /* ---------- Karte ---------- */
+  .card {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 2px solid var(--ink);
+  }
+  .item {
+    display: flex;
+    gap: 18px;
+    width: 100%;
+    padding: 18px 8px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, padding 0.25s ease;
+  }
+  .no {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    padding-top: 6px;
+    min-width: 24px;
+  }
+  .body {
+    display: grid;
+    gap: 4px;
+  }
+  .name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.6vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+  }
+  .ingr {
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .item[aria-pressed='true'],
+  .item:hover {
+    background: var(--panel);
+    padding-left: 18px;
+  }
+  .item[aria-pressed='true'] .no {
+    color: var(--accent);
+  }
+  .item--wish .name {
+    color: var(--accent);
+  }
+  .tag {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1.5px solid currentColor;
+    color: #4e7a2e;
+  }
+  .tag--vegan {
+    color: #2f6b2a;
+    background: #e3ecd3;
+    border-color: #e3ecd3;
+  }
+  .tag--favorit {
+    color: var(--accent);
+  }
+  .tag--scharf {
+    color: #c2410c;
+  }
+
+  /* ---------- Grosse Pizza ---------- */
+  .stage {
+    position: sticky;
+    top: calc(var(--nav-h) + 24px);
+    aspect-ratio: 1;
+  }
+  .plate {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .plate.active {
+    opacity: 1;
+  }
+  /* Rundes Holzbrett mit Griff; die Farbe der Pizza als weicher Ring darum */
+  .board {
+    position: absolute;
+    inset: 9% 13% 9% 5%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255, 240, 215, 0.35), transparent 55%),
+      repeating-linear-gradient(97deg, rgba(120, 75, 35, 0.09) 0 2px, transparent 2px 11px, rgba(120, 75, 35, 0.06) 11px 13px, transparent 13px 23px),
+      linear-gradient(180deg, #c99462, #b98250);
+    box-shadow:
+      inset 0 0 0 10px #a86f41,
+      inset 0 -10px 24px rgba(60, 35, 15, 0.35),
+      0 34px 50px -20px rgba(32, 25, 18, 0.5);
+    transform: scale(0.85);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .board::after {
+    content: '';
+    position: absolute;
+    right: -17%;
+    top: 50%;
+    width: 22%;
+    height: 15%;
+    transform: translateY(-50%);
+    border-radius: 0 999px 999px 0;
+    background:
+      radial-gradient(circle at 70% 50%, var(--cream) 0 18%, transparent 19%),
+      linear-gradient(180deg, #b98250, #9c683b);
+    box-shadow: 0 12px 20px -10px rgba(32, 25, 18, 0.5);
+  }
+  .plate.active .board {
+    transform: scale(1);
+  }
+  .spin {
+    position: relative;
+    width: 72%;
+    margin-right: 8%;
+    transform: rotate(-120deg) scale(0.75);
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .plate.active .spin {
+    transform: rotate(0) scale(1);
+  }
+  .spin img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 12px rgba(32, 25, 18, 0.3));
+    animation: turn 60s linear infinite;
+  }
+  @keyframes turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  figcaption {
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--cream);
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  figcaption .no {
+    color: #f6c48a;
+    padding: 0;
+    font-size: 13px;
+  }
+
+  /* ---------- Handy: wischen ---------- */
+  .swipe,
+  .dots {
+    display: none;
+  }
+  @media (max-width: 760px) {
+    .menu {
+      display: block;
+    }
+    .card,
+    .stage {
+      display: none;
+    }
+    .swipe {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      margin-inline: calc(-1 * var(--gutter));
+      padding: 4px var(--gutter) 8px;
+      scroll-padding-inline: var(--gutter);
+    }
+    .swipe::-webkit-scrollbar {
+      display: none;
+    }
+    .slide {
+      flex: 0 0 82%;
+      scroll-snap-align: start;
+      border-radius: var(--radius);
+      background: #e9e1d5;
+      padding: 18px 18px 22px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .slideImg {
+      position: relative;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+    }
+    .slideImg .board {
+      inset: 6% 12% 6% 4%;
+      transform: none;
+      box-shadow:
+        inset 0 0 0 8px #a86f41,
+        inset 0 -8px 18px rgba(60, 35, 15, 0.35),
+        0 26px 36px -18px rgba(32, 25, 18, 0.5);
+    }
+    .slideImg img {
+      position: relative;
+      width: 76%;
+      margin-right: 8%;
+      height: auto;
+      filter: drop-shadow(0 8px 10px rgba(32, 25, 18, 0.3));
+    }
+    .slideText {
+      margin-top: 10px;
+    }
+    .slide h3 {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      font-size: 28px;
+      line-height: 1.05;
+      margin: 2px 0 6px;
+    }
+    .slide p {
+      margin: 0;
+      font-size: 15px;
+      color: var(--ink-2);
+    }
+    .slide--wish {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--ink);
+      color: var(--cream);
+    }
+    .slide--wish p {
+      color: #cfc8bd;
+      margin-bottom: 20px;
+    }
+    .slide--wish .btn {
+      align-self: flex-start;
+      background: var(--cream);
+      color: var(--ink);
+      border-color: var(--cream);
+    }
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+    }
+    .dots span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--soft);
+      transition: background-color 0.2s ease, width 0.2s ease;
+    }
+    .dots span.on {
+      width: 20px;
+      border-radius: 4px;
+      background: var(--ink);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spin img {
+      animation: none;
+    }
+  }
+</style>

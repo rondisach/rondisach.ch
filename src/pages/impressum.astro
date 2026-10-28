@@ -1,0 +1,21 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import kontakt from '../data/kontakt.json';
+---
+
+<LegalLayout title="Impressum" heading="impressum." lead="Wer hinter rondisach steht und wie ihr uns erreicht.">
+  <h2>Impressum</h2>
+  <div class="cols">
+    <div>
+      <p><strong>rondisach Pizza-Catering</strong><br />Maurice Stofer<br />{kontakt.street}<br />{kontakt.zip} {kontakt.city}, Schweiz</p>
+    </div>
+    <div>
+      <p>
+        Telefon: <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`}>{kontakt.phoneDisplay}</a><br />
+        E-Mail: <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a><br />
+        Website: <a href="https://rondisach.ch/">rondisach.ch</a>
+      </p>
+      <p>Verantwortlich für den Inhalt: Maurice Stofer.</p>
+    </div>
+  </div>
+</LegalLayout>

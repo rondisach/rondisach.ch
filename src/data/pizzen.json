@@ -1,0 +1,59 @@
+{
+  "pizzas": [
+    {
+      "name": "Mortadella & Burrata",
+      "ingredients": "Crème · Fior di Latte · Mortadella · Burrata · Pistazien",
+      "image": "/src/assets/uploads/pizza-mortadella.webp",
+      "alt": "Pizza Mortadella mit Burrata und Pistazien",
+      "tags": []
+    },
+    {
+      "name": "Prosciutto Crudo",
+      "ingredients": "Tomate · Fior di Latte · Rohschinken · Rucola · Parmesan · Cherrytomaten",
+      "image": "/src/assets/uploads/pizza-crudo.webp",
+      "alt": "Pizza Prosciutto Crudo mit Rucola",
+      "tags": []
+    },
+    {
+      "name": "Margherita",
+      "ingredients": "Tomate · Fior di Latte · Basilikum · Olivenöl",
+      "image": "/src/assets/uploads/pizza-margherita.webp",
+      "alt": "Pizza Margherita mit Fior di Latte und Basilikum",
+      "tags": [
+        "vegi"
+      ]
+    },
+    {
+      "name": "Salsiccia",
+      "ingredients": "Tomate · Pecorino · Fior di Latte · Salsiccia · rote Zwiebeln · Ricotta",
+      "image": "/src/assets/uploads/pizza-salsiccia.webp",
+      "alt": "Pizza Salsiccia mit roten Zwiebeln und Ricotta",
+      "tags": []
+    },
+    {
+      "name": "Vegetariana",
+      "ingredients": "Tomate · Fior di Latte · Aubergine · Zucchetti · Cherrytomaten",
+      "image": "/src/assets/uploads/pizza-vegi.webp",
+      "alt": "Pizza Vegetariana mit grilliertem Gemüse",
+      "tags": [
+        "vegi"
+      ]
+    },
+    {
+      "name": "Marinara",
+      "ingredients": "Tomate · Knoblauch · Oregano · Olivenöl",
+      "image": "/src/assets/uploads/pizza-marinara.webp",
+      "alt": "Pizza Marinara mit Knoblauch und Oregano",
+      "tags": [
+        "vegan"
+      ]
+    },
+    {
+      "name": "Salami",
+      "ingredients": "Tomate · Fior di Latte · Salami · Olivenöl",
+      "image": "/src/assets/uploads/pizza-salami.webp",
+      "alt": "Pizza Salami mit Fior di Latte",
+      "tags": []
+    }
+  ]
+}

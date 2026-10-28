@@ -1,0 +1,34 @@
+{
+  "lead": "Von Pizza à discrétion bis zum ganzen Abend. Wo möglich setzen wir auf Zutaten aus der Schweiz, teilweise lokal und in Bio-Qualität. Für euren Anlass erstellen wir eine individuelle Offerte.",
+  "packages": [
+    {
+      "name": "pizza à discrétion.",
+      "description": "Laufend frisch gebackene Pizza direkt bei euch vor Ort – ihr organisiert den Rest des Anlasses.",
+      "price": 28,
+      "highlight": false,
+      "features": ["Ab 15 Personen", "Mehrere Standardsorten, laufend frisch gebacken", "Ofen, Setup und Service inklusive"]
+    },
+    {
+      "name": "rundum.",
+      "description": "Vom Apéro bis zum Dessert – inklusive umfassender Betreuung und alkoholfreier Basisgetränke.",
+      "price": 79,
+      "highlight": true,
+      "features": ["Ab 15 Personen", "Apéro, Pizza à discrétion, Salat/Beilage und Dessert inklusive", "Wasser & Softdrinks in Basisauswahl inklusive", "Wein & Bier zusätzlich"]
+    }
+  ],
+  "modules": [
+    { "name": "Pizza à discrétion", "description": "Mehrere Standardsorten, Ofen, Setup & Service inklusive", "price": 28 },
+    { "name": "Apéro", "description": "Basisauswahl kleiner Häppchen, in Kombination mit dem Pizza-Catering", "price": 16 },
+    { "name": "Salat & Beilagen", "description": "Eine abgestimmte Basisauswahl als Ergänzung zum Hauptgang", "price": 8 },
+    { "name": "Dessert", "description": "Ein vorbereitetes Dessert, passend zum Anlass und restlichen Catering", "price": 9 },
+    { "name": "Alkoholfreie Getränke", "description": "Basisauswahl Wasser und Softdrinks gemäss Offerte", "price": 6 },
+    { "name": "Wein & Bier", "description": "Abgestimmte Auswahl und Menge gemäss Offerte", "price": 18 }
+  ],
+  "minGuests": 15,
+  "minOrder": 600,
+  "travel": [
+    { "title": "Anfahrt bis 15 km", "text": "CHF 50 pauschal ab 6010 Kriens." },
+    { "title": "Weitere Distanz", "text": "CHF 1.50 pro zusätzlichem Kilometer der einfachen Strecke; die Rückfahrt ist im Tarif berücksichtigt." }
+  ],
+  "fineprint": "Bei kleinen Pizza-Caterings kann der effektive Preis pro Person wegen des Mindestauftragswerts über dem ausgewiesenen Ab-Preis liegen. Die genannten Preise verstehen sich in CHF als Endpreise; allfällige gesetzlich geschuldete Abgaben sind darin enthalten. Zusatzwünsche, besondere Menükomponenten, erschwerte örtliche Bedingungen oder kleinere Gruppen können den Preis verändern. Verbindlich sind ausschliesslich Leistungsumfang und Gesamtpreis der persönlichen Offerte."
+}

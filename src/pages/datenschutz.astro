@@ -1,0 +1,51 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import kontakt from '../data/kontakt.json';
+---
+
+<LegalLayout title="Datenschutz" heading="datenschutz." lead="Hier erklären wir transparent, welche Personendaten wir im Zusammenhang mit unserer Website und euren Catering-Anfragen bearbeiten.">
+  <h2>Datenschutzerklärung</h2>
+  <div class="cols">
+    <div>
+      <h3>Verantwortliche Stelle</h3>
+      <p>Verantwortlich für die Bearbeitung von Personendaten über diese Website ist Maurice Stofer, rondisach Pizza-Catering, {kontakt.street}, {kontakt.zip} {kontakt.city}. Datenschutzanfragen könnt ihr an <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a> richten.</p>
+    </div>
+    <div>
+      <h3>Welche Daten wir bearbeiten</h3>
+      <p>Wir bearbeiten Angaben, die ihr uns freiwillig übermittelt, insbesondere Name, E-Mail-Adresse, Telefonnummer, Anlassdatum, Gästezahl, Ort und Nachricht. Beim Aufruf der Website können zudem technische Verbindungsdaten wie IP-Adresse, Zeitpunkt, Browser-/Geräteinformationen und aufgerufene Seiten anfallen.</p>
+    </div>
+    <div>
+      <h3>Zweck der Bearbeitung</h3>
+      <p>Wir verwenden Personendaten zur Beantwortung von Anfragen, Erstellung von Offerten, Planung und Durchführung von Caterings, Kommunikation, Rechnungsstellung sowie zur Erfüllung gesetzlicher Pflichten und zur sicheren Bereitstellung der Website. Wir bearbeiten nur Daten, die für diese Zwecke erforderlich oder sinnvoll sind.</p>
+    </div>
+    <div>
+      <h3>Dienstleister &amp; Datenübermittlung</h3>
+      <p>Das Kontaktformular wird über <strong>FormSubmit</strong> übermittelt. E-Mails werden über <strong>Google/Gmail</strong> verarbeitet. Die Website wird über <strong>GitHub Pages</strong> bereitgestellt. Dabei können insbesondere Formularinhalte sowie technische Verbindungsdaten durch diese Dienstleister bearbeitet werden. Daten können in der Schweiz, im Europäischen Wirtschaftsraum, in den <strong>USA</strong> sowie – abhängig von den eingesetzten Unterauftragnehmern – in weiteren Staaten verarbeitet werden. Bei Übermittlungen in Staaten ohne als angemessen anerkanntes Datenschutzniveau stützen sich die jeweiligen Anbieter nach ihren Angaben auf anerkannte Garantien oder Übermittlungsmechanismen, insbesondere Standarddatenschutzklauseln bzw. anwendbare Datenschutzrahmen. Für Einzelheiten gelten die Datenschutzhinweise der jeweiligen Anbieter.</p>
+    </div>
+    <div>
+      <h3>Links zu Google-Bewertungen</h3>
+      <p>Unsere Website verlinkt auf unser Profil bei Google, wo ihr Bewertungen lesen und schreiben könnt. Erst wenn ihr einen solchen Link anklickt, wird eine Verbindung zu Google hergestellt; dafür gelten die <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Datenschutzhinweise von Google</a>. Auf unserer Website selbst sind keine Inhalte von Google eingebettet.</p>
+    </div>
+    <div>
+      <h3>Cookies &amp; Tracking</h3>
+      <p>Wir setzen keine Analyse-, Werbe- oder Profiling-Tools und keine Cookies ein. Schriften und Grafiken werden direkt von unserer Website geladen, ohne Verbindung zu Drittanbietern.</p>
+    </div>
+    <div>
+      <h3>Aufbewahrung</h3>
+      <p>Wir bewahren Personendaten nur so lange auf, wie dies für Anfrage, Vertrag, Abrechnung und unsere berechtigten Geschäftsinteressen erforderlich ist. Buchhaltungs- und andere geschäftsrelevante Unterlagen bewahren wir, soweit gesetzlich erforderlich, in der Regel 10 Jahre auf. Danach werden Daten gelöscht oder anonymisiert, sofern keine andere gesetzliche Pflicht oder ein überwiegendes berechtigtes Interesse eine längere Aufbewahrung erfordert.</p>
+    </div>
+    <div>
+      <h3>Eure Rechte</h3>
+      <p>Im Rahmen des anwendbaren Schweizer Datenschutzrechts könnt ihr insbesondere Auskunft über eure Daten sowie Berichtigung oder Löschung verlangen, soweit keine gesetzlichen Pflichten oder überwiegenden Interessen entgegenstehen. Soweit gesetzlich vorgesehen, könnt ihr zudem die Herausgabe oder Übertragung bestimmter Daten verlangen.</p>
+    </div>
+    <div>
+      <h3>Sicherheit &amp; Fotos</h3>
+      <p>Wir treffen angemessene organisatorische und technische Massnahmen zum Schutz der Daten und stellen die Website über HTTPS bereit. Gästeaufnahmen veröffentlichen wir nur mit entsprechender Berechtigung oder so bearbeitet, dass betroffene Personen nicht identifizierbar sind.</p>
+    </div>
+    <div>
+      <h3>Änderungen &amp; Aufsicht</h3>
+      <p>Wir können diese Datenschutzerklärung anpassen, wenn sich unsere Website oder Datenbearbeitung ändert. Massgebend ist die jeweils auf rondisach.ch veröffentlichte Version. Weitere Informationen zum Schweizer Datenschutz erhaltet ihr beim <a href="https://www.edoeb.admin.ch/" rel="noopener" target="_blank">EDÖB</a>.</p>
+    </div>
+  </div>
+  <p class="small">Stand: Oktober 2026</p>
+</LegalLayout>

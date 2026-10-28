@@ -1,0 +1,449 @@
+---
+import { Image } from 'astro:assets';
+import heroPizza from '../assets/uploads/pizza-margherita.webp';
+import logo from '../assets/brand/rondisach-logo.webp';
+
+// Texte, die während dem Spaziergang durch den Garten eingeblendet werden (Fortschritt von–bis).
+const captions = [
+  { from: 0.3, to: 0.44, kicker: 'eure gäste', text: 'Alle sitzen zusammen, essen, lachen.' },
+  { from: 0.48, to: 0.64, kicker: 'pizza à discrétion', text: 'Es kommt laufend frisch Pizza nach.' },
+  { from: 0.74, to: 0.95, kicker: 'und wir?', text: 'Wir stehen am Ofen und backen direkt vor Ort.' },
+];
+---
+
+<!-- Die ganze Seite scrollt durch den Garten; ohne WebGL, auf dem Handy oder bei reduzierter Bewegung bleibt das statische Bild. -->
+<section class="hero" data-mode="static" aria-label="Einleitung">
+  <div class="heroSticky">
+    <div class="veil" aria-hidden="true"></div>
+    <div class="wrap heroGrid">
+      <div class="heroText">
+        <div class="kicker">pizza catering · luzern &amp; umgebung</div>
+        <h1>eifach<br />e rondi sach.</h1>
+        <p class="heroLead">Das könnte euer nächster Anlass sein: handgemachte Pizza, direkt vor euren Gästen gebacken.</p>
+        <div class="heroActions">
+          <a class="btn" href="#anfrage">Unverbindlich anfragen</a>
+          <a class="btn btn--outline" href="#preise">Preise &amp; Pakete</a>
+        </div>
+      </div>
+
+      <div class="heroStatic">
+        <Image class="heroPizza" src={heroPizza} alt="Neapolitanische Margherita von rondisach" widths={[420, 640, 900]} sizes="(max-width: 920px) 90vw, 540px" loading="eager" fetchpriority="high" />
+        <Image class="heroLogo" src={logo} alt="rondisach Pizza Catering" widths={[240, 480]} sizes="240px" loading="eager" />
+        <div class="stamp">handgemacht · vor ort</div>
+      </div>
+
+      <div class="stage">
+        <canvas class="heroCanvas" aria-hidden="true"></canvas>
+        <div class="captions" aria-hidden="true">
+          {
+            captions.map((c) => (
+              <div class="caption" data-from={c.from} data-to={c.to}>
+                <div class="kicker">{c.kicker}</div>
+                <p>{c.text}</p>
+              </div>
+            ))
+          }
+        </div>
+        <!-- Knopf, der am Stand «klebt» und mit der Kamera mitwandert -->
+        <a class="standCta" href="#anfrage" tabindex="-1"><span class="pulse" aria-hidden="true"></span>Jetzt Termin anfragen</a>
+        <div class="scrollHint" aria-hidden="true"><span>scrollen</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const hero = document.querySelector<HTMLElement>('.hero');
+  const canvas = hero?.querySelector<HTMLCanvasElement>('.heroCanvas');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Die Animation startet nicht ganz hinten im Garten, sondern schon ein Stück weiter vorne.
+  const START = 0.22;
+
+  function webglOk() {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  }
+
+  async function init() {
+    // Auf dem Handy bleibt das statische Bild – schneller und schont den Akku.
+    const phone = window.matchMedia('(max-width: 760px)').matches;
+    if (!hero || !canvas || reduce.matches || phone || !webglOk()) return;
+    const { createHeroScene } = await import('../scripts/hero/scene');
+    const text = hero.querySelector<HTMLElement>('.heroText')!;
+    const veil = hero.querySelector<HTMLElement>('.veil')!;
+    const stage = hero.querySelector<HTMLElement>('.stage')!;
+    const sticky = hero.querySelector<HTMLElement>('.heroSticky')!;
+    const captions = Array.from(hero.querySelectorAll<HTMLElement>('.caption'));
+    const standCta = hero.querySelector<HTMLElement>('.standCta')!;
+
+    const scene = createHeroScene(canvas, (p, anchor) => {
+      // Einleitung blendet beim Losgehen aus
+      const introOut = Math.min(1, Math.max(0, (p - START - 0.01) / 0.08));
+      text.style.opacity = veil.style.opacity = String(1 - introOut);
+      text.style.transform = `translateY(${-introOut * 24}px)`;
+      text.style.pointerEvents = introOut > 0.5 ? 'none' : '';
+      for (const c of captions) {
+        const from = Number(c.dataset.from);
+        const to = Number(c.dataset.to);
+        const fade = 0.04;
+        const o = Math.min(Math.max((p - from) / fade, 0), 1, Math.max((to - p) / fade, 0));
+        c.style.opacity = String(o);
+        c.style.transform = `translateY(${(1 - o) * 16}px)`;
+      }
+      const show = p > 0.66 && anchor.visible;
+      standCta.classList.toggle('show', show);
+      standCta.tabIndex = show ? 0 : -1;
+      // Nie oben aus der Animation herausragen lassen
+      standCta.style.transform = `translate(${anchor.x}px, ${Math.max(anchor.y, 76)}px) translate(-50%, -100%)`;
+    });
+    scene.jump(START);
+    hero.dataset.mode = '3d';
+    if (import.meta.env.DEV) (window as unknown as { __hero: typeof scene }).__hero = scene;
+
+    // Der Scroll-Fortschritt durch den hohen Abschnitt steuert die Animation.
+    const update = () => {
+      const rect = hero.getBoundingClientRect();
+      const travel = rect.height - sticky.offsetHeight;
+      const prog = travel > 0 ? Math.min(1, Math.max(0, -rect.top / travel)) : 0;
+      scene.setProgress(START + prog * (1 - START));
+      hero.classList.toggle('scrolled', prog > 0.02);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+
+    // Nur rendern, solange die Animation sichtbar ist – spart Akku.
+    new IntersectionObserver(([entry]) => (entry.isIntersecting ? scene.start() : scene.stop())).observe(stage);
+  }
+
+  init().catch((err) => {
+    console.warn('[rondisach] 3D-Hero konnte nicht geladen werden', err);
+    if (hero) hero.dataset.mode = 'static';
+  });
+</script>
+
+<style>
+  .hero {
+    position: relative;
+  }
+  .heroSticky {
+    position: relative;
+    padding-block: clamp(28px, 5vw, 56px) 24px;
+  }
+  .heroGrid {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: center;
+  }
+  h1 {
+    font-size: clamp(56px, 9vw, 124px);
+    line-height: 0.84;
+    letter-spacing: -0.07em;
+    margin: 16px 0 26px;
+  }
+  .heroLead {
+    font-size: clamp(18px, 2vw, 23px);
+    line-height: 1.4;
+    color: var(--ink-2);
+    max-width: 30ch;
+    margin: 0 0 28px;
+  }
+  .heroActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Statische Variante (ohne JS, ohne WebGL oder bei reduzierter Bewegung) */
+  .heroStatic {
+    position: relative;
+    min-height: clamp(380px, 46vw, 560px);
+  }
+  .heroPizza {
+    position: absolute;
+    width: min(88%, 540px);
+    right: 0;
+    top: 2%;
+    transform: rotate(5deg);
+    filter: drop-shadow(0 24px 24px rgba(0, 0, 0, 0.15));
+  }
+  .heroLogo {
+    position: absolute;
+    width: 42%;
+    left: 2%;
+    bottom: 4%;
+    transform: rotate(-2deg);
+  }
+  .stamp {
+    position: absolute;
+    right: 2%;
+    bottom: 3%;
+    background: var(--accent);
+    color: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transform: rotate(3deg);
+  }
+  .stage,
+  .veil {
+    display: none;
+  }
+  .hero:not([data-mode='static']) .heroStatic {
+    display: none;
+  }
+
+  /* Gemeinsame Teile der Animation */
+  .heroCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .captions {
+    position: absolute;
+    left: var(--cap-x);
+    right: var(--cap-x);
+    bottom: var(--cap-y);
+    pointer-events: none;
+  }
+  .caption {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    max-width: min(520px, 100%);
+    padding: 16px 20px;
+    border-radius: 20px;
+    background: rgba(18, 18, 18, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--cream);
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+  .caption .kicker {
+    color: #f6c48a;
+  }
+  .caption p {
+    margin: 6px 0 0;
+    font-family: var(--font-display);
+    font-size: var(--cap-size);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .standCta {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px 14px 20px;
+    border: 2px solid var(--cream);
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(16px, 1.6vw, 20px);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-decoration: none;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease, background-color 0.2s ease, color 0.2s ease;
+    will-change: transform;
+  }
+  /* Spitze nach unten, zeigt auf den Stand */
+  .standCta::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    width: 14px;
+    height: 14px;
+    background: inherit;
+    border-right: 2px solid var(--cream);
+    border-bottom: 2px solid var(--cream);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .standCta.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .standCta:hover {
+    background: var(--ink);
+  }
+  .pulse {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .pulse::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    animation: pulse 1.6s ease-out infinite;
+  }
+  @keyframes pulse {
+    from {
+      transform: scale(0.6);
+      opacity: 1;
+    }
+    to {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+  }
+  .scrollHint {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+  }
+  .scrollHint span::after {
+    content: ' ↓';
+  }
+  .hero.scrolled .scrollHint {
+    opacity: 0;
+  }
+
+  /* ---------- Animation (Vollbild) ---------- */
+  .hero[data-mode='3d'] {
+    height: 287vh;
+  }
+  .hero[data-mode='3d'] .heroSticky {
+    position: sticky;
+    top: var(--nav-h);
+    height: calc(100svh - var(--nav-h));
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+  }
+  .hero[data-mode='3d'] .heroGrid {
+    position: static;
+    display: block;
+    padding-top: clamp(28px, 6vh, 72px);
+  }
+  .hero[data-mode='3d'] .stage {
+    display: block;
+    position: absolute;
+    inset: 0;
+    --cap-x: var(--gutter);
+    --cap-y: clamp(40px, 9vh, 88px);
+    --cap-size: clamp(22px, 2.6vw, 32px);
+  }
+  /* Unten weich in die Seite überblenden */
+  .hero[data-mode='3d'] .stage::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 90px;
+    background: linear-gradient(180deg, rgba(243, 238, 228, 0), var(--cream));
+    pointer-events: none;
+  }
+  /* Heller Schleier über die ganze Höhe, damit der Text gut lesbar ist */
+  .hero[data-mode='3d'] .veil {
+    display: block;
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 1;
+    width: min(72%, 1100px);
+    background: linear-gradient(90deg, rgba(243, 238, 228, 0.92) 0%, rgba(243, 238, 228, 0.82) 45%, rgba(243, 238, 228, 0));
+    pointer-events: none;
+    will-change: opacity;
+  }
+  .hero[data-mode='3d'] .heroText {
+    position: relative;
+    z-index: 2;
+    max-width: 640px;
+    will-change: opacity, transform;
+  }
+  .hero[data-mode='3d'] .captions {
+    z-index: 3;
+  }
+  .hero[data-mode='3d'] .scrollHint {
+    bottom: 22px;
+    z-index: 3;
+  }
+
+  @media (max-width: 920px) {
+    .heroGrid {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .hero[data-mode='3d'] {
+      height: 256vh;
+    }
+    .hero[data-mode='3d'] h1 {
+      font-size: clamp(48px, 13vw, 84px);
+    }
+    .hero[data-mode='3d'] .heroLead {
+      font-size: 17px;
+    }
+  }
+  @media (max-width: 620px) {
+    .stamp {
+      font-size: 10px;
+    }
+    /* Handy: Bild kleiner, damit gleich darunter die Fakten und Termine sichtbar werden */
+    .heroSticky {
+      padding-block: 24px 8px;
+    }
+    h1 {
+      margin: 12px 0 18px;
+    }
+    .heroLead {
+      font-size: 17px;
+      margin-bottom: 22px;
+    }
+    .heroActions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .heroActions .btn {
+      justify-content: center;
+    }
+    .heroStatic {
+      min-height: 0;
+      aspect-ratio: 1 / 0.82;
+    }
+    .heroPizza {
+      width: 80%;
+    }
+    .heroLogo {
+      width: 38%;
+    }
+    .hero[data-mode='3d'] .veil {
+      width: 100%;
+      background: linear-gradient(180deg, rgba(243, 238, 228, 0.92) 0%, rgba(243, 238, 228, 0.85) 55%, rgba(243, 238, 228, 0) 80%);
+    }
+  }
+</style>
