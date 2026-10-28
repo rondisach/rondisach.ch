@@ -11,7 +11,7 @@ import termine from '../data/termine.json';
 
 const chf = (n: number) => `CHF ${n.toLocaleString('de-CH')}`;
 const facts = [
-  { value: '2', label: 'Jungs' },
+  { value: '100 %', label: 'Handarbeit' },
   { value: '48 h', label: 'Teigruhe' },
   { value: '500 °C', label: 'Ofentemperatur' },
   { value: '~90 Sek.', label: 'Backzeit' },
@@ -62,7 +62,10 @@ const events = termine.events
         </div>
         <ul class="eventList">
           {events.map((e) => (
-            <li class="event" data-end={e.end || e.start}>
+            <li class:list={['event', { 'event--xmas': e.theme === 'weihnachten' }]} data-end={e.end || e.start}>
+              {e.theme === 'weihnachten' && (
+                <span class="lights" aria-hidden="true" />
+              )}
               <div class="eventDate">
                 <strong>{e.day}</strong>
                 <span>{e.month}</span>
@@ -71,7 +74,7 @@ const events = termine.events
                 <h3>{e.title}</h3>
                 <p class="eventMeta">{[e.long, e.time, e.place].filter(Boolean).map((m) => <span>{m}</span>)}</p>
                 {e.text && <p class="eventText">{e.text}</p>}
-                {e.link && <a class="textLink" href={e.link} target="_blank" rel="noopener">Mehr erfahren</a>}
+                {e.link && <a class="textLink" href={e.link} target="_blank" rel="noopener">mehr erfahren</a>}
               </div>
             </li>
           ))}
@@ -88,10 +91,10 @@ const events = termine.events
         <h2 class="title">zwei jungs.<br />eine gemeinsame leidenschaft.</h2>
       </div>
       <div>
-        <p class="story">Wir sind <em>Maurice und Andrin</em> – zwei Jungs aus der Region Luzern, die gerne kochen und Menschen damit eine Freude machen.</p>
+        <p class="story">Wir sind Maurice und Andrin aus der Region Luzern – wir kochen gerne und machen Menschen damit eine Freude.</p>
         <p class="lead">Was mit gemeinsamem Kochen, Ausprobieren und Essen für Freunde und Familie angefangen hat, wurde mit der Zeit zu einer echten Leidenschaft. Vieles haben wir uns selbst beigebracht, immer wieder getestet und Schritt für Schritt verbessert.</p>
         <details class="fold" open>
-          <summary>Mehr über uns lesen</summary>
+          <summary>mehr über uns lesen</summary>
         <p class="lead">Besonders hängen geblieben ist die Pizza. Für uns braucht guter Teig vor allem Zeit, gute Zutaten und etwas Geduld. Deshalb bereiten wir unseren Teig selbst zu, lassen ihn lange reifen und backen jede Pizza direkt vor Ort bei hoher Temperatur.</p>
         <p class="lead">Mit <strong>rondisach</strong> möchten wir genau das an euren Anlass bringen: ehrliches, unkompliziertes Essen, sorgfältig vorbereitet und frisch für eure Gäste gemacht. Ohne unnötigen Schnickschnack – dafür mit viel Freude an dem, was wir tun.</p>
         <ul class="dots">
@@ -121,7 +124,7 @@ const events = termine.events
       </ol>
       <div class="swipeDots swipeDots--light" aria-hidden="true"></div>
       <div class="processMore">
-        <a class="btn btn--light" href="/impressionen.html">Impressionen ansehen →</a>
+        <a class="btn btn--light" href="/impressionen.html">impressionen ansehen →</a>
       </div>
     </div>
   </section>
@@ -164,7 +167,7 @@ const events = termine.events
       <div class="swipeDots" aria-hidden="true"></div>
 
       <details class="fold fold--box" open>
-        <summary>Alle Bausteine &amp; Preise anzeigen</summary>
+        <summary>alle bausteine &amp; preise anzeigen</summary>
       <div class="modules">
         <div class="modulesHead">Bausteine · Ab-Preise pro Person · ab {preise.minGuests} Personen</div>
         {preise.modules.map((m) => (
@@ -178,7 +181,7 @@ const events = termine.events
       </details>
 
       <details class="fold fold--box" open>
-        <summary>Anfahrt &amp; Bedingungen</summary>
+        <summary>anfahrt &amp; bedingungen</summary>
       <div class="travel">
         {preise.travel.map((t) => <div class="travelBox"><strong>{t.title}</strong>{t.text}</div>)}
       </div>
@@ -196,9 +199,9 @@ const events = termine.events
           <h2 class="bookingTitle">wann wird's rund?</h2>
           <p>Habt ihr eine Frage oder schon einen Anlass im Kopf? Schreibt uns unverbindlich über das Formular oder meldet euch direkt bei uns. Wir antworten so schnell wie möglich.</p>
           <div class="quick">
-            <a href={`mailto:${kontakt.email}`}>E-Mail schreiben</a>
+            <a class="quickMain" href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener">auf WhatsApp schreiben</a>
+            <a href={`mailto:${kontakt.email}`}>e-mail schreiben</a>
             <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`}>{kontakt.phoneDisplay}</a>
-            <a href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>
           </div>
         </div>
         <form action={`https://formsubmit.co/${kontakt.email}`} method="POST" class="form">
@@ -206,12 +209,12 @@ const events = termine.events
           <input type="hidden" name="_template" value="table" />
           <input type="hidden" name="_next" value="https://rondisach.ch/?anfrage=gesendet#anfrage" />
           <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
-          <label>Name<input name="name" placeholder="Vor- und Nachname" autocomplete="name" required /></label>
-          <label>E-Mail<input name="email" type="email" placeholder="name@beispiel.ch" autocomplete="email" required /></label>
+          <label class="mFull">Name<input name="name" placeholder="Vor- und Nachname" autocomplete="name" required /></label>
+          <label class="mFull">E-Mail<input name="email" type="email" placeholder="name@beispiel.ch" autocomplete="email" required /></label>
           <label>Telefon<input name="phone" type="tel" placeholder="+41 …" autocomplete="tel" /></label>
-          <label>Datum<input name="date" type="date" required /></label>
-          <label>Gäste<input name="people" type="number" min={preise.minGuests} placeholder={`mindestens ${preise.minGuests}`} required /></label>
           <label>Ort<input name="place" placeholder="Ort / Location" required /></label>
+          <label>Datum<input name="date" type="date" required /></label>
+          <label>Gäste<input name="people" type="number" inputmode="numeric" min={preise.minGuests} placeholder={`ab ${preise.minGuests}`} required /></label>
           <label class="full">Gewünschter Umfang
             <select name="package">
               <option>Pizza à discrétion</option>
@@ -222,7 +225,7 @@ const events = termine.events
           </label>
           <label class="full">Was plant ihr?<textarea name="message" placeholder="Anlass, ungefährer Zeitplan, Wünsche, Besonderheiten …"></textarea></label>
           <label class="check full"><input type="checkbox" name="datenschutz" value="gelesen" required /><span>Ich habe die <a href="/datenschutz.html">Datenschutzerklärung</a> zur Kenntnis genommen.</span></label>
-          <button class="btn btn--light full" type="submit">Unverbindliche Anfrage senden</button>
+          <button class="btn btn--light full" type="submit">unverbindliche anfrage senden</button>
           <p class="formHint full">Das Formular ist noch keine Buchung. Verbindlich wird ein Auftrag erst nach schriftlicher Bestätigung bzw. Annahme unserer Offerte.</p>
           <p class="done full" id="done" hidden role="status">Danke! Eure Anfrage wurde erfolgreich gesendet. Wir melden uns so bald wie möglich.</p>
         </form>
@@ -254,8 +257,8 @@ const events = termine.events
         </ul>
       )}
       <div class="reviewActions">
-        <a class="btn" href={rezensionen.googleUrl} target="_blank" rel="noopener">Alle Bewertungen auf Google</a>
-        <a class="btn btn--outline" href={rezensionen.writeReviewUrl} target="_blank" rel="noopener">Bewertung schreiben</a>
+        <a class="btn" href={rezensionen.googleUrl} target="_blank" rel="noopener">alle bewertungen auf Google</a>
+        <a class="btn btn--outline" href={rezensionen.writeReviewUrl} target="_blank" rel="noopener">bewertung schreiben</a>
       </div>
     </div>
   </section>
@@ -371,13 +374,6 @@ const events = termine.events
     letter-spacing: -0.035em;
     margin: 0 0 32px;
   }
-  .story em {
-    font-style: normal;
-    text-decoration: underline;
-    text-decoration-thickness: 4px;
-    text-underline-offset: 6px;
-    text-decoration-color: var(--accent);
-  }
   .dots {
     display: flex;
     flex-wrap: wrap;
@@ -390,6 +386,12 @@ const events = termine.events
     content: '·';
     margin: 0 10px;
     color: var(--muted);
+  }
+
+  /* Pizzen, Preise und Anfrage liegen auf demselben Hintergrund: dazwischen reicht ein Abstand statt zwei */
+  #preise,
+  #anfrage {
+    --section-pad-top: calc(var(--section-pad) * 0.35);
   }
 
   /* Ablauf */
@@ -840,6 +842,41 @@ const events = termine.events
     display: inline-block;
     margin-top: 8px;
   }
+  /* Weihnachts-Stil für einen Termin (im Editor: Stil = weihnachten) */
+  .event--xmas {
+    position: relative;
+    padding-top: 40px;
+  }
+  /* Lichterkette oben */
+  .lights {
+    position: absolute;
+    inset: 2px 12px auto;
+    height: 26px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='26'%3E%3Cpath d='M0 3 Q20 13 40 3 T80 3 T120 3 T160 3' fill='none' stroke='%23121212' stroke-width='1.5'/%3E%3Cg%3E%3Crect x='18' y='7' width='4' height='4' rx='1' fill='%23121212'/%3E%3Cellipse cx='20' cy='15' rx='3.6' ry='5.2' fill='%23f6c48a'/%3E%3Crect x='58' y='7' width='4' height='4' rx='1' fill='%23121212'/%3E%3Cellipse cx='60' cy='15' rx='3.6' ry='5.2' fill='%23e0574a'/%3E%3Crect x='98' y='7' width='4' height='4' rx='1' fill='%23121212'/%3E%3Cellipse cx='100' cy='15' rx='3.6' ry='5.2' fill='%23fff4dc'/%3E%3Crect x='138' y='7' width='4' height='4' rx='1' fill='%23121212'/%3E%3Cellipse cx='140' cy='15' rx='3.6' ry='5.2' fill='%238fcf8a'/%3E%3C/g%3E%3C/svg%3E") repeat-x 10px 0;
+  }
+  .lights::before,
+  .lights::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    filter: blur(3px);
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+  .lights::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='26'%3E%3Cg opacity='.55'%3E%3Ccircle cx='20' cy='15' r='9' fill='%23f6c48a'/%3E%3Ccircle cx='100' cy='15' r='9' fill='%23fff4dc'/%3E%3C/g%3E%3C/svg%3E") repeat-x 10px 0;
+  }
+  .lights::after {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='26'%3E%3Cg opacity='.55'%3E%3Ccircle cx='60' cy='15' r='9' fill='%23e0574a'/%3E%3Ccircle cx='140' cy='15' r='9' fill='%238fcf8a'/%3E%3C/g%3E%3C/svg%3E") repeat-x 10px 0;
+    animation-delay: -1.2s;
+  }
+  @keyframes twinkle {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
   @media (max-width: 760px) {
     .termine {
       grid-template-columns: 1fr;
@@ -917,9 +954,14 @@ const events = termine.events
     text-decoration: none;
     transition: background-color 0.18s ease, color 0.18s ease;
   }
-  .quick a:hover {
+  .quick a:hover,
+  .quick .quickMain {
     background: #fff;
     color: var(--accent);
+  }
+  .quick .quickMain:hover {
+    background: transparent;
+    color: #fff;
   }
   .form {
     display: grid;
@@ -995,8 +1037,25 @@ const events = termine.events
     }
   }
   @media (max-width: 620px) {
+    /* Kurze Felder bleiben paarweise nebeneinander, damit das Formular kürzer wird */
     .form {
-      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .form .mFull {
+      grid-column: 1 / -1;
+    }
+    .form input:not([type='checkbox']),
+    .form select,
+    .form textarea {
+      padding: 11px 13px;
+      min-width: 0;
+    }
+    .form textarea {
+      min-height: 96px;
+    }
+    .quick .quickMain {
+      flex-basis: 100%;
+      justify-content: center;
     }
     .bookingBox {
       border-radius: 24px;
