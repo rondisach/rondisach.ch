@@ -1,11 +1,11 @@
 ---
 const links = [
-  { href: '/#wir', label: 'Über uns' },
-  { href: '/#ablauf', label: 'Ablauf' },
-  { href: '/#pizzen', label: 'Pizzen' },
-  { href: '/#preise', label: 'Preise' },
-  { href: '/impressionen.html', label: 'Impressionen' },
-  { href: '/#anfrage', label: 'Kontakt' },
+  { href: '/#wir', label: 'über uns' },
+  { href: '/#ablauf', label: 'ablauf' },
+  { href: '/#pizzen', label: 'pizzen' },
+  { href: '/#preise', label: 'preise' },
+  { href: '/impressionen.html', label: 'impressionen' },
+  { href: '/#anfrage', label: 'kontakt' },
 ];
 const current = Astro.url.pathname;
 ---
@@ -22,7 +22,7 @@ const current = Astro.url.pathname;
         ))
       }
     </nav>
-    <a class="btn cta" href="/#anfrage">Catering anfragen</a>
+    <a class="btn cta" href="/#anfrage">catering anfragen</a>
     <button class="menuBtn" type="button" aria-expanded="false" aria-controls="mobileMenu">
       <span class="srOnly">Menü öffnen</span>
       <span class="bars" aria-hidden="true"></span>
@@ -31,7 +31,7 @@ const current = Astro.url.pathname;
   <nav id="mobileMenu" class="mobileMenu" aria-label="Mobile Navigation" hidden>
     <div class="wrap">
       {links.map((l) => <a href={l.href}>{l.label}</a>)}
-      <a class="btn" href="/#anfrage">Catering anfragen</a>
+      <a class="btn" href="/#anfrage">catering anfragen</a>
     </div>
   </nav>
 </header>

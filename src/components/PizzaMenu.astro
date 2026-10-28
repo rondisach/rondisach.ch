@@ -55,7 +55,6 @@ const TAG_LABEL: Record<string, string> = { vegi: 'vegi', vegan: 'vegan', favori
     {
       list.map((p, i) => (
         <figure class:list={['plate', { active: i === 0 }]} data-index={i}>
-          <div class="board" aria-hidden="true" />
           <div class="spin">
             <Image src={p.src!} alt={p.alt} widths={[480, 720, 1000]} sizes="(max-width: 1100px) 45vw, 520px" loading={i === 0 ? 'eager' : 'lazy'} />
           </div>
@@ -73,8 +72,7 @@ const TAG_LABEL: Record<string, string> = { vegi: 'vegi', vegan: 'vegan', favori
       list.map((p, i) => (
         <article class="slide">
           <div class="slideImg">
-            <div class="board" aria-hidden="true" />
-            <Image src={p.src!} alt={p.alt} widths={[360, 560, 800]} sizes="80vw" />
+              <Image src={p.src!} alt={p.alt} widths={[360, 560, 800]} sizes="80vw" />
           </div>
           <div class="slideText">
             <span class="no">{no(i)}</span>
@@ -91,7 +89,7 @@ const TAG_LABEL: Record<string, string> = { vegi: 'vegi', vegan: 'vegan', favori
       <span class="no">{no(list.length)}</span>
       <h3>Eure Wunschpizza?</h3>
       <p>Sagt uns, worauf ihr Lust habt – wir stellen die Auswahl für euren Anlass zusammen.</p>
-      <span class="btn">Anfragen →</span>
+      <span class="btn">anfragen →</span>
     </a>
   </div>
   <div class="dots" aria-hidden="true">
@@ -239,43 +237,9 @@ const TAG_LABEL: Record<string, string> = { vegi: 'vegi', vegan: 'vegan', favori
   .plate.active {
     opacity: 1;
   }
-  /* Rundes Holzbrett mit Griff; die Farbe der Pizza als weicher Ring darum */
-  .board {
-    position: absolute;
-    inset: 9% 13% 9% 5%;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 32% 28%, rgba(255, 240, 215, 0.35), transparent 55%),
-      repeating-linear-gradient(97deg, rgba(120, 75, 35, 0.09) 0 2px, transparent 2px 11px, rgba(120, 75, 35, 0.06) 11px 13px, transparent 13px 23px),
-      linear-gradient(180deg, #c99462, #b98250);
-    box-shadow:
-      inset 0 0 0 10px #a86f41,
-      inset 0 -10px 24px rgba(60, 35, 15, 0.35),
-      0 34px 50px -20px rgba(32, 25, 18, 0.5);
-    transform: scale(0.85);
-    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .board::after {
-    content: '';
-    position: absolute;
-    right: -17%;
-    top: 50%;
-    width: 22%;
-    height: 15%;
-    transform: translateY(-50%);
-    border-radius: 0 999px 999px 0;
-    background:
-      radial-gradient(circle at 70% 50%, var(--cream) 0 18%, transparent 19%),
-      linear-gradient(180deg, #b98250, #9c683b);
-    box-shadow: 0 12px 20px -10px rgba(32, 25, 18, 0.5);
-  }
-  .plate.active .board {
-    transform: scale(1);
-  }
   .spin {
     position: relative;
-    width: 72%;
-    margin-right: 8%;
+    width: 78%;
     transform: rotate(-120deg) scale(0.75);
     transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -285,7 +249,7 @@ const TAG_LABEL: Record<string, string> = { vegi: 'vegi', vegan: 'vegan', favori
   .spin img {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 10px 12px rgba(32, 25, 18, 0.3));
+    filter: drop-shadow(0 4px 14px rgba(32, 25, 18, 0.16));
     animation: turn 60s linear infinite;
   }
   @keyframes turn {
@@ -353,20 +317,11 @@ const TAG_LABEL: Record<string, string> = { vegi: 'vegi', vegan: 'vegan', favori
       display: grid;
       place-items: center;
     }
-    .slideImg .board {
-      inset: 6% 12% 6% 4%;
-      transform: none;
-      box-shadow:
-        inset 0 0 0 8px #a86f41,
-        inset 0 -8px 18px rgba(60, 35, 15, 0.35),
-        0 26px 36px -18px rgba(32, 25, 18, 0.5);
-    }
     .slideImg img {
       position: relative;
-      width: 76%;
-      margin-right: 8%;
+      width: 82%;
       height: auto;
-      filter: drop-shadow(0 8px 10px rgba(32, 25, 18, 0.3));
+      filter: drop-shadow(0 3px 12px rgba(32, 25, 18, 0.14));
     }
     .slideText {
       margin-top: 10px;

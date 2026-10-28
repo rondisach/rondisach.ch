@@ -36,6 +36,12 @@ content:
           - { name: place, label: Ort, type: string }
           - { name: text, label: Kurzer Text (optional), type: text }
           - { name: link, label: Link (optional), type: string }
+          - name: theme
+            label: Stil
+            type: select
+            description: "Weihnachten = Karte mit Lichterkette oben"
+            options:
+              values: [normal, weihnachten]
 
   - name: preise
     label: Preise

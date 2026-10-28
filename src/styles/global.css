@@ -30,7 +30,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--nav-h) + 16px);
+  scroll-padding-top: var(--nav-h);
 }
 
 body {
@@ -90,7 +90,11 @@ figure {
 }
 
 .section {
-  padding-block: clamp(64px, 9vw, 112px);
+  --section-pad: clamp(64px, 9vw, 112px);
+  --section-pad-top: var(--section-pad);
+  padding-block: var(--section-pad-top) var(--section-pad);
+  /* Beim Klick auf einen Menüpunkt landet der Titel knapp unter dem Menü statt nach dem ganzen Abstand */
+  scroll-margin-top: calc(clamp(20px, 3vw, 32px) - var(--section-pad-top));
 }
 
 .kicker {
