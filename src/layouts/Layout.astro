@@ -1,0 +1,240 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import banner from '../data/banner.json';
+import kontakt from '../data/kontakt.json';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Strukturierte Daten nur auf der Startseite ausgeben. */
+  schema?: boolean;
+}
+
+const { title, description, schema = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname.replace(/index\.html$/, ''), Astro.site);
+const ogImage = new URL('/assets/og-image.jpg', Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Caterer',
+  name: 'rondisach Pizza Catering',
+  url: 'https://rondisach.ch/',
+  logo: 'https://rondisach.ch/favicon-512.png',
+  image: ogImage.href,
+  email: kontakt.email,
+  telephone: kontakt.phone,
+  areaServed: 'Luzern und Umgebung',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: kontakt.street,
+    postalCode: kontakt.zip,
+    addressLocality: kontakt.city,
+    addressCountry: 'CH',
+  },
+};
+---
+
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f3eee4" />
+    <link rel="canonical" href={canonical.href} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={ogImage.href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="de_CH" />
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    {
+      banner.active && banner.text && (
+        <Fragment>
+          {/* Ganzer Banner ist klickbar; auf dem Handy nur die Kurzversion in einer Zeile */}
+          {banner.link ? (
+            <a class="banner" href={banner.link}>
+              <div class="wrap">
+                <span class="bLong">{banner.text}</span>
+                <span class="bShort">{banner.short || banner.text}</span>
+                <span class="bLink"><span class="bLinkText">{banner.linkText || 'Mehr erfahren'} </span>→</span>
+              </div>
+            </a>
+          ) : (
+            <div class="banner">
+              <div class="wrap">
+                <span class="bLong">{banner.text}</span>
+                <span class="bShort">{banner.short || banner.text}</span>
+              </div>
+            </div>
+          )}
+        </Fragment>
+      )
+    }
+    <Nav />
+    <main id="top">
+      <slot />
+    </main>
+    <footer class="footer">
+      <div class="wrap footIn">
+        <div>
+          <div class="footBrand">rondisach</div>
+          <p>Pizza Catering · Luzern &amp; Umgebung<br />{kontakt.street}, {kontakt.zip} {kontakt.city}</p>
+        </div>
+        <div class="footCol">
+          <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a>
+          <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`}>{kontakt.phoneDisplay}</a>
+          <a href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+        <div class="footCol">
+          <a href="/impressionen.html">Impressionen</a>
+          <a href="/impressum.html">Impressum</a>
+          <a href="/datenschutz.html">Datenschutz</a>
+          <a href="/buchung-storno.html">Buchung &amp; Storno</a>
+        </div>
+      </div>
+      <div class="wrap footBottom">© {new Date().getFullYear()} rondisach · eifach e rondi sach.</div>
+    </footer>
+    <a class="mobileCta btn" href="/#anfrage">Anfragen</a>
+    <script>
+      // Der schwebende Anfragen-Knopf verschwindet, solange schon ein Anfrage-Knopf, das Formular oder der Footer sichtbar ist.
+      const cta = document.querySelector<HTMLElement>('.mobileCta');
+      const targets = document.querySelectorAll('.heroActions, #anfrage, .footer');
+      if (cta && targets.length) {
+        const visible = new Set<Element>();
+        const io = new IntersectionObserver((entries) => {
+          for (const e of entries) e.isIntersecting ? visible.add(e.target) : visible.delete(e.target);
+          cta.classList.toggle('away', visible.size > 0);
+        });
+        targets.forEach((t) => io.observe(t));
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  .banner {
+    display: block;
+    text-decoration: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .banner .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    justify-content: center;
+    padding-block: 10px;
+    text-align: center;
+  }
+  .bLink {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .bShort {
+    display: none;
+  }
+  .footer {
+    margin-top: clamp(48px, 8vw, 96px);
+    border-top: 2px solid var(--ink);
+    padding-block: 40px 56px;
+    font-size: 15px;
+  }
+  .footIn {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 32px;
+  }
+  .footBrand {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+  .footIn p {
+    color: var(--muted);
+    margin: 10px 0 0;
+  }
+  .footCol {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+  .footCol a {
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .footCol a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .footBottom {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .mobileCta {
+    display: none;
+  }
+  @media (max-width: 760px) {
+    .footIn {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 620px) {
+    .mobileCta {
+      display: inline-flex;
+      position: fixed;
+      right: 16px;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      z-index: 30;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .mobileCta.away {
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+    }
+    .banner {
+      font-size: 13px;
+    }
+    .banner .wrap {
+      flex-wrap: nowrap;
+      padding-block: 7px;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .bLong,
+    .bLinkText {
+      display: none;
+    }
+    .bShort {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bLink {
+      text-decoration: none;
+    }
+    .footer {
+      padding-bottom: 96px;
+    }
+  }
+</style>

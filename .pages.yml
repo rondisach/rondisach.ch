@@ -1,0 +1,153 @@
+# Konfiguration für den Editor auf https://app.pagescms.org
+# Jeder Eintrag unten erscheint dort als eigener Menüpunkt mit einem einfachen Formular.
+media:
+  input: src/assets/uploads
+  output: /src/assets/uploads
+  extensions: [jpg, jpeg, png, webp]
+
+content:
+  - name: banner
+    label: Banner
+    type: file
+    path: src/data/banner.json
+    format: json
+    fields:
+      - { name: active, label: Banner anzeigen, type: boolean }
+      - { name: text, label: Text, type: string }
+      - { name: short, label: Kurztext fürs Handy (eine Zeile), type: string, description: "z. B. 5.–8. Dez · Weihnachtsmarkt Bellpark Kriens" }
+      - { name: linkText, label: Link-Text (optional), type: string }
+      - { name: link, label: Link (optional), type: string, description: "z. B. https://… oder /#anfrage" }
+
+  - name: termine
+    label: Nächste Termine
+    type: file
+    path: src/data/termine.json
+    format: json
+    fields:
+      - name: events
+        label: Termine (vergangene verschwinden automatisch)
+        type: object
+        list: true
+        fields:
+          - { name: title, label: Titel, type: string }
+          - { name: start, label: Datum (Beginn), type: date }
+          - { name: end, label: Datum (Ende, optional), type: date }
+          - { name: time, label: Zeit (optional), type: string, description: "z. B. 16–21 Uhr" }
+          - { name: place, label: Ort, type: string }
+          - { name: text, label: Kurzer Text (optional), type: text }
+          - { name: link, label: Link (optional), type: string }
+
+  - name: preise
+    label: Preise
+    type: file
+    path: src/data/preise.json
+    format: json
+    fields:
+      - { name: lead, label: Einleitung, type: text }
+      - name: packages
+        label: Pakete
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: description, label: Beschreibung, type: text }
+          - { name: price, label: Preis ab (CHF pro Person), type: number }
+          - { name: highlight, label: Dunkel hervorheben, type: boolean }
+          - { name: features, label: Punkte, type: string, list: true }
+      - name: modules
+        label: Bausteine
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: description, label: Beschreibung, type: string }
+          - { name: price, label: Preis ab (CHF pro Person), type: number }
+      - { name: minGuests, label: Mindestanzahl Gäste, type: number }
+      - { name: minOrder, label: Mindestauftragswert (CHF), type: number }
+      - name: travel
+        label: Anfahrt
+        type: object
+        list: true
+        fields:
+          - { name: title, label: Titel, type: string }
+          - { name: text, label: Text, type: text }
+      - { name: fineprint, label: Kleingedrucktes, type: text }
+
+  - name: pizzen
+    label: Pizzen
+    type: file
+    path: src/data/pizzen.json
+    format: json
+    fields:
+      - name: pizzas
+        label: Pizzen
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: ingredients, label: Zutaten, type: string, description: "mit · trennen" }
+          - { name: image, label: Bild (freigestellt, PNG/WebP), type: image }
+          - { name: alt, label: Bildbeschreibung, type: string }
+          - name: tags
+            label: Kennzeichnung
+            type: select
+            list: true
+            options:
+              values: [vegi, vegan, favorit, scharf]
+
+  - name: impressionen
+    label: Impressionen
+    type: collection
+    path: src/content/impressionen
+    format: yaml-frontmatter
+    view:
+      fields: [title, date]
+      primary: title
+      sort: [date]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - { name: title, label: Titel, type: string, required: true }
+      - { name: date, label: Datum, type: date }
+      - { name: guests, label: Anzahl Gäste, type: number }
+      - { name: description, label: Kurzbeschreibung, type: text }
+      - name: photos
+        label: Fotos
+        type: object
+        list: true
+        fields:
+          - { name: image, label: Bild, type: image }
+          - { name: alt, label: Bildbeschreibung, type: string }
+
+  - name: rezensionen
+    label: Rezensionen
+    type: file
+    path: src/data/rezensionen.json
+    format: json
+    fields:
+      - { name: rating, label: Google-Bewertung (z. B. 4.9), type: number }
+      - { name: count, label: Anzahl Bewertungen, type: number }
+      - { name: googleUrl, label: Link zu den Google-Bewertungen, type: string }
+      - { name: writeReviewUrl, label: Link „Bewertung schreiben“, type: string }
+      - name: reviews
+        label: Ausgewählte Rezensionen
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: text, label: Text, type: text }
+
+  - name: kontakt
+    label: Kontakt
+    type: file
+    path: src/data/kontakt.json
+    format: json
+    fields:
+      - { name: email, label: E-Mail (auch Empfänger des Formulars), type: string }
+      - { name: phone, label: Telefon international, type: string }
+      - { name: phoneDisplay, label: Telefon wie angezeigt, type: string }
+      - { name: whatsapp, label: WhatsApp-Nummer (ohne +), type: string }
+      - { name: street, label: Strasse, type: string }
+      - { name: zip, label: PLZ, type: string }
+      - { name: city, label: Ort, type: string }

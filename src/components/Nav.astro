@@ -1,0 +1,188 @@
+---
+const links = [
+  { href: '/#wir', label: 'Über uns' },
+  { href: '/#ablauf', label: 'Ablauf' },
+  { href: '/#pizzen', label: 'Pizzen' },
+  { href: '/#preise', label: 'Preise' },
+  { href: '/impressionen.html', label: 'Impressionen' },
+  { href: '/#anfrage', label: 'Kontakt' },
+];
+const current = Astro.url.pathname;
+---
+
+<header class="nav">
+  <div class="wrap navIn">
+    <a class="brand" href="/">rondisach</a>
+    <nav class="links" aria-label="Hauptnavigation">
+      {
+        links.map((l) => (
+          <a href={l.href} aria-current={current === l.href ? 'page' : undefined}>
+            {l.label}
+          </a>
+        ))
+      }
+    </nav>
+    <a class="btn cta" href="/#anfrage">Catering anfragen</a>
+    <button class="menuBtn" type="button" aria-expanded="false" aria-controls="mobileMenu">
+      <span class="srOnly">Menü öffnen</span>
+      <span class="bars" aria-hidden="true"></span>
+    </button>
+  </div>
+  <nav id="mobileMenu" class="mobileMenu" aria-label="Mobile Navigation" hidden>
+    <div class="wrap">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+      <a class="btn" href="/#anfrage">Catering anfragen</a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.menuBtn');
+  const menu = document.getElementById('mobileMenu');
+  if (btn && menu) {
+    const setOpen = (open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+      document.body.classList.toggle('menuOpen', open);
+    };
+    btn.addEventListener('click', () => setOpen(menu.hidden));
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(243, 238, 228, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .navIn {
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    text-decoration: none;
+    margin-right: auto;
+  }
+  .links {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .links a {
+    text-decoration: none;
+  }
+  .links a:hover,
+  .links a[aria-current='page'] {
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 2px;
+  }
+  .cta {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .menuBtn {
+    display: none;
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    place-items: center;
+  }
+  .bars,
+  .bars::before,
+  .bars::after {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .bars {
+    position: relative;
+  }
+  .bars::before,
+  .bars::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+  .bars::before {
+    top: -6px;
+  }
+  .bars::after {
+    top: 6px;
+  }
+  .menuBtn[aria-expanded='true'] .bars {
+    background: transparent;
+  }
+  .menuBtn[aria-expanded='true'] .bars::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .menuBtn[aria-expanded='true'] .bars::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+  .mobileMenu {
+    border-top: 1px solid var(--line);
+    background: var(--cream);
+    height: calc(100dvh - var(--nav-h));
+    overflow-y: auto;
+  }
+  .mobileMenu .wrap {
+    display: grid;
+    padding-block: 12px 32px;
+  }
+  .mobileMenu a:not(.btn) {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    text-decoration: none;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .mobileMenu .btn {
+    margin-top: 24px;
+  }
+  @media (max-width: 1020px) {
+    .links {
+      display: none;
+    }
+    .menuBtn {
+      display: grid;
+    }
+  }
+  @media (max-width: 620px) {
+    .cta {
+      display: none;
+    }
+  }
+  @media (min-width: 1021px) {
+    .mobileMenu {
+      display: none;
+    }
+  }
+  :global(body.menuOpen) {
+    overflow: hidden;
+  }
+</style>
