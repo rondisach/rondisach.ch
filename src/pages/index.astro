@@ -1039,7 +1039,21 @@ const events = termine.events
   @media (max-width: 620px) {
     /* Kurze Felder bleiben paarweise nebeneinander, damit das Formular kürzer wird */
     .form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+    }
+    .form label {
+      min-width: 0;
+    }
+    /* Safari auf dem iPhone gibt dem Datumsfeld sonst eine feste Mindestbreite, es ragt dann ins Nachbarfeld */
+    .form input[type='date'] {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+      min-height: 46px;
+    }
+    .form input[type='date']::-webkit-date-and-time-value {
+      text-align: left;
     }
     .form .mFull {
       grid-column: 1 / -1;
