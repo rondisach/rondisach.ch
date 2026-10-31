@@ -2,12 +2,15 @@
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
 import PizzaMenu from '../components/PizzaMenu.astro';
+import OvenDialog from '../components/OvenDialog.astro';
+import Faq from '../components/Faq.astro';
 import { upload } from '../lib/images';
 import pizzen from '../data/pizzen.json';
 import preise from '../data/preise.json';
 import rezensionen from '../data/rezensionen.json';
 import kontakt from '../data/kontakt.json';
 import termine from '../data/termine.json';
+import faq from '../data/faq.json';
 
 const chf = (n: number) => `CHF ${Number.isInteger(n) ? n.toLocaleString('de-CH') : n.toFixed(2)}`;
 const diy = preise.diy;
@@ -195,7 +198,10 @@ const events = termine.events
           <h3 id="diy-title">{diy.title}</h3>
           <p class="pkDesc">{diy.lead}</p>
           <ul class="ticks">{diy.includes.map((f) => <li>{f}</li>)}</ul>
-          <button class="btn diyBtn" type="button" data-open-oven data-umami-event="Ofen-Popup geöffnet">ofen anfragen</button>
+          <div class="diyActions">
+            <button class="btn" type="button" data-open-oven data-umami-event="Ofen-Popup geöffnet">ofen anfragen</button>
+            <a class="btn btn--outline" href="/ofen-mieten.html">mehr zur ofenmiete</a>
+          </div>
         </div>
         <div class="diyPrices">
           {diy.items.map((m) => (
@@ -212,54 +218,28 @@ const events = termine.events
     </div>
   </section>
 
-  <dialog class="ovenDialog" id="ofen-anfrage" aria-labelledby="oven-title">
-    <button class="dialogClose" type="button" data-close-oven aria-label="Schliessen"></button>
-    <div class="kicker">ofen mieten</div>
-    <h2 class="ovenTitle" id="oven-title">selber backen.</h2>
-    <form action={`https://formsubmit.co/${kontakt.email}`} method="POST" class="form ovenForm">
-      <input type="hidden" name="_subject" value="Neue Ofenmiete-Anfrage über rondisach.ch" />
-      <input type="hidden" name="_template" value="table" />
-      <input type="hidden" name="_next" value="https://rondisach.ch/?ofen=gesendet#selber-backen" />
-      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
-      <label class="mFull">Name<input name="name" placeholder="Vor- und Nachname" autocomplete="name" required /></label>
-      <label class="mFull">E-Mail<input name="email" type="email" placeholder="name@beispiel.ch" autocomplete="email" required /></label>
-      <label>Telefon<input name="phone" type="tel" placeholder="+41 …" autocomplete="tel" /></label>
-      <label>Öfen
-        <select name="ovens">
-          <option>1 Ofen</option>
-          <option>2 Öfen</option>
-        </select>
-      </label>
-      <label>Datum<input name="date" type="date" required /></label>
-      <label>Dauer
-        <select name="duration">
-          <option>1 Tag</option>
-          <option>Wochenende (Fr–Mo)</option>
-          <option>Länger, siehe Nachricht</option>
-        </select>
-      </label>
-      <label class="full">Übergabe
-        <select name="handover">
-          <option>Abholung in Kriens (kostenlos)</option>
-          <option>Lieferung in Luzern (CHF 60 + Rückholung CHF 60)</option>
-        </select>
-      </label>
-      <label class="full" data-address hidden>Lieferadresse<input name="address" placeholder="Strasse, PLZ, Ort" autocomplete="street-address" /></label>
-      <label class="full">Pizzateig (Ballen)<input name="dough" type="number" inputmode="numeric" min="0" step="1" placeholder={`leer lassen oder ab ${diy.minDough}`} data-min={diy.minDough} /></label>
-      <label class="full">Nachricht<textarea name="message" placeholder="Anlass, ungefähre Anzahl Personen, Fragen …"></textarea></label>
-      <label class="check full"><input type="checkbox" name="datenschutz" value="gelesen" required /><span>Ich habe die <a href="/datenschutz.html">Datenschutzerklärung</a> zur Kenntnis genommen.</span></label>
-      <button class="btn btn--light full" type="submit">ofen-anfrage senden</button>
-      <p class="formHint full">Noch keine Buchung: Wir prüfen die Verfügbarkeit und bestätigen euch die Miete schriftlich. Teig bitte mindestens 3 Tage im Voraus bestellen.</p>
-    </form>
-    <p class="ovenDone" hidden role="status">Danke! Eure Anfrage für den Ofen ist bei uns angekommen. Wir melden uns so bald wie möglich.</p>
-  </dialog>
+  <OvenDialog anchor="selber-backen" />
 
-  <!-- 05 Anfrage -->
+  <!-- 05 Fragen -->
+  <section class="section" id="fragen">
+    <div class="wrap">
+      <div class="split splitEnd">
+        <div>
+          <div class="kicker">05 · fragen</div>
+          <h2 class="title">gut zu wissen.</h2>
+        </div>
+        <p class="lead">Die häufigsten Fragen zu unserem Catering. Eure ist nicht dabei? Schreibt uns einfach.</p>
+      </div>
+      <Faq items={faq.catering} />
+    </div>
+  </section>
+
+  <!-- 06 Anfrage -->
   <section class="section booking" id="anfrage">
     <div class="wrap bookingBox">
       <div class="bookingGrid">
         <div>
-          <div class="kicker">05 · anfrage</div>
+          <div class="kicker">06 · anfrage</div>
           <h2 class="bookingTitle">wann wird's rund?</h2>
           <p>Habt ihr eine Frage oder schon einen Anlass im Kopf? Schreibt uns unverbindlich über das Formular oder meldet euch direkt bei uns. Wir antworten so schnell wie möglich.</p>
           <div class="quick">
@@ -297,10 +277,10 @@ const events = termine.events
     </div>
   </section>
 
-  <!-- 06 Stimmen: ganz unten und zentriert -->
+  <!-- 07 Stimmen: ganz unten und zentriert -->
   <section class="section reviews" id="stimmen">
     <div class="wrap reviewsIn">
-      <div class="kicker">06 · kundenstimmen</div>
+      <div class="kicker">07 · kundenstimmen</div>
       <h2 class="title">das sagen unsere gäste.</h2>
       <div class="ratingCard">
         <div class="ratingScore">{rezensionen.rating.toFixed(1).replace('.', ',')}</div>
@@ -329,6 +309,8 @@ const events = termine.events
 </Layout>
 
 <script>
+  import { track, trackPage } from '../lib/umami';
+
   // Auf dem Handy sind Details zugeklappt, auf grossen Bildschirmen immer offen.
   const small = window.matchMedia('(max-width: 620px)');
   const folds = document.querySelectorAll<HTMLDetailsElement>('details.fold');
@@ -358,53 +340,6 @@ const events = termine.events
   const termineSection = document.getElementById('termine');
   if (termineSection && !termineSection.querySelector('.event')) termineSection.remove();
 
-  // Ofenmiete im Popup
-  // Statistik (Umami): Events und Popups als eigene Seiten zählen; das Umami-Script lädt erst nach diesem Skript
-  const umami = (payload: unknown) => {
-    const send = () => (window as any).umami?.track(payload);
-    if ((window as any).umami) send();
-    else window.addEventListener('load', send, { once: true });
-  };
-  const track = (name: string) => umami(name);
-  const trackPage = (url: string, title: string) => umami((props: object) => ({ ...props, url, title }));
-
-  const ovenDialog = document.getElementById('ofen-anfrage') as HTMLDialogElement | null;
-  if (ovenDialog) {
-    const ovenForm = ovenDialog.querySelector('form')!;
-    const handover = ovenForm.querySelector<HTMLSelectElement>('select[name="handover"]')!;
-    const addressLabel = ovenForm.querySelector<HTMLElement>('[data-address]')!;
-    const address = addressLabel.querySelector('input')!;
-    const dough = ovenForm.querySelector<HTMLInputElement>('input[name="dough"]')!;
-    const minDough = Number(dough.dataset.min);
-
-    document.querySelectorAll('[data-open-oven]').forEach((b) =>
-      b.addEventListener('click', () => {
-        ovenDialog.showModal();
-        trackPage('/ofen-anfrage', 'Ofenmiete · Anfrage-Formular');
-      }),
-    );
-    ovenDialog.querySelector('[data-close-oven]')!.addEventListener('click', () => ovenDialog.close());
-    // Klick auf den abgedunkelten Hintergrund schliesst das Popup
-    ovenDialog.addEventListener('click', (e) => {
-      if (e.target === ovenDialog) ovenDialog.close();
-    });
-
-    // Lieferadresse nur bei Lieferung abfragen
-    const syncAddress = () => {
-      const delivery = handover.value.startsWith('Lieferung');
-      addressLabel.hidden = !delivery;
-      address.required = delivery;
-    };
-    handover.addEventListener('change', syncAddress);
-    syncAddress();
-
-    // Teig: leer lassen oder Mindestmenge
-    dough.addEventListener('input', () => {
-      const n = Number(dough.value);
-      dough.setCustomValidity(dough.value && n > 0 && n < minDough ? `Teig gibt es ab ${minDough} Ballen.` : '');
-    });
-  }
-
   document.querySelectorAll<HTMLInputElement>('.form input[type="date"]').forEach((dateField) => {
     const now = new Date();
     dateField.min = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -419,24 +354,6 @@ const events = termine.events
       done.scrollIntoView({ block: 'center' });
     }
     history.replaceState({}, document.title, location.pathname + '#anfrage');
-  }
-  if (params.get('ofen') === 'gesendet' && ovenDialog) {
-    track('Ofen-Anfrage gesendet');
-    trackPage('/ofen-anfrage-gesendet', 'Ofenmiete · Anfrage gesendet');
-    ovenDialog.querySelector('form')!.hidden = true;
-    ovenDialog.querySelector<HTMLElement>('.ovenDone')!.hidden = false;
-    ovenDialog.showModal();
-    // Nach dem Schliessen zur Ofenmiete springen (kurz verzögert, wenn die Seite wieder scrollbar ist)
-    ovenDialog.addEventListener(
-      'close',
-      () =>
-        setTimeout(() => {
-          const target = document.getElementById('selber-backen');
-          if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 90 });
-        }),
-      { once: true },
-    );
-    history.replaceState({}, document.title, location.pathname + '#selber-backen');
   }
 </script>
 
@@ -518,8 +435,9 @@ const events = termine.events
     color: var(--muted);
   }
 
-  /* Pizzen, Preise und Anfrage liegen auf demselben Hintergrund: dazwischen reicht ein Abstand statt zwei */
+  /* Pizzen, Preise, Fragen und Anfrage liegen auf demselben Hintergrund: dazwischen reicht ein Abstand statt zwei */
   #preise,
+  #fragen,
   #anfrage {
     --section-pad-top: calc(var(--section-pad) * 0.35);
   }
@@ -835,6 +753,11 @@ const events = termine.events
   .diy .ticks {
     margin: 0 0 24px;
   }
+  .diyActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
   .diyPrices {
     align-self: start;
     border: 2px solid var(--ink);
@@ -1087,103 +1010,6 @@ const events = termine.events
     }
   }
 
-  /* Ofenmiete-Popup: gleiche Farben wie das Anfrageformular */
-  .ovenDialog {
-    width: min(640px, calc(100% - 32px));
-    max-height: calc(100dvh - 32px);
-    margin: auto;
-    padding: clamp(24px, 4vw, 40px);
-    border: 0;
-    border-radius: 28px;
-    background: var(--accent);
-    color: #fff;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  .ovenDialog::backdrop {
-    background: rgba(18, 18, 18, 0.6);
-    backdrop-filter: blur(4px);
-  }
-  :global(html:has(dialog[open])) {
-    overflow: hidden;
-  }
-  .ovenDialog .kicker {
-    color: var(--accent-ink);
-  }
-  .ovenTitle {
-    font-size: clamp(36px, 5vw, 48px);
-    line-height: 0.95;
-    margin: 6px 0 18px;
-  }
-  .dialogClose {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    width: 44px;
-    height: 44px;
-    border: 1.5px solid #fff;
-    border-radius: 50%;
-    background: transparent;
-    cursor: pointer;
-  }
-  .dialogClose::before,
-  .dialogClose::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 2px;
-    background: #fff;
-    border-radius: 2px;
-    transform: translate(-50%, -50%) rotate(45deg);
-  }
-  .dialogClose::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
-  }
-  .dialogClose:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
-  .ovenForm {
-    gap: 10px;
-  }
-  .ovenForm textarea {
-    min-height: 80px;
-  }
-  .ovenForm .formHint {
-    color: var(--accent-ink);
-    margin: 0;
-  }
-  .ovenForm[hidden],
-  .ovenForm label[hidden] {
-    display: none;
-  }
-  .ovenDone {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0;
-  }
-  @media (max-width: 620px) {
-    .ovenDialog {
-      width: 100%;
-      max-width: none;
-      max-height: 100dvh;
-      height: 100dvh;
-      border-radius: 0;
-      padding: 24px 16px 32px;
-    }
-    .ovenDialog:has(.ovenDone:not([hidden])) {
-      width: calc(100% - 32px);
-      height: fit-content;
-      border-radius: 24px;
-      padding: 24px 20px 28px;
-    }
-    .dialogClose {
-      top: 14px;
-      right: 14px;
-    }
-  }
-
   /* Anfrage */
   .booking {
     padding-bottom: 0;
@@ -1236,70 +1062,6 @@ const events = termine.events
     background: transparent;
     color: #fff;
   }
-  .form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .form label {
-    display: grid;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .form input:not([type='checkbox']),
-  .form select,
-  .form textarea {
-    width: 100%;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border-radius: 14px;
-    padding: 13px 15px;
-    font-size: 16px;
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: 400;
-  }
-  .form input:focus,
-  .form select:focus,
-  .form textarea:focus {
-    outline: 2px solid #fff;
-    outline-offset: 1px;
-  }
-  .form ::placeholder {
-    color: #f6cdc5;
-  }
-  .form select option {
-    color: var(--ink);
-  }
-  .form textarea {
-    min-height: 120px;
-    resize: vertical;
-  }
-  .full {
-    grid-column: 1 / -1;
-  }
-  .form .check {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    text-transform: none;
-    letter-spacing: 0;
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .check input {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    accent-color: var(--cream);
-  }
-  .formHint {
-    font-size: 13px;
-  }
   .bookingGrid .done {
     font-weight: 700;
     color: #fff;
@@ -1310,36 +1072,6 @@ const events = termine.events
     }
   }
   @media (max-width: 620px) {
-    /* Kurze Felder bleiben paarweise nebeneinander, damit das Formular kürzer wird */
-    .form {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .form label {
-      min-width: 0;
-    }
-    /* Safari auf dem iPhone gibt dem Datumsfeld sonst eine feste Mindestbreite, es ragt dann ins Nachbarfeld */
-    .form input[type='date'] {
-      -webkit-appearance: none;
-      appearance: none;
-      display: block;
-      min-height: 46px;
-    }
-    .form input[type='date']::-webkit-date-and-time-value {
-      text-align: left;
-    }
-    .form .mFull {
-      grid-column: 1 / -1;
-    }
-    .form input:not([type='checkbox']),
-    .form select,
-    .form textarea {
-      padding: 11px 13px;
-      min-width: 0;
-    }
-    .form textarea {
-      min-height: 96px;
-    }
     .quick .quickMain {
       flex-basis: 100%;
       justify-content: center;

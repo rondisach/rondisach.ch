@@ -1,0 +1,387 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import OvenDialog from '../components/OvenDialog.astro';
+import Faq from '../components/Faq.astro';
+import preise from '../data/preise.json';
+import faq from '../data/faq.json';
+import kontakt from '../data/kontakt.json';
+import ovenPhoto from '../assets/uploads/process-2.jpg';
+import gardenPhoto from '../assets/uploads/event-edited-01.webp';
+
+const diy = preise.diy;
+const chf = (n: number) => `CHF ${Number.isInteger(n) ? n.toLocaleString('de-CH') : n.toFixed(2)}`;
+const ovenPrice = Math.min(...diy.items.filter((i) => i.unit.includes('Tag')).map((i) => i.price));
+
+const facts = [
+  { value: '500 °C', label: 'Ofentemperatur' },
+  { value: '60–90 s', label: 'pro Pizza' },
+  { value: '20–25', label: 'Personen pro Ofen' },
+  { value: chf(ovenPrice), label: 'pro Ofen und Tag' },
+];
+const steps = [
+  { title: 'Anfragen', text: 'Datum, Anzahl Öfen und auf Wunsch Teig im Formular angeben. Wir prüfen die Verfügbarkeit und bestätigen euch die Miete.' },
+  { title: 'Abholen oder liefern', text: 'Ihr holt Ofen und Teig in Kriens ab, oder wir liefern in Luzern. Bei der Übergabe zeigen wir euch alles kurz.' },
+  { title: 'Selber backen', text: 'Ofen 25–30 Minuten vorheizen, Teig ausziehen, belegen, einschiessen. Unser Guide als PDF führt euch Schritt für Schritt.' },
+  { title: 'Zurückbringen', text: 'Ofen und Schieber grob gereinigt zurückbringen oder von uns am nächsten Tag abholen lassen. Ihr bekommt die Kaution zurück.' },
+];
+
+// Strukturierte Daten für Google: Vermietung als eigenes Angebot
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Pizzaofen mieten',
+  serviceType: 'Vermietung von Pizzaöfen',
+  description: diy.lead,
+  areaServed: 'Luzern und Umgebung',
+  provider: {
+    '@type': 'LocalBusiness',
+    name: 'rondisach Pizza Catering',
+    url: 'https://rondisach.ch/',
+    telephone: kontakt.phone,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: kontakt.street,
+      postalCode: kontakt.zip,
+      addressLocality: kontakt.city,
+      addressCountry: 'CH',
+    },
+  },
+  offers: { '@type': 'Offer', price: ovenPrice, priceCurrency: 'CHF', description: 'Pro Ofen und Tag' },
+};
+---
+
+<Layout
+  title="Pizzaofen mieten in Luzern | rondisach"
+  description={`Gozney Arc XL Pizzaofen mieten in Kriens und Luzern: ab ${chf(ovenPrice)} pro Tag, inklusive Schieber-Set, Gas und Einführung. Auf Wunsch mit 48 h gereiftem Pizzateig.`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <header class="wrap ovenHero">
+    <div class="ovenHeroText">
+      <div class="kicker">ofen mieten · kriens &amp; luzern</div>
+      <h1 class="ovenTitle">pizzaofen mieten.</h1>
+      <p class="lead">{diy.lead}</p>
+      <div class="actions heroActions">
+        <button class="btn" type="button" data-open-oven data-umami-event="Ofen-Popup geöffnet">ofen anfragen</button>
+        <a class="btn btn--outline" href="#preise">preise ansehen</a>
+      </div>
+    </div>
+    <Image class="heroPhoto" src={ovenPhoto} alt="Pizza wird mit dem Schieber aus dem Gozney Pizzaofen geholt" widths={[320, 500]} sizes="(max-width: 760px) 60vw, 340px" loading="eager" />
+  </header>
+
+  <div class="wrap">
+    <ul class="facts">
+      {facts.map((f) => <li><strong>{f.value}</strong><span>{f.label}</span></li>)}
+    </ul>
+  </div>
+
+  <section class="section" id="ablauf" aria-labelledby="ablauf-title">
+    <div class="wrap">
+      <div class="kicker">so funktioniert's</div>
+      <h2 class="title" id="ablauf-title">in vier schritten.</h2>
+      <ol class="steps">
+        {steps.map((s) => <li><h3>{s.title}</h3><p>{s.text}</p></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section priceSection" id="preise" aria-labelledby="preise-title">
+    <div class="wrap priceGrid">
+      <div>
+        <div class="kicker">preise</div>
+        <h2 class="title" id="preise-title">was dabei ist.</h2>
+        <ul class="ticks">{diy.includes.map((f) => <li>{f}</li>)}</ul>
+        <Image class="gardenPhoto" src={gardenPhoto} alt="Pizzaöfen im Garten bei Abendstimmung" widths={[480, 800]} sizes="(max-width: 920px) 100vw, 520px" />
+      </div>
+      <div>
+        <div class="priceList">
+          {diy.items.map((m) => (
+            <div class="priceRow">
+              <div><b>{m.name}</b><small>{m.description}</small></div>
+              <strong>{chf(m.price)} <small>/ {m.unit}</small></strong>
+            </div>
+          ))}
+        </div>
+        <div class="notes">
+          {diy.notes.map((n) => <div class="note"><strong>{n.title}</strong>{n.text}</div>)}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="fragen" aria-labelledby="fragen-title">
+    <div class="wrap">
+      <div class="kicker">fragen</div>
+      <h2 class="title faqTitle" id="fragen-title">gut zu wissen.</h2>
+      <Faq items={faq.ofen} />
+    </div>
+  </section>
+
+  <section class="wrap cta" aria-labelledby="cta-title">
+    <div>
+      <h2 id="cta-title">bereit zum backen?</h2>
+      <p>Schickt uns eure Anfrage. Wir melden uns so schnell wie möglich mit der Bestätigung.</p>
+    </div>
+    <div class="ctaActions">
+      <button class="btn btn--light" type="button" data-open-oven data-umami-event="Ofen-Popup geöffnet">ofen anfragen</button>
+      <a class="ctaLink" href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener" data-umami-event="WhatsApp geklickt">oder auf WhatsApp schreiben</a>
+    </div>
+  </section>
+
+  <OvenDialog anchor="preise" returnTo="/ofen-mieten.html" />
+</Layout>
+
+<script>
+  // Der schwebende Knopf auf dem Handy öffnet hier das Ofen-Popup statt das Catering-Formular
+  const mobileCta = document.querySelector<HTMLAnchorElement>('.mobileCta');
+  const openOven = document.querySelector<HTMLElement>('[data-open-oven]');
+  if (mobileCta && openOven) {
+    mobileCta.textContent = 'ofen anfragen';
+    mobileCta.addEventListener('click', (e) => {
+      e.preventDefault();
+      openOven.click();
+    });
+  }
+</script>
+
+<style>
+  .ovenHero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: center;
+    padding-block: clamp(40px, 7vw, 88px) clamp(32px, 5vw, 56px);
+  }
+  .ovenTitle {
+    font-size: clamp(48px, 8vw, 104px);
+    line-height: 0.9;
+    margin: 14px 0 22px;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .heroPhoto {
+    width: clamp(220px, 26vw, 360px);
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: center 60%;
+    border-radius: var(--radius);
+    transform: rotate(2deg);
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-block: 2px solid var(--ink);
+  }
+  .facts li {
+    padding: 22px 18px;
+  }
+  .facts li + li {
+    border-left: 1px solid var(--line);
+  }
+  .facts strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+  }
+  .facts span {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: clamp(28px, 4vw, 44px) 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+  .steps li {
+    counter-increment: step;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .steps li::before {
+    content: counter(step, decimal-leading-zero);
+    display: block;
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 12px;
+  }
+  .steps h3 {
+    font-family: var(--font-body);
+    font-size: 18px;
+    letter-spacing: 0;
+    margin-bottom: 6px;
+  }
+  .steps p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .priceSection {
+    background: var(--panel);
+  }
+  .priceGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(28px, 5vw, 56px);
+  }
+  .ticks {
+    display: grid;
+    gap: 10px;
+    margin: 24px 0 28px;
+    padding: 0;
+    list-style: none;
+  }
+  .ticks li {
+    display: flex;
+    gap: 10px;
+  }
+  .ticks li::before {
+    content: '✓';
+    font-weight: 700;
+  }
+  .gardenPhoto {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+  }
+  .priceList {
+    border: 2px solid var(--ink);
+    border-radius: 20px;
+    background: var(--cream);
+    overflow: hidden;
+  }
+  .priceRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 18px 24px;
+  }
+  .priceRow + .priceRow {
+    border-top: 1px solid var(--line);
+  }
+  .priceRow small {
+    display: block;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 2px;
+  }
+  .priceRow strong {
+    white-space: nowrap;
+    font-size: 18px;
+  }
+  .priceRow strong small {
+    display: inline;
+    font-weight: 600;
+  }
+  .notes {
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .note {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 20px;
+  }
+  .note strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .faqTitle {
+    margin-bottom: clamp(24px, 4vw, 40px);
+  }
+  .cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: clamp(56px, 8vw, 96px);
+    padding: clamp(28px, 5vw, 56px);
+    border-radius: 34px;
+    background: var(--accent);
+    color: #fff;
+  }
+  .cta h2 {
+    font-size: clamp(36px, 5vw, 60px);
+    line-height: 0.95;
+    margin-bottom: 10px;
+  }
+  .cta p {
+    margin: 0;
+    color: var(--accent-ink);
+    max-width: 44ch;
+  }
+  .ctaActions {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    flex: none;
+  }
+  .ctaLink {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  @media (max-width: 920px) {
+    .steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .priceGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 760px) {
+    .ovenHero {
+      grid-template-columns: 1fr;
+    }
+    .heroPhoto {
+      width: 60%;
+      justify-self: center;
+    }
+  }
+  @media (max-width: 620px) {
+    .facts {
+      grid-template-columns: 1fr 1fr;
+    }
+    .facts li:nth-child(3) {
+      border-left: 0;
+    }
+    .facts li:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+    .steps {
+      grid-template-columns: 1fr;
+    }
+    .priceRow {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 16px 20px;
+    }
+    .cta {
+      flex-direction: column;
+      align-items: stretch;
+      border-radius: 24px;
+    }
+    .ctaActions {
+      justify-items: stretch;
+    }
+  }
+</style>

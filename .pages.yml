@@ -168,6 +168,31 @@ content:
           - { name: name, label: Name, type: string }
           - { name: text, label: Text, type: text }
 
+  - name: faq
+    label: Häufige Fragen
+    type: file
+    path: src/data/faq.json
+    format: json
+    fields:
+      - name: catering
+        label: Fragen zum Catering (Startseite)
+        type: object
+        list: true
+        fields:
+          - { name: question, label: Frage, type: string }
+          - { name: answer, label: Antwort, type: text }
+          - { name: linkText, label: Link-Text (optional), type: string }
+          - { name: link, label: Link (optional), type: string, description: "z. B. /buchung-storno.html" }
+      - name: ofen
+        label: Fragen zur Ofenmiete (Seite Ofen mieten)
+        type: object
+        list: true
+        fields:
+          - { name: question, label: Frage, type: string }
+          - { name: answer, label: Antwort, type: text }
+          - { name: linkText, label: Link-Text (optional), type: string }
+          - { name: link, label: Link (optional), type: string }
+
   - name: analytics
     label: Besucherstatistik
     type: file
