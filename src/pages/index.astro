@@ -2,7 +2,6 @@
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
 import PizzaMenu from '../components/PizzaMenu.astro';
-import OvenDialog from '../components/OvenDialog.astro';
 import Faq from '../components/Faq.astro';
 import { upload } from '../lib/images';
 import pizzen from '../data/pizzen.json';
@@ -12,8 +11,7 @@ import kontakt from '../data/kontakt.json';
 import termine from '../data/termine.json';
 import faq from '../data/faq.json';
 
-const chf = (n: number) => `CHF ${Number.isInteger(n) ? n.toLocaleString('de-CH') : n.toFixed(2)}`;
-const diy = preise.diy;
+const chf = (n: number) => `CHF ${n.toLocaleString('de-CH')}`;
 const facts = [
   { value: '100 %', label: 'Handarbeit' },
   { value: '48 h', label: 'Teigruhe' },
@@ -191,34 +189,8 @@ const events = termine.events
       </div>
       <p class="fineprint"><strong>Caterings sind ab {preise.minGuests} Personen möglich. Mindestauftragswert: {chf(preise.minOrder)}.</strong> {preise.fineprint}</p>
       </details>
-
-      <article class="diy" id="selber-backen" aria-labelledby="diy-title">
-        <div class="diyIntro">
-          <div class="diyTag">ofen mieten</div>
-          <h3 id="diy-title">{diy.title}</h3>
-          <p class="pkDesc">{diy.lead}</p>
-          <ul class="ticks">{diy.includes.map((f) => <li>{f}</li>)}</ul>
-          <div class="diyActions">
-            <button class="btn" type="button" data-open-oven data-umami-event="Ofen-Popup geöffnet">ofen anfragen</button>
-            <a class="btn btn--outline" href="/ofen-mieten.html">mehr zur ofenmiete</a>
-          </div>
-        </div>
-        <div class="diyPrices">
-          {diy.items.map((m) => (
-            <div class="moduleRow">
-              <div><b>{m.name}</b><small>{m.description}</small></div>
-              <strong>{chf(m.price)} <small>/ {m.unit}</small></strong>
-            </div>
-          ))}
-        </div>
-        <div class="travel diyNotes">
-          {diy.notes.map((t) => <div class="travelBox"><strong>{t.title}</strong>{t.text}</div>)}
-        </div>
-      </article>
     </div>
   </section>
-
-  <OvenDialog anchor="selber-backen" />
 
   <!-- 05 Fragen -->
   <section class="section" id="fragen">
@@ -729,59 +701,8 @@ const events = termine.events
     margin: 16px 0 0;
     max-width: 110ch;
   }
-  .diy {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(22px, 3vw, 40px);
-    margin-top: clamp(32px, 5vw, 48px);
-    border: 2px solid var(--ink);
-    border-radius: var(--radius);
-    background: var(--panel);
-    padding: clamp(22px, 3vw, 32px);
-  }
-  .diyTag {
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .diy h3 {
-    font-size: 34px;
-  }
-  .diy .ticks {
-    margin: 0 0 24px;
-  }
-  .diyActions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .diyPrices {
-    align-self: start;
-    border: 2px solid var(--ink);
-    border-radius: 20px;
-    background: var(--cream);
-    overflow: hidden;
-  }
-  .diyPrices .moduleRow:first-child {
-    border-top: 0;
-  }
-  .diyPrices strong small {
-    display: inline;
-    font-weight: 600;
-  }
-  .diyNotes {
-    grid-column: 1 / -1;
-    margin-top: 0;
-  }
-  .diyNotes .travelBox {
-    background: var(--cream);
-  }
   @media (max-width: 920px) {
-    .packages,
-    .diy {
+    .packages {
       grid-template-columns: 1fr;
     }
   }

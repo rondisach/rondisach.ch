@@ -2,7 +2,9 @@
   "catering": [
     {
       "question": "Ab wie vielen Personen bucht ihr?",
-      "answer": "Caterings sind ab 15 Personen möglich, der Mindestauftragswert liegt bei CHF 600. Für kleinere Runden lohnt sich vielleicht unsere Ofenmiete."
+      "answer": "Caterings sind ab 15 Personen möglich, der Mindestauftragswert liegt bei CHF 600. Für kleinere Runden lohnt sich vielleicht unsere Ofenmiete.",
+      "linkText": "Ofen mieten",
+      "link": "/ofen-mieten.html"
     },
     {
       "question": "Wo seid ihr unterwegs?",
@@ -51,6 +53,10 @@
     {
       "question": "Wie bestellen wir Teig?",
       "answer": "Mindestens 3 Tage im Voraus, ab 18 Ballen à 280 g. Gebt die Anzahl einfach im Anfrageformular an."
+    },
+    {
+      "question": "Wann holen wir Ofen und Teig ab?",
+      "answer": "Mit Teig am Backtag, etwa 5 Stunden vor der ersten Pizza. Bis dann reift der Teig bei uns im Kühlschrank. Stellt ihn zu Hause wieder kühl und nehmt ihn 1–2 Stunden vor dem Backen heraus, damit er sich gut ausziehen lässt. Lasst ihn nicht stundenlang warm stehen, sonst geht er zu stark auf."
     },
     {
       "question": "Passt der Ofen in unser Auto?",
