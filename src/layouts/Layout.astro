@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import banner from '../data/banner.json';
 import kontakt from '../data/kontakt.json';
+import analytics from '../data/analytics.json';
 
 interface Props {
   title: string;
@@ -57,6 +58,12 @@ const jsonLd = {
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="de_CH" />
     {schema && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    {/* Besucherstatistik ohne Cookies (Umami), nur aktiv mit Website-ID und nur auf rondisach.ch */}
+    {
+      analytics.umamiWebsiteId && (
+        <script is:inline defer src="https://cloud.umami.is/script.js" data-website-id={analytics.umamiWebsiteId} data-domains="rondisach.ch" />
+      )
+    }
   </head>
   <body>
     {
@@ -93,9 +100,9 @@ const jsonLd = {
           <p>Pizza Catering · Luzern &amp; Umgebung<br />{kontakt.street}, {kontakt.zip} {kontakt.city}</p>
         </div>
         <div class="footCol">
-          <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a>
-          <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`}>{kontakt.phoneDisplay}</a>
-          <a href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener">WhatsApp</a>
+          <a href={`mailto:${kontakt.email}`} data-umami-event="E-Mail geklickt">{kontakt.email}</a>
+          <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`} data-umami-event="Telefon geklickt">{kontakt.phoneDisplay}</a>
+          <a href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener" data-umami-event="WhatsApp geklickt">WhatsApp</a>
         </div>
         <div class="footCol">
           <a href="/impressionen.html">impressionen</a>

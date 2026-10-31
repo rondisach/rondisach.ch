@@ -195,7 +195,7 @@ const events = termine.events
           <h3 id="diy-title">{diy.title}</h3>
           <p class="pkDesc">{diy.lead}</p>
           <ul class="ticks">{diy.includes.map((f) => <li>{f}</li>)}</ul>
-          <button class="btn diyBtn" type="button" data-open-oven>ofen anfragen</button>
+          <button class="btn diyBtn" type="button" data-open-oven data-umami-event="Ofen-Popup geöffnet">ofen anfragen</button>
         </div>
         <div class="diyPrices">
           {diy.items.map((m) => (
@@ -263,9 +263,9 @@ const events = termine.events
           <h2 class="bookingTitle">wann wird's rund?</h2>
           <p>Habt ihr eine Frage oder schon einen Anlass im Kopf? Schreibt uns unverbindlich über das Formular oder meldet euch direkt bei uns. Wir antworten so schnell wie möglich.</p>
           <div class="quick">
-            <a class="quickMain" href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener">auf WhatsApp schreiben</a>
-            <a href={`mailto:${kontakt.email}`}>e-mail schreiben</a>
-            <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`}>{kontakt.phoneDisplay}</a>
+            <a class="quickMain" href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener" data-umami-event="WhatsApp geklickt">auf WhatsApp schreiben</a>
+            <a href={`mailto:${kontakt.email}`} data-umami-event="E-Mail geklickt">e-mail schreiben</a>
+            <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`} data-umami-event="Telefon geklickt">{kontakt.phoneDisplay}</a>
           </div>
         </div>
         <form action={`https://formsubmit.co/${kontakt.email}`} method="POST" class="form">
@@ -395,8 +395,16 @@ const events = termine.events
     const now = new Date();
     dateField.min = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   });
+  // Gesendete Anfragen in der Statistik zählen (das Umami-Script lädt erst nach diesem Skript)
+  const track = (name: string) => {
+    const send = () => (window as any).umami?.track(name);
+    if ((window as any).umami) send();
+    else window.addEventListener('load', send, { once: true });
+  };
+
   const params = new URLSearchParams(location.search);
   if (params.get('anfrage') === 'gesendet') {
+    track('Catering-Anfrage gesendet');
     const done = document.getElementById('done');
     if (done) {
       done.hidden = false;
@@ -405,6 +413,7 @@ const events = termine.events
     history.replaceState({}, document.title, location.pathname + '#anfrage');
   }
   if (params.get('ofen') === 'gesendet' && ovenDialog) {
+    track('Ofen-Anfrage gesendet');
     ovenDialog.querySelector('form')!.hidden = true;
     ovenDialog.querySelector<HTMLElement>('.ovenDone')!.hidden = false;
     ovenDialog.showModal();
