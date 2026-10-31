@@ -30,5 +30,21 @@
     { "title": "Anfahrt bis 15 km", "text": "CHF 50 pauschal ab 6010 Kriens." },
     { "title": "Weitere Distanz", "text": "CHF 1.50 pro zusätzlichem Kilometer der einfachen Strecke; die Rückfahrt ist im Tarif berücksichtigt." }
   ],
+  "diy": {
+    "title": "selber backen.",
+    "lead": "Ihr wollt selbst Pizzaiolo sein? Unsere Öfen gibt's auch zum Mieten – für Geburtstage, Familienfeste oder den Abend mit Freunden. Auf Wunsch gibt es unseren 48 h gereiften Teig gleich dazu.",
+    "includes": ["Gozney Arc XL Gasofen, bis 500 °C", "Pizzaschieber, Wendeschaufel & Pizzaschneider", "Gasflasche und kurze Einführung bei der Übergabe", "Guide als PDF: Ofen, Teig, Beläge & Einkaufsliste", "Ein Ofen reicht für ca. 20–25 Personen"],
+    "items": [
+      { "name": "Ofen", "description": "Gozney Arc XL inkl. Schieber-Set · 2 Öfen verfügbar · Wochenende (Fr–Mo) CHF 175 pro Ofen", "price": 110, "unit": "Ofen & Tag" },
+      { "name": "Gas", "description": "Pauschal pro Ofen, volle Flasche", "price": 25, "unit": "Ofen" },
+      { "name": "Lieferung in Luzern", "description": "Wir bringen Ofen und Teig vorbei · Rückholung am nächsten Tag ebenfalls CHF 60", "price": 60, "unit": "Fahrt" },
+      { "name": "Pizzateig", "description": "Frische Teigballen à 280 g, im professionellen Spiralkneter gemacht und 48 h gereift · ab 18 Stück, 3 Tage im Voraus bestellen", "price": 4.5, "unit": "Stück" }
+    ],
+    "minDough": 18,
+    "notes": [
+      { "title": "Abholen oder liefern", "text": "Abholung in Kriens kostenlos. In Luzern liefern wir für CHF 60 und holen den Ofen am nächsten Tag für CHF 60 wieder ab." },
+      { "title": "Kaution & Reinigung", "text": "CHF 300 Kaution pro Ofen, zurück bei der Rückgabe. Bitte Ofen und Schieber grob gereinigt zurückbringen." }
+    ]
+  },
   "fineprint": "Bei kleinen Pizza-Caterings kann der effektive Preis pro Person wegen des Mindestauftragswerts über dem ausgewiesenen Ab-Preis liegen. Die genannten Preise verstehen sich in CHF als Endpreise; allfällige gesetzlich geschuldete Abgaben sind darin enthalten. Zusatzwünsche, besondere Menükomponenten, erschwerte örtliche Bedingungen oder kleinere Gruppen können den Preis verändern. Verbindlich sind ausschliesslich Leistungsumfang und Gesamtpreis der persönlichen Offerte."
 }
