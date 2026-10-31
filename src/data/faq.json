@@ -1,0 +1,70 @@
+{
+  "catering": [
+    {
+      "question": "Ab wie vielen Personen bucht ihr?",
+      "answer": "Caterings sind ab 15 Personen möglich, der Mindestauftragswert liegt bei CHF 600. Für kleinere Runden lohnt sich vielleicht unsere Ofenmiete.",
+      "linkText": "Ofen mieten",
+      "link": "/ofen-mieten.html"
+    },
+    {
+      "question": "Wo seid ihr unterwegs?",
+      "answer": "In Luzern und Umgebung. Bis 15 km ab Kriens kostet die Anfahrt pauschal CHF 50, darüber CHF 1.50 pro zusätzlichem Kilometer."
+    },
+    {
+      "question": "Was braucht ihr bei uns vor Ort?",
+      "answer": "Einen ebenen Platz im Freien für unseren Ofen und einen Arbeitstisch. Alles Weitere besprechen wir bei der Offerte."
+    },
+    {
+      "question": "Was passiert, wenn es regnet?",
+      "answer": "Wir backen auch bei Regen, solange der Ofen unter einem Vordach oder Pavillon stehen kann. Klärt das am besten vorher mit uns ab."
+    },
+    {
+      "question": "Gibt es vegetarische oder vegane Pizza?",
+      "answer": "Ja. Mehrere unserer Pizzen sind vegetarisch, die Marinara ist vegan. Bei Allergien oder Wünschen wie glutenfrei sprecht uns bei der Anfrage an."
+    },
+    {
+      "question": "Wie früh sollten wir buchen?",
+      "answer": "So früh wie möglich, besonders für Samstage im Sommer. Kurzfristige Anfragen versuchen wir trotzdem möglich zu machen."
+    },
+    {
+      "question": "Wie wird gebucht und storniert?",
+      "answer": "Nach eurer Anfrage erhaltet ihr eine Offerte. Verbindlich wird der Auftrag mit eurer schriftlichen Bestätigung.",
+      "linkText": "Buchung & Storno",
+      "link": "/buchung-storno.html"
+    }
+  ],
+  "ofen": [
+    {
+      "question": "Für wie viele Personen reicht ein Ofen?",
+      "answer": "Für etwa 20–25 Personen. Eine Pizza ist in 60–90 Sekunden fertig. Für grössere Runden empfehlen wir beide Öfen."
+    },
+    {
+      "question": "Brauchen wir Erfahrung mit Pizzaöfen?",
+      "answer": "Nein. Bei der Übergabe zeigen wir euch alles kurz, und ihr bekommt unseren Guide als PDF mit allen Schritten zu Ofen, Teig und Belägen."
+    },
+    {
+      "question": "Dürfen wir den Ofen drinnen benutzen?",
+      "answer": "Nein, der Gasofen ist nur für draussen gedacht. Stellt ihn auf einen stabilen, nicht brennbaren Tisch mit mindestens 1 m Abstand zu Wänden und Dächern."
+    },
+    {
+      "question": "Was müssen wir selbst besorgen?",
+      "answer": "Die Beläge und einen stabilen Tisch. Eine Einkaufsliste mit Links zu Migros und Coop steht im Guide. Den Teig könnt ihr bei uns bestellen."
+    },
+    {
+      "question": "Wie bestellen wir Teig?",
+      "answer": "Mindestens 3 Tage im Voraus, ab 18 Ballen à 280 g. Gebt die Anzahl einfach im Anfrageformular an."
+    },
+    {
+      "question": "Wann holen wir Ofen und Teig ab?",
+      "answer": "Der Teig muss 4–5 Stunden vor der ersten Pizza aus dem Kühlschrank. Backt ihr am Abholtag, holt ihr Ofen und Teig darum etwa 5 Stunden vorher ab. Bis dann reift der Teig bei uns im Kühlschrank, danach bleibt er zugedeckt bei Raumtemperatur. Backt ihr erst später, zum Beispiel Abholung am Freitag und Backen am Samstag, gebt im Formular den Backtag an. Dann setzen wir den Teig so an, dass er einen Tag bei uns und den letzten Tag bei euch im Kühlschrank reift. Am Backtag nehmt ihr ihn 4–5 Stunden vor der ersten Pizza heraus."
+    },
+    {
+      "question": "Passt der Ofen in unser Auto?",
+      "answer": "In einen normalen Kofferraum, ja. Er ist aber schwer, tragt ihn am besten zu zweit. In Luzern liefern wir auch für CHF 60."
+    },
+    {
+      "question": "Wie funktioniert die Kaution?",
+      "answer": "Pro Ofen hinterlegt ihr CHF 300 und bekommt sie bei der Rückgabe zurück. Bitte bringt Ofen und Schieber grob gereinigt zurück."
+    }
+  ]
+}

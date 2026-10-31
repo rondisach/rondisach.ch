@@ -1,0 +1,87 @@
+---
+interface Item {
+  question: string;
+  answer: string;
+  link?: string;
+  linkText?: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+
+// Strukturierte Daten, damit Google die Fragen direkt in den Suchergebnissen zeigen kann
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map((i) => ({
+    '@type': 'Question',
+    name: i.question,
+    acceptedAnswer: { '@type': 'Answer', text: i.answer },
+  })),
+};
+---
+
+<div class="faq">
+  {
+    items.map((i) => (
+      <details class="faqItem">
+        <summary>{i.question}</summary>
+        <p>
+          {i.answer}
+          {i.link && (
+            <>
+              {' '}
+              <a href={i.link}>{i.linkText || 'mehr'}</a>
+            </>
+          )}
+        </p>
+      </details>
+    ))
+  }
+</div>
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+<style>
+  .faq {
+    border-top: 2px solid var(--ink);
+  }
+  .faqItem {
+    border-bottom: 1px solid var(--line);
+  }
+  .faqItem summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 0;
+    font-size: clamp(17px, 2vw, 20px);
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faqItem summary::-webkit-details-marker {
+    display: none;
+  }
+  .faqItem summary::after {
+    content: '+';
+    flex: none;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1;
+    transition: transform 0.2s ease;
+  }
+  .faqItem[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .faqItem p {
+    margin: 0;
+    padding: 0 0 22px;
+    max-width: 70ch;
+    color: var(--muted);
+  }
+  .faqItem a {
+    color: var(--ink);
+    font-weight: 600;
+  }
+</style>
