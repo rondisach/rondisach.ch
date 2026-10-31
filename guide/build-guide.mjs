@@ -12,7 +12,7 @@ const oven = [
 ];
 
 const dough = [
-  { title: 'Temperieren', text: 'Die Teigballen 1–2 Stunden vor dem Backen aus dem Kühlschrank nehmen und zugedeckt bei Raumtemperatur stehen lassen. Kalter Teig reisst und lässt sich schlecht ausziehen.' },
+  { title: 'Temperieren', text: 'Die Teigballen 4–5 Stunden vor der ersten Pizza aus dem Kühlschrank nehmen und zugedeckt bei Raumtemperatur stehen lassen. Kalter Teig reisst und lässt sich schlecht ausziehen.' },
   { title: 'Lösen', text: 'Die Arbeitsfläche grosszügig mit Hartweizengriess bestreuen. Den Ballen mit einem Teigschaber aus der Box lösen und mit der Oberseite nach unten in den Griess legen, dann wenden.' },
   { title: 'Rand formen', text: 'Mit den Fingerspitzen von der Mitte nach aussen drücken und einen Rand von gut 1 cm frei lassen. Dort sitzt die Luft, die nachher den luftigen Rand gibt.' },
   { title: 'Ausziehen', text: 'Den Teig über die Handrücken legen, sanft drehen und auseinanderziehen, bis er etwa 30–32 cm gross ist. Die Mitte darf dünn sein, Löcher aber vermeiden.' },

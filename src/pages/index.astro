@@ -192,26 +192,12 @@ const events = termine.events
     </div>
   </section>
 
-  <!-- 05 Fragen -->
-  <section class="section" id="fragen">
-    <div class="wrap">
-      <div class="split splitEnd">
-        <div>
-          <div class="kicker">05 · fragen</div>
-          <h2 class="title">gut zu wissen.</h2>
-        </div>
-        <p class="lead">Die häufigsten Fragen zu unserem Catering. Eure ist nicht dabei? Schreibt uns einfach.</p>
-      </div>
-      <Faq items={faq.catering} />
-    </div>
-  </section>
-
-  <!-- 06 Anfrage -->
+  <!-- 05 Anfrage -->
   <section class="section booking" id="anfrage">
     <div class="wrap bookingBox">
       <div class="bookingGrid">
         <div>
-          <div class="kicker">06 · anfrage</div>
+          <div class="kicker">05 · anfrage</div>
           <h2 class="bookingTitle">wann wird's rund?</h2>
           <p>Habt ihr eine Frage oder schon einen Anlass im Kopf? Schreibt uns unverbindlich über das Formular oder meldet euch direkt bei uns. Wir antworten so schnell wie möglich.</p>
           <div class="quick">
@@ -249,10 +235,10 @@ const events = termine.events
     </div>
   </section>
 
-  <!-- 07 Stimmen: ganz unten und zentriert -->
+  <!-- 06 Stimmen: zentriert -->
   <section class="section reviews" id="stimmen">
     <div class="wrap reviewsIn">
-      <div class="kicker">07 · kundenstimmen</div>
+      <div class="kicker">06 · kundenstimmen</div>
       <h2 class="title">das sagen unsere gäste.</h2>
       <div class="ratingCard">
         <div class="ratingScore">{rezensionen.rating.toFixed(1).replace('.', ',')}</div>
@@ -276,6 +262,20 @@ const events = termine.events
         <a class="btn" href={rezensionen.googleUrl} target="_blank" rel="noopener">alle bewertungen auf Google</a>
         <a class="btn btn--outline" href={rezensionen.writeReviewUrl} target="_blank" rel="noopener">bewertung schreiben</a>
       </div>
+    </div>
+  </section>
+
+  <!-- 07 Fragen: ganz unten -->
+  <section class="section" id="fragen">
+    <div class="wrap">
+      <div class="split splitEnd">
+        <div>
+          <div class="kicker">07 · fragen</div>
+          <h2 class="title">gut zu wissen.</h2>
+        </div>
+        <p class="lead">Die häufigsten Fragen zu unserem Catering. Eure ist nicht dabei? Schreibt uns einfach.</p>
+      </div>
+      <Faq items={faq.catering} />
     </div>
   </section>
 </Layout>
@@ -407,9 +407,8 @@ const events = termine.events
     color: var(--muted);
   }
 
-  /* Pizzen, Preise, Fragen und Anfrage liegen auf demselben Hintergrund: dazwischen reicht ein Abstand statt zwei */
+  /* Pizzen, Preise und Anfrage liegen auf demselben Hintergrund: dazwischen reicht ein Abstand statt zwei */
   #preise,
-  #fragen,
   #anfrage {
     --section-pad-top: calc(var(--section-pad) * 0.35);
   }
