@@ -359,6 +359,15 @@ const events = termine.events
   if (termineSection && !termineSection.querySelector('.event')) termineSection.remove();
 
   // Ofenmiete im Popup
+  // Statistik (Umami): Events und Popups als eigene Seiten zählen; das Umami-Script lädt erst nach diesem Skript
+  const umami = (payload: unknown) => {
+    const send = () => (window as any).umami?.track(payload);
+    if ((window as any).umami) send();
+    else window.addEventListener('load', send, { once: true });
+  };
+  const track = (name: string) => umami(name);
+  const trackPage = (url: string, title: string) => umami((props: object) => ({ ...props, url, title }));
+
   const ovenDialog = document.getElementById('ofen-anfrage') as HTMLDialogElement | null;
   if (ovenDialog) {
     const ovenForm = ovenDialog.querySelector('form')!;
@@ -368,7 +377,12 @@ const events = termine.events
     const dough = ovenForm.querySelector<HTMLInputElement>('input[name="dough"]')!;
     const minDough = Number(dough.dataset.min);
 
-    document.querySelectorAll('[data-open-oven]').forEach((b) => b.addEventListener('click', () => ovenDialog.showModal()));
+    document.querySelectorAll('[data-open-oven]').forEach((b) =>
+      b.addEventListener('click', () => {
+        ovenDialog.showModal();
+        trackPage('/ofen-anfrage', 'Ofenmiete · Anfrage-Formular');
+      }),
+    );
     ovenDialog.querySelector('[data-close-oven]')!.addEventListener('click', () => ovenDialog.close());
     // Klick auf den abgedunkelten Hintergrund schliesst das Popup
     ovenDialog.addEventListener('click', (e) => {
@@ -395,16 +409,10 @@ const events = termine.events
     const now = new Date();
     dateField.min = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   });
-  // Gesendete Anfragen in der Statistik zählen (das Umami-Script lädt erst nach diesem Skript)
-  const track = (name: string) => {
-    const send = () => (window as any).umami?.track(name);
-    if ((window as any).umami) send();
-    else window.addEventListener('load', send, { once: true });
-  };
-
   const params = new URLSearchParams(location.search);
   if (params.get('anfrage') === 'gesendet') {
     track('Catering-Anfrage gesendet');
+    trackPage('/anfrage-gesendet', 'Catering · Anfrage gesendet');
     const done = document.getElementById('done');
     if (done) {
       done.hidden = false;
@@ -414,10 +422,11 @@ const events = termine.events
   }
   if (params.get('ofen') === 'gesendet' && ovenDialog) {
     track('Ofen-Anfrage gesendet');
+    trackPage('/ofen-anfrage-gesendet', 'Ofenmiete · Anfrage gesendet');
     ovenDialog.querySelector('form')!.hidden = true;
     ovenDialog.querySelector<HTMLElement>('.ovenDone')!.hidden = false;
     ovenDialog.showModal();
-    // Nach dem Schliessen zur Ofenmiete springen (erst im nächsten Frame, wenn die Seite wieder scrollbar ist)
+    // Nach dem Schliessen zur Ofenmiete springen (kurz verzögert, wenn die Seite wieder scrollbar ist)
     ovenDialog.addEventListener(
       'close',
       () =>
