@@ -46,6 +46,7 @@ const diy = preise.diy;
     </label>
     <label class="full" data-address hidden>Lieferadresse<input name="address" placeholder="Strasse, PLZ, Ort" autocomplete="street-address" /></label>
     <label class="full">Pizzateig (Ballen)<input name="dough" type="number" inputmode="numeric" min="0" step="1" placeholder={`leer lassen oder ab ${diy.minDough}`} data-min={diy.minDough} /></label>
+    <label class="full" data-bake hidden>Backtag, falls später als Abholung<input name="bake_date" type="date" /></label>
     <label class="full">Nachricht<textarea name="message" placeholder="Anlass, ungefähre Anzahl Personen, Fragen …"></textarea></label>
     <label class="check full"><input type="checkbox" name="datenschutz" value="gelesen" required /><span>Ich habe die <a href="/datenschutz.html">Datenschutzerklärung</a> zur Kenntnis genommen.</span></label>
     <button class="btn btn--light full" type="submit">ofen-anfrage senden</button>
@@ -65,7 +66,9 @@ const diy = preise.diy;
     const address = addressLabel.querySelector('input')!;
     const dough = ovenForm.querySelector<HTMLInputElement>('input[name="dough"]')!;
     const minDough = Number(dough.dataset.min);
-    const dateField = ovenForm.querySelector<HTMLInputElement>('input[type="date"]')!;
+    const dateField = ovenForm.querySelector<HTMLInputElement>('input[name="date"]')!;
+    const bakeLabel = ovenForm.querySelector<HTMLElement>('[data-bake]')!;
+    const bakeDate = bakeLabel.querySelector('input')!;
 
     document.querySelectorAll('[data-open-oven]').forEach((b) =>
       b.addEventListener('click', () => {
@@ -89,13 +92,17 @@ const diy = preise.diy;
     syncAddress();
 
     // Teig: leer lassen oder Mindestmenge
+    // Mit Teig nach dem Backtag fragen: Holt jemand früher ab, setzen wir den Teig passend an
     dough.addEventListener('input', () => {
       const n = Number(dough.value);
       dough.setCustomValidity(dough.value && n > 0 && n < minDough ? `Teig gibt es ab ${minDough} Ballen.` : '');
+      bakeLabel.hidden = !(n > 0);
     });
 
     const now = new Date();
     dateField.min = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    bakeDate.min = dateField.min;
+    dateField.addEventListener('change', () => (bakeDate.min = dateField.value || dateField.min));
 
     // Zurück von FormSubmit: Danke-Popup zeigen
     if (new URLSearchParams(location.search).get('ofen') === 'gesendet') {
