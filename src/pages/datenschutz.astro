@@ -1,4 +1,5 @@
 ---
+import analytics from '../data/analytics.json';
 import LegalLayout from '../layouts/LegalLayout.astro';
 import kontakt from '../data/kontakt.json';
 ---
@@ -27,8 +28,14 @@ import kontakt from '../data/kontakt.json';
       <p>Unsere Website verlinkt auf unser Profil bei Google, wo ihr Bewertungen lesen und schreiben könnt. Erst wenn ihr einen solchen Link anklickt, wird eine Verbindung zu Google hergestellt; dafür gelten die <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Datenschutzhinweise von Google</a>. Auf unserer Website selbst sind keine Inhalte von Google eingebettet.</p>
     </div>
     <div>
-      <h3>Cookies &amp; Tracking</h3>
-      <p>Wir setzen keine Analyse-, Werbe- oder Profiling-Tools und keine Cookies ein. Schriften und Grafiken werden direkt von unserer Website geladen, ohne Verbindung zu Drittanbietern.</p>
+      <h3>Cookies &amp; Besucherstatistik</h3>
+      {
+        analytics.umamiWebsiteId ? (
+          <p>Wir setzen keine Cookies und keine Werbe- oder Profiling-Tools ein. Um zu verstehen, wie unsere Website genutzt wird, verwenden wir die cookielose Besucherstatistik <strong>Umami Cloud</strong> (Umami Software, Inc.). Dabei werden ausschliesslich anonyme, zusammengefasste Angaben erfasst, etwa aufgerufene Seiten, die verweisende Website, Land, Gerätetyp und Browser sowie Klicks auf Kontakt-Links und gesendete Anfragen. IP-Adressen werden nicht gespeichert, und es wird kein Profil über einzelne Besucherinnen und Besucher erstellt; ein Wiedererkennen über mehrere Tage ist nicht möglich. Die Daten werden auf Servern in der EU gespeichert. Schriften und Grafiken werden direkt von unserer Website geladen, ohne Verbindung zu Drittanbietern.</p>
+        ) : (
+          <p>Wir setzen keine Analyse-, Werbe- oder Profiling-Tools und keine Cookies ein. Schriften und Grafiken werden direkt von unserer Website geladen, ohne Verbindung zu Drittanbietern.</p>
+        )
+      }
     </div>
     <div>
       <h3>Aufbewahrung</h3>

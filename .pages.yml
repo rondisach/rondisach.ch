@@ -168,6 +168,14 @@ content:
           - { name: name, label: Name, type: string }
           - { name: text, label: Text, type: text }
 
+  - name: analytics
+    label: Besucherstatistik
+    type: file
+    path: src/data/analytics.json
+    format: json
+    fields:
+      - { name: umamiWebsiteId, label: Umami Website-ID, type: string, description: "Aus cloud.umami.is → Websites → Bearbeiten. Leer lassen = Statistik aus." }
+
   - name: kontakt
     label: Kontakt
     type: file
