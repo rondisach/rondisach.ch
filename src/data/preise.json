@@ -1,15 +1,15 @@
 {
-  "lead": "Unser Fokus: handgemachte Pizza à discrétion, frisch bei euch vor Ort gebacken. Wo möglich setzen wir auf Zutaten aus der Schweiz, teilweise lokal und in Bio-Qualität. Für euren Anlass erstellen wir eine individuelle Offerte.",
+  "lead": "Handgemachte Pizza à discrétion, frisch bei euch vor Ort gebacken – so viel ihr mögt. Die Auswahl stellen wir gemeinsam mit euch zusammen. Ergänzungen gibt es ausschliesslich auf Anfrage und je nach Kapazität.",
   "packages": [
     {
       "name": "pizza à discrétion.",
-      "description": "Laufend frisch gebackene Pizza direkt bei euch vor Ort – ihr organisiert den Rest des Anlasses.",
+      "description": "Wir bringen den Ofen mit und backen laufend frische Pizza für eure Gäste – unkompliziert zum Selbstbedienen.",
       "price": 28,
       "highlight": true,
       "features": [
-        "Ab 15 Personen",
-        "Mehrere Standardsorten, laufend frisch gebacken",
-        "Ofen, Setup und Service inklusive"
+        "Ab 15 Personen · Mindestauftragswert CHF 600",
+        "Gemeinsam abgestimmte Pizza-Auswahl",
+        "Ofen, Aufbau und frische Zubereitung vor Ort inklusive"
       ]
     },
     {

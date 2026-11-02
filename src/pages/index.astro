@@ -22,7 +22,7 @@ const steps = [
   { title: 'Anfrage', text: 'Datum, Ort, Gästezahl und gewünschter Umfang reichen für eine erste Einschätzung.' },
   { title: 'Offerte', text: 'Ihr bekommt eine persönliche Offerte für euer Pizza-Catering. Ergänzungen prüfen wir auf Anfrage.' },
   { title: 'Aufbau', text: 'Wir kommen rechtzeitig, bauen unser Setup auf und bringen den Ofen auf Temperatur.' },
-  { title: 'Pizza', text: 'Wir backen laufend frisch, schneiden auf und servieren – unkompliziert und direkt vor euren Gästen.' },
+  { title: 'Pizza', text: 'Wir backen laufend frisch und schneiden die Pizza für eure Gäste auf – zum unkomplizierten Selbstbedienen.' },
 ];
 const pizzas = pizzen.pizzas.map((p) => ({ ...p, src: upload(p.image) }));
 
@@ -114,7 +114,7 @@ const events = termine.events
     <div class="wrap">
       <div class="kicker">02 · so läuft's</div>
       <h2 class="title">ihr feiert.<br />wir machen pizza.</h2>
-      <p class="lead processLead">Ihr gebt uns die Eckdaten, wir planen den Rest mit euch. Am Anlass bauen wir auf, heizen ein und backen laufend frisch.</p>
+      <p class="lead processLead">Ihr gebt uns die Eckdaten, wir planen euer Pizza-Catering mit euch. Am Anlass bauen wir auf, heizen ein und backen laufend frisch.</p>
       <ol class="steps swipeRow" aria-label="Ablauf, seitlich wischen">
         {steps.map((s, i) => (
           <li class="step">
@@ -150,13 +150,13 @@ const events = termine.events
     <div class="wrap">
       <div class="split splitEnd">
         <div>
-          <div class="kicker">04 · preise</div>
-          <h2 class="title">pizza im mittelpunkt.<br />der rest auf anfrage.</h2>
+          <div class="kicker">04 · unser angebot</div>
+          <h2 class="title">pizza für<br />euren anlass.</h2>
         </div>
         <p class="lead">{preise.lead}</p>
       </div>
 
-      <div class="packages swipeRow" aria-label="Pakete, seitlich wischen">
+      <div class="packages swipeRow" aria-label="Unser Angebot, seitlich wischen">
         {preise.packages.map((pk) => (
           <article class:list={['package', { 'package--dark': pk.highlight }]}>
             <h3>{pk.name}</h3>

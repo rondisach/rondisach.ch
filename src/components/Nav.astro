@@ -3,7 +3,7 @@ const links = [
   { href: '/#wir', label: 'über uns' },
   { href: '/#ablauf', label: 'ablauf' },
   { href: '/#pizzen', label: 'pizzen' },
-  { href: '/#preise', label: 'preise' },
+  { href: '/#preise', label: 'angebot' },
   { href: '/ofen-mieten.html', label: 'ofen mieten' },
   { href: '/impressionen.html', label: 'impressionen' },
   { href: '/#anfrage', label: 'kontakt' },
@@ -23,7 +23,7 @@ const current = Astro.url.pathname;
         ))
       }
     </nav>
-    <a class="btn cta" href="/#anfrage">catering anfragen</a>
+    <a class="btn cta" href="/#anfrage">pizza anfragen</a>
     <button class="menuBtn" type="button" aria-expanded="false" aria-controls="mobileMenu">
       <span class="srOnly">Menü öffnen</span>
       <span class="bars" aria-hidden="true"></span>
@@ -32,7 +32,7 @@ const current = Astro.url.pathname;
   <nav id="mobileMenu" class="mobileMenu" aria-label="Mobile Navigation" hidden>
     <div class="wrap">
       {links.map((l) => <a href={l.href}>{l.label}</a>)}
-      <a class="btn" href="/#anfrage">catering anfragen</a>
+      <a class="btn" href="/#anfrage">pizza anfragen</a>
     </div>
   </nav>
 </header>
@@ -44,9 +44,14 @@ const current = Astro.url.pathname;
     const setOpen = (open: boolean) => {
       btn.setAttribute('aria-expanded', String(open));
       menu.hidden = !open;
+      const label = btn.querySelector('.srOnly');
+      if (label) label.textContent = open ? 'Menü schliessen' : 'Menü öffnen';
       document.body.classList.toggle('menuOpen', open);
     };
     btn.addEventListener('click', () => setOpen(menu.hidden));
+    window.matchMedia('(min-width: 1021px)').addEventListener('change', (e) => {
+      if (e.matches) setOpen(false);
+    });
     menu.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('a')) setOpen(false);
     });
