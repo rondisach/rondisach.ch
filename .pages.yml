@@ -57,17 +57,9 @@ content:
         fields:
           - { name: name, label: Name, type: string }
           - { name: description, label: Beschreibung, type: text }
-          - { name: price, label: Preis ab (CHF pro Person), type: number }
+          - { name: price, label: Preis ab (CHF pro Person), type: number, description: "Leer lassen = auf Anfrage" }
           - { name: highlight, label: Dunkel hervorheben, type: boolean }
           - { name: features, label: Punkte, type: string, list: true }
-      - name: modules
-        label: Bausteine
-        type: object
-        list: true
-        fields:
-          - { name: name, label: Name, type: string }
-          - { name: description, label: Beschreibung, type: string }
-          - { name: price, label: Preis ab (CHF pro Person), type: number }
       - { name: minGuests, label: Mindestanzahl Gäste, type: number }
       - { name: minOrder, label: Mindestauftragswert (CHF), type: number }
       - name: travel

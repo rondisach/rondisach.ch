@@ -20,7 +20,7 @@ const facts = [
 ];
 const steps = [
   { title: 'Anfrage', text: 'Datum, Ort, Gästezahl und gewünschter Umfang reichen für eine erste Einschätzung.' },
-  { title: 'Offerte', text: 'Ihr bekommt ein passendes Angebot – nur Pizza oder mit Apéro, Beilagen, Dessert und Getränken.' },
+  { title: 'Offerte', text: 'Ihr bekommt eine persönliche Offerte für euer Pizza-Catering. Ergänzungen prüfen wir auf Anfrage.' },
   { title: 'Aufbau', text: 'Wir kommen rechtzeitig, bauen unser Setup auf und bringen den Ofen auf Temperatur.' },
   { title: 'Pizza', text: 'Wir backen laufend frisch, schneiden auf und servieren – unkompliziert und direkt vor euren Gästen.' },
 ];
@@ -151,7 +151,7 @@ const events = termine.events
       <div class="split splitEnd">
         <div>
           <div class="kicker">04 · preise</div>
-          <h2 class="title">so viel oder<br />so wenig ihr wollt.</h2>
+          <h2 class="title">pizza im mittelpunkt.<br />der rest auf anfrage.</h2>
         </div>
         <p class="lead">{preise.lead}</p>
       </div>
@@ -161,26 +161,16 @@ const events = termine.events
           <article class:list={['package', { 'package--dark': pk.highlight }]}>
             <h3>{pk.name}</h3>
             <p class="pkDesc">{pk.description}</p>
-            <div class="price">ab {chf(pk.price)} <small>/ Person</small></div>
+            {typeof pk.price === 'number' ? (
+              <div class="price">ab {chf(pk.price)} <small>/ Person</small></div>
+            ) : (
+              <div class="price price--request">auf Anfrage</div>
+            )}
             <ul class="ticks">{pk.features.map((f) => <li>{f}</li>)}</ul>
           </article>
         ))}
       </div>
       <div class="swipeDots" aria-hidden="true"></div>
-
-      <details class="fold fold--box" open>
-        <summary>alle bausteine &amp; preise anzeigen</summary>
-      <div class="modules">
-        <div class="modulesHead">Bausteine · Ab-Preise pro Person · ab {preise.minGuests} Personen</div>
-        {preise.modules.map((m) => (
-          <div class="moduleRow">
-            <div><b>{m.name}</b><small>{m.description}</small></div>
-            <strong>ab {chf(m.price)}</strong>
-          </div>
-        ))}
-      </div>
-
-      </details>
 
       <details class="fold fold--box" open>
         <summary>anfahrt &amp; bedingungen</summary>
@@ -220,8 +210,7 @@ const events = termine.events
           <label class="full">Gewünschter Umfang
             <select name="package">
               <option>Pizza à discrétion</option>
-              <option>Pizza + Apéro</option>
-              <option>Komplettes Catering</option>
+              <option>Rundum – auf Anfrage</option>
               <option>Noch offen / beraten lassen</option>
             </select>
           </label>
@@ -630,6 +619,9 @@ const events = termine.events
     line-height: 1;
     margin-bottom: 24px;
   }
+  .price--request {
+    font-size: clamp(32px, 4vw, 44px);
+  }
   .price small {
     font-family: var(--font-body);
     font-size: 15px;
@@ -650,33 +642,6 @@ const events = termine.events
   .ticks li::before {
     content: '✓';
     font-weight: 700;
-  }
-  .modules {
-    border: 2px solid var(--ink);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  .modulesHead {
-    padding: 20px 24px;
-    background: var(--panel);
-    font-weight: 700;
-  }
-  .moduleRow {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 20px;
-    align-items: center;
-    padding: 16px 24px;
-    border-top: 1px solid var(--line);
-  }
-  .moduleRow small {
-    display: block;
-    color: var(--muted);
-    font-size: 14px;
-    margin-top: 2px;
-  }
-  .moduleRow strong {
-    white-space: nowrap;
   }
   .travel {
     display: grid;
@@ -708,10 +673,6 @@ const events = termine.events
   @media (max-width: 620px) {
     .travel {
       grid-template-columns: 1fr;
-    }
-    .moduleRow {
-      grid-template-columns: 1fr;
-      gap: 4px;
     }
   }
 
