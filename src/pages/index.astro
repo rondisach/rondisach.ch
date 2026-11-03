@@ -237,15 +237,20 @@ const events = termine.events
         </div>
       </div>
       {rezensionen.reviews.length > 0 && (
-        <ul class="reviewList">
-          {rezensionen.reviews.map((r: { name: string; text: string }) => (
-            <li class="review">
-              <div class="stars" aria-hidden="true">★★★★★</div>
-              <blockquote>«{r.text}»</blockquote>
-              <cite>{r.name}</cite>
-            </li>
-          ))}
-        </ul>
+        <div class="reviewScroll">
+          <ul class="reviewList swipeRow" aria-label="Kundenstimmen, seitlich scrollen">
+            {rezensionen.reviews.map((r: { name: string; text: string }) => (
+              <li class="review">
+                <div class="stars" aria-hidden="true">★★★★★</div>
+                <blockquote>«{r.text}»</blockquote>
+                <cite>{r.name}</cite>
+              </li>
+            ))}
+          </ul>
+          <div class="swipeDots swipeDots--always" aria-hidden="true"></div>
+          <button class="reviewArrow reviewArrow--prev" type="button" aria-label="Vorherige Bewertungen">‹</button>
+          <button class="reviewArrow reviewArrow--next" type="button" aria-label="Nächste Bewertungen">›</button>
+        </div>
       )}
       <div class="reviewActions">
         <a class="btn" href={rezensionen.googleUrl} target="_blank" rel="noopener">alle bewertungen auf Google</a>
@@ -286,11 +291,35 @@ const events = termine.events
     const items = Array.from(row.children) as HTMLElement[];
     const dots = items.map(() => dotsBox.appendChild(document.createElement('span')));
     const update = () => {
-      const i = Math.round(row.scrollLeft / Math.max(1, items[0].offsetWidth));
+      const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 2;
+      const i = atEnd ? dots.length - 1 : Math.round(row.scrollLeft / Math.max(1, items[0].offsetWidth));
       dots.forEach((d, k) => d.classList.toggle('on', k === Math.min(i, dots.length - 1)));
+      // Ohne Überlauf (alles sichtbar) braucht es keine Punkte.
+      dotsBox.hidden = row.scrollWidth <= row.clientWidth + 1;
     };
     update();
     row.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+  });
+
+  // Pfeile neben den Kundenstimmen scrollen um eine Karte weiter.
+  document.querySelectorAll<HTMLElement>('.reviewScroll').forEach((box) => {
+    const row = box.querySelector<HTMLElement>('.reviewList');
+    const prev = box.querySelector<HTMLButtonElement>('.reviewArrow--prev');
+    const next = box.querySelector<HTMLButtonElement>('.reviewArrow--next');
+    if (!row || !prev || !next) return;
+    const step = () => (row.firstElementChild as HTMLElement).offsetWidth + 16;
+    const sync = () => {
+      const overflow = row.scrollWidth > row.clientWidth + 1;
+      prev.hidden = next.hidden = !overflow;
+      prev.disabled = row.scrollLeft <= 2;
+      next.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 2;
+    };
+    prev.addEventListener('click', () => row.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next.addEventListener('click', () => row.scrollBy({ left: step(), behavior: 'smooth' }));
+    row.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    sync();
   });
 
   // Vergangene Termine ausblenden (die Seite wird nicht jeden Tag neu gebaut)
@@ -715,18 +744,87 @@ const events = termine.events
   .ratingMeta {
     font-weight: 600;
   }
+  .reviewScroll {
+    position: relative;
+    width: 100%;
+    margin-bottom: 28px;
+  }
   .reviewList {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    display: flex;
+    justify-content: safe center;
     gap: 16px;
-    margin: 0 0 28px;
-    padding: 0;
+    margin-block: 0;
+    padding-block: 0 4px;
+    padding-left: 0;
     list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .reviewList::-webkit-scrollbar {
+    display: none;
   }
   .review {
+    flex: 0 0 min(320px, 84%);
+    scroll-snap-align: start;
     background: var(--cream);
     border-radius: var(--radius-sm);
     padding: 24px;
+  }
+  .swipeDots--always {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .swipeDots--always[hidden] {
+    display: none;
+  }
+  .swipeDots--always :global(span) {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--soft);
+    transition: background-color 0.2s ease, width 0.2s ease;
+  }
+  .swipeDots--always :global(span.on) {
+    width: 20px;
+    border-radius: 4px;
+    background: var(--ink);
+  }
+  .reviewArrow {
+    position: absolute;
+    top: calc(50% - 30px);
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .reviewArrow[hidden] {
+    display: none;
+  }
+  .reviewArrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .reviewArrow--prev {
+    left: -22px;
+  }
+  .reviewArrow--next {
+    right: -22px;
+  }
+  @media (max-width: 620px) {
+    .reviewList {
+      padding-inline: var(--gutter);
+    }
+    .reviewArrow {
+      display: none;
+    }
   }
   .review blockquote {
     margin: 10px 0 14px;
@@ -739,8 +837,6 @@ const events = termine.events
     font-size: 14px;
   }
   .reviewList {
-    width: 100%;
-    max-width: 760px;
     text-align: left;
   }
   .reviewActions {
