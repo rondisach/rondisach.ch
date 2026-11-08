@@ -1,4 +1,4 @@
-# Baut Vorschau-Zweige (vorschau-*), ohne sie zu veröffentlichen. Das Ergebnis liegt als Download im Actions-Lauf.
+# Baut Vorschau-Zweige (vorschau-*), ohne sie zu veröffentlichen. Das Ergebnis landet im Zweig vorschau-dist.
 name: Vorschau
 
 on:
@@ -6,7 +6,7 @@ on:
     branches: ['vorschau-*']
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -19,8 +19,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: vorschau
-          path: dist
-          retention-days: 7
+      - name: Ergebnis in Zweig vorschau-dist ablegen (wird nicht veröffentlicht)
+        run: |
+          cd dist
+          git init -q -b vorschau-dist
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -qm "Vorschau von ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" vorschau-dist
