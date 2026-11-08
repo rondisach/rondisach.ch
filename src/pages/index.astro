@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/Hero.astro';
+import HeroPhoto from '../components/HeroPhoto.astro';
+import { Image } from 'astro:assets';
+import aboutPhoto from '../assets/uploads/process-2.jpg';
 import PizzaMenu from '../components/PizzaMenu.astro';
 import Faq from '../components/Faq.astro';
 import { upload } from '../lib/images';
@@ -13,17 +15,11 @@ import faq from '../data/faq.json';
 
 const chf = (n: number) => `CHF ${n.toLocaleString('de-CH')}`;
 const ovenPrice = Math.min(...preise.diy.items.filter((i) => i.unit.includes('Tag')).map((i) => i.price));
-const facts = [
-  { value: '100 %', label: 'Handarbeit' },
-  { value: '48 h', label: 'Teigruhe' },
-  { value: '500 °C', label: 'Ofentemperatur' },
-  { value: '~90 Sek.', label: 'Backzeit' },
-];
 const steps = [
-  { title: 'Anfrage', text: 'Datum, Ort, Gästezahl und gewünschter Umfang reichen für eine erste Einschätzung.' },
-  { title: 'Offerte', text: 'Ihr bekommt eine persönliche Offerte für euer Pizza-Catering. Ergänzungen prüfen wir auf Anfrage.' },
-  { title: 'Aufbau', text: 'Wir kommen rechtzeitig, bauen unser Setup auf und bringen den Ofen auf Temperatur.' },
-  { title: 'Pizza', text: 'Wir backen laufend frisch und schneiden die Pizza für eure Gäste auf – zum unkomplizierten Selbstbedienen.' },
+  { title: 'Anfrage', text: 'Datum, Ort und Gästezahl reichen uns für den Anfang.' },
+  { title: 'Offerte', text: 'Ihr bekommt eine persönliche Offerte.' },
+  { title: 'Aufbau', text: 'Wir kommen rechtzeitig, bauen auf und heizen ein.' },
+  { title: 'Pizza', text: 'Wir backen laufend frisch, eure Gäste bedienen sich.' },
 ];
 const pizzas = pizzen.pizzas.map((p) => ({ ...p, src: upload(p.image) }));
 
@@ -50,11 +46,8 @@ const events = termine.events
   description="rondisach Pizza Catering: handgemachter Teig, Pizza à discrétion und Catering für private Feste und Firmenanlässe in Luzern und Umgebung."
   schema
 >
-  <Hero />
+  <HeroPhoto />
 
-  <div class="wrap factbar" aria-label="Unsere wichtigsten Fakten">
-    {facts.map((f) => <div class="fact"><strong>{f.value}</strong><span>{f.label}</span></div>)}
-  </div>
 
   {
     events.length > 0 && (
@@ -86,36 +79,24 @@ const events = termine.events
     )
   }
 
-  <!-- 01 Über uns -->
-  <section class="section" id="wir">
-    <div class="wrap split">
-      <div class="sticky">
-        <div class="kicker">01 · über uns</div>
-        <h2 class="title">zwei jungs.<br />eine gemeinsame leidenschaft.</h2>
+  <!-- Über uns: farbiges Band mit Foto -->
+  <section class="about" id="wir">
+    <div class="wrap aboutIn">
+      <div class="aboutText">
+        <div class="kicker">über uns</div>
+        <h2 class="title">zwei jungs<br />aus luzern.</h2>
+        <p>Wir sind Maurice und Andrin. Angefangen hat es mit Pizza für Freunde, heute bringen wir unseren Ofen an eure Anlässe.</p>
+        <p>Den Teig machen wir selbst und lassen ihn 48 Stunden reifen. Gebacken wird direkt vor euren Gästen.</p>
       </div>
-      <div>
-        <p class="story">Wir sind Maurice und Andrin aus der Region Luzern – wir kochen gerne und machen Menschen damit eine Freude.</p>
-        <details class="fold">
-          <summary>mehr über uns lesen</summary>
-        <p class="lead">Was mit gemeinsamem Kochen, Ausprobieren und Essen für Freunde und Familie angefangen hat, wurde mit der Zeit zu einer echten Leidenschaft. Vieles haben wir uns selbst beigebracht, immer wieder getestet und Schritt für Schritt verbessert.</p>
-        <p class="lead">Besonders hängen geblieben ist die Pizza. Für uns braucht guter Teig vor allem Zeit, gute Zutaten und etwas Geduld. Deshalb bereiten wir unseren Teig selbst zu, lassen ihn lange reifen und backen jede Pizza direkt vor Ort bei hoher Temperatur.</p>
-        <p class="lead">Mit <strong>rondisach</strong> möchten wir genau das an euren Anlass bringen: ehrliches, unkompliziertes Essen, sorgfältig vorbereitet und frisch für eure Gäste gemacht. Ohne unnötigen Schnickschnack – dafür mit viel Freude an dem, was wir tun.</p>
-        </details>
-        <ul class="dots">
-          <li>selbst erlernt</li>
-          <li>von Hand gemacht</li>
-          <li>aus Luzern</li>
-        </ul>
-      </div>
+      <Image class="aboutPhoto" src={aboutPhoto} alt="Pizza wird mit dem Schieber aus dem Ofen geholt" widths={[360, 600]} sizes="(max-width: 760px) 80vw, 380px" />
     </div>
   </section>
 
   <!-- 02 Ablauf -->
   <section class="section process" id="ablauf">
     <div class="wrap">
-      <div class="kicker">02 · so läuft's</div>
+      <div class="kicker">so läuft's</div>
       <h2 class="title">ihr feiert.<br />wir machen pizza.</h2>
-      <p class="lead processLead">Ihr gebt uns die Eckdaten, wir planen euer Pizza-Catering mit euch. Am Anlass bauen wir auf, heizen ein und backen laufend frisch.</p>
       <ol class="steps swipeRow" aria-label="Ablauf, seitlich wischen">
         {steps.map((s, i) => (
           <li class="step">
@@ -137,10 +118,10 @@ const events = termine.events
     <div class="wrap">
       <div class="split splitEnd">
         <div>
-          <div class="kicker">03 · unsere pizzen</div>
+          <div class="kicker">unsere pizzen</div>
           <h2 class="title">was kommt auf<br />euren teller?</h2>
         </div>
-        <p class="lead">Eine Auswahl unserer Favoriten. <strong>Eure Lieblingspizza fehlt?</strong> Sagt es uns.</p>
+        <p class="lead">Unsere Favoriten. Welche Pizzen es an eurem Anlass gibt, stimmen wir mit euch ab.</p>
       </div>
       <PizzaMenu pizzas={pizzas} />
     </div>
@@ -151,7 +132,7 @@ const events = termine.events
     <div class="wrap">
       <div class="split splitEnd">
         <div>
-          <div class="kicker">04 · unser angebot</div>
+          <div class="kicker">angebot</div>
           <h2 class="title">pizza für<br />euren anlass.</h2>
         </div>
         <p class="lead">{preise.lead}</p>
@@ -194,9 +175,9 @@ const events = termine.events
     <div class="wrap bookingBox">
       <div class="bookingGrid">
         <div>
-          <div class="kicker">05 · anfrage</div>
+          <div class="kicker">anfrage</div>
           <h2 class="bookingTitle">wann wird's rund?</h2>
-          <p>Habt ihr eine Frage oder schon einen Anlass im Kopf? Schreibt uns unverbindlich über das Formular oder meldet euch direkt bei uns. Wir antworten so schnell wie möglich.</p>
+          <p>Erzählt uns kurz von eurem Anlass. Wir melden uns mit einer Offerte.</p>
           <div class="quick">
             <a class="quickMain" href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener" data-umami-event="WhatsApp geklickt">auf WhatsApp schreiben</a>
             <a href={`mailto:${kontakt.email}`} data-umami-event="E-Mail geklickt">e-mail schreiben</a>
@@ -234,7 +215,7 @@ const events = termine.events
   <!-- 06 Rezensionen: zentriert -->
   <section class="section reviews" id="stimmen">
     <div class="wrap reviewsIn">
-      <div class="kicker">06 · rezensionen</div>
+      <div class="kicker">rezensionen</div>
       <h2 class="title">das sagen unsere gäste.</h2>
       <div class="ratingCard">
         <div class="ratingScore">{rezensionen.rating.toFixed(1).replace('.', ',')}</div>
@@ -271,10 +252,10 @@ const events = termine.events
     <div class="wrap">
       <div class="split splitEnd">
         <div>
-          <div class="kicker">07 · fragen</div>
+          <div class="kicker">fragen</div>
           <h2 class="title">gut zu wissen.</h2>
         </div>
-        <p class="lead">Die häufigsten Fragen zu unserem Catering. Eure ist nicht dabei? Schreibt uns einfach.</p>
+        <p class="lead">Eure Frage ist nicht dabei? Schreibt uns.</p>
       </div>
       <Faq items={faq.catering} />
     </div>
@@ -1059,6 +1040,50 @@ const events = termine.events
     }
     .bookingBox {
       border-radius: 24px;
+    }
+  }
+
+  /* Über uns: Band in der Markenfarbe */
+  .about {
+    background: var(--accent);
+    color: var(--cream);
+    padding-block: clamp(64px, 9vw, 112px);
+    scroll-margin-top: 0;
+  }
+  .aboutIn {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: center;
+  }
+  .aboutText .title {
+    margin-bottom: 24px;
+  }
+  .aboutText p {
+    font-size: clamp(18px, 1.8vw, 21px);
+    line-height: 1.5;
+    max-width: 40ch;
+    margin: 0;
+    color: var(--accent-ink);
+  }
+  .aboutText p + p {
+    margin-top: 0.8em;
+  }
+  .aboutPhoto {
+    width: clamp(220px, 28vw, 380px);
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius);
+    transform: rotate(2deg);
+  }
+  @media (max-width: 760px) {
+    .aboutIn {
+      grid-template-columns: 1fr;
+    }
+    .aboutPhoto {
+      width: 78%;
+      justify-self: center;
     }
   }
 </style>
