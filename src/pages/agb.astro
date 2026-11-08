@@ -1,0 +1,107 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import kontakt from '../data/kontakt.json';
+import preise from '../data/preise.json';
+---
+
+<LegalLayout title="AGB" heading="agb." lead="Allgemeine Geschäftsbedingungen für unsere Caterings und die Ofenmiete. Individuelle Vereinbarungen in eurer Offerte oder Bestätigung gehen vor.">
+  <h2>A · Allgemeines</h2>
+  <div class="cols">
+    <div>
+      <h3>A1 · Geltungsbereich</h3>
+      <p>Diese AGB gelten für alle Caterings, Ofenmieten und Teigverkäufe von rondisach Pizza-Catering, betrieben von {kontakt.owners}, {kontakt.street}, {kontakt.zip} {kontakt.city} („wir“). Kundinnen und Kunden nennen wir hier „Auftraggeber“ bzw. „Mieter“. Abweichende Bedingungen gelten nur, wenn wir ihnen schriftlich zustimmen. Schriftlich heisst hier auch per E-Mail oder WhatsApp.</p>
+    </div>
+    <div>
+      <h3>A2 · Anfrage &amp; Vertragsschluss</h3>
+      <p>Angaben und Preise auf der Website sind unverbindlich. Anfragen über die Website, per E-Mail, Telefon oder Nachricht sind für beide Seiten unverbindlich. Ein Vertrag kommt erst zustande, wenn ihr unsere Offerte schriftlich annehmt oder wir eure Buchung bzw. Miete schriftlich bestätigen. Mit der Annahme bzw. Bestätigung gelten diese AGB.</p>
+    </div>
+    <div>
+      <h3>A3 · Preise</h3>
+      <p>Alle Preise verstehen sich in Schweizer Franken (CHF) als Endpreise. Massgebend sind Leistungsumfang und Gesamtpreis gemäss Offerte bzw. Bestätigung. Zusätzliche Leistungen, die vor Ort gewünscht und vereinbart werden, verrechnen wir nachträglich.</p>
+    </div>
+    <div>
+      <h3>A4 · Zahlung</h3>
+      <p>Sofern in der Offerte vorgesehen, ist bei Caterings eine Anzahlung von 20 % des Gesamtpreises fällig; die Buchung ist erst nach Eingang der Anzahlung definitiv reserviert. Der Restbetrag ist gemäss Rechnung zu bezahlen, in der Regel innert 10 Tagen nach dem Anlass. Ofenmiete, Gas, Teig und Lieferung sind bei Übergabe zu bezahlen, sofern nichts anderes vereinbart ist. Bei Zahlungsverzug können wir nach Mahnung Verzugszins von 5 % pro Jahr (Art. 104 OR) verlangen.</p>
+    </div>
+    <div>
+      <h3>A5 · Allergien &amp; Lebensmittel</h3>
+      <p>Allergien und Unverträglichkeiten müsst ihr uns vor dem Anlass bzw. vor der Teigbestellung mitteilen. Auf Anfrage geben wir Auskunft über die verwendeten Zutaten und Allergene. In einer mobilen Küche können wir Spuren von Allergenen (z. B. Gluten, Milch, Nüsse) nicht vollständig ausschliessen.</p>
+    </div>
+    <div>
+      <h3>A6 · Haftung</h3>
+      <p>Wir haften für Schäden, die wir absichtlich oder grobfahrlässig verursachen, sowie für Personenschäden nach den gesetzlichen Bestimmungen. Für leichte Fahrlässigkeit ist unsere Haftung, soweit gesetzlich zulässig, auf den vereinbarten Gesamtpreis des jeweiligen Auftrags beschränkt. Für indirekte Schäden und entgangenen Gewinn haften wir nicht. Zwingende gesetzliche Haftungsbestimmungen, namentlich das Produktehaftpflichtgesetz, bleiben vorbehalten.</p>
+    </div>
+    <div>
+      <h3>A7 · Aussergewöhnliche Ereignisse</h3>
+      <p>Kann ein Anlass oder eine Miete wegen eines Ereignisses, das keine Partei zu vertreten hat (z. B. Unwetterwarnung, behördliches Verbot, Unfall, schwere Krankheit), nicht wie geplant stattfinden, informieren wir uns gegenseitig so früh wie möglich und suchen eine faire Lösung, vorzugsweise einen Ersatztermin. Bereits geleistete Zahlungen erstatten wir zurück, abzüglich unwiderruflich entstandener Dritt- und Warenkosten.</p>
+    </div>
+    <div>
+      <h3>A8 · Anwendbares Recht &amp; Gerichtsstand</h3>
+      <p>Es gilt Schweizer Recht. Gerichtsstand ist Kriens bzw. das für Kriens zuständige Gericht im Kanton Luzern. Für Konsumentinnen und Konsumenten bleiben die zwingenden Gerichtsstände nach der Schweizerischen Zivilprozessordnung, insbesondere am eigenen Wohnsitz, vorbehalten.</p>
+    </div>
+  </div>
+
+  <h2 id="catering" style="margin-top:48px">B · Catering</h2>
+  <div class="cols">
+    <div>
+      <h3>B1 · Umfang &amp; Gästezahl</h3>
+      <p>Caterings sind ab {preise.minGuests} Personen und mit einem Mindestauftragswert von CHF {preise.minOrder} möglich. Leistungsumfang, Ort, Zeit und Preis ergeben sich aus der Offerte. Die definitive Gästezahl benötigen wir spätestens 7 Kalendertage vor dem Anlass. Spätere Erhöhungen sind nur nach Verfügbarkeit möglich. Bei einer Reduktion nach diesem Zeitpunkt bleibt die zuletzt bestätigte Gästezahl Berechnungsbasis.</p>
+    </div>
+    <div>
+      <h3>B2 · Ort, Platz &amp; Bewilligungen</h3>
+      <p>Der Auftraggeber stellt einen ebenen, sicheren und gut zugänglichen Platz im Freien für Ofen und Arbeitstisch zur Verfügung, bei Regen mit Vordach oder Pavillon. Allfällige Bewilligungen der Liegenschaft oder Behörde (z. B. für offenes Feuer oder Gas) holt der Auftraggeber ein. Bei starkem Wind, Unwetter oder anderen sicherheitsrelevanten Bedingungen dürfen wir Aufbau oder Betrieb unterbrechen oder anpassen; wo möglich suchen wir gemeinsam eine Alternative.</p>
+    </div>
+    <div>
+      <h3>B3 · Stornierung durch den Auftraggeber</h3>
+      <p>Sofern in der Offerte nichts anderes vereinbart ist, gelten bei einer vollständigen Stornierung folgende Pauschalen auf dem vereinbarten Gesamtpreis:</p>
+      <ul>
+        <li>mehr als 14 Tage vor dem Anlass: keine Stornogebühr</li>
+        <li>7–14 Tage vorher: 25 %</li>
+        <li>3–6 Tage vorher: 50 %</li>
+        <li>weniger als 72 Stunden vorher: 80 %</li>
+        <li>nach Beginn von Aufbau oder Leistung oder bei Nichterscheinen: 100 %</li>
+      </ul>
+      <p>Speziell für den Auftrag beschaffte, nicht anderweitig verwendbare Waren oder verbindlich gebuchte externe Leistungen können zusätzlich verrechnet werden, soweit sie nicht durch die Pauschale gedeckt sind. Ersparte Aufwendungen rechnen wir an; insgesamt verrechnen wir höchstens den vereinbarten Gesamtpreis. Eine geleistete Anzahlung wird mit den Stornokosten verrechnet. Ihr dürft jederzeit nachweisen, dass uns kein oder ein geringerer Schaden entstanden ist.</p>
+    </div>
+    <div>
+      <h3>B4 · Verschiebung &amp; Absage durch uns</h3>
+      <p>Bei einer gewünschten Verschiebung suchen wir gemeinsam einen Ersatztermin, sofern verfügbar. Bereits entstandene externe Kosten bleiben geschuldet; Stornokosten können nach Absprache an eine zeitnahe Ersatzbuchung angerechnet werden. Müssen wir einen Anlass aus Gründen absagen, die wir zu vertreten haben, erstatten wir alle bereits geleisteten Zahlungen vollständig zurück.</p>
+    </div>
+  </div>
+
+  <h2 id="ofenmiete" style="margin-top:48px">C · Ofenmiete &amp; Teig</h2>
+  <div class="cols">
+    <div>
+      <h3>C1 · Mieter &amp; Mietdauer</h3>
+      <p>Mieten dürfen nur volljährige Personen. Bei der Übergabe können wir einen amtlichen Ausweis verlangen. Die Mietdauer ergibt sich aus unserer Bestätigung. Wird der Ofen ohne Absprache später zurückgegeben, verrechnen wir pro angefangenen zusätzlichen Tag den Tagesmietpreis.</p>
+    </div>
+    <div>
+      <h3>C2 · Übergabe, Kaution &amp; Rückgabe</h3>
+      <p>Bei der Übergabe prüfen wir gemeinsam den Zustand von Ofen und Zubehör und zeigen euch die Bedienung. Pro Ofen ist eine Kaution von CHF 300 zu hinterlegen. Ofen und Zubehör sind vollständig und grob gereinigt zurückzugeben. Die Kaution erstatten wir bei mängelfreier Rückgabe sofort zurück. Wir dürfen sie mit Kosten für Schäden, fehlendes Zubehör, aussergewöhnlichen Reinigungsaufwand und offene Beträge verrechnen.</p>
+    </div>
+    <div>
+      <h3>C3 · Sicherer Gebrauch</h3>
+      <p>Der Mieter verpflichtet sich, Ofen und Gasflasche sorgfältig und gemäss unserer Einführung und unserem Guide zu verwenden, insbesondere:</p>
+      <ul>
+        <li>nur im Freien betreiben, nie in Innenräumen, Garagen oder Zelten</li>
+        <li>auf einen stabilen, nicht brennbaren Untergrund stellen, mind. 1 m Abstand zu Wänden, Dächern und brennbarem Material</li>
+        <li>den heissen Ofen nie unbeaufsichtigt lassen und Kinder fernhalten</li>
+        <li>Gas nach Gebrauch abdrehen; bei Gasgeruch sofort abdrehen, Ofen nicht mehr benutzen und uns informieren</li>
+        <li>den Ofen nicht weitervermieten, verändern oder selbst reparieren</li>
+      </ul>
+    </div>
+    <div>
+      <h3>C4 · Haftung des Mieters</h3>
+      <p>Ab Übergabe bis zur Rückgabe trägt der Mieter die Verantwortung für Ofen, Zubehör und Gasflasche. Er haftet für Beschädigung, Verlust und Diebstahl, ausgenommen normale Abnutzung, bis höchstens zum Zeitwert bzw. zu den Reparaturkosten. Für Schäden an Personen und Sachen, die durch den Betrieb des Ofens beim Mieter entstehen, ist der Mieter verantwortlich, sofern sie nicht auf einen Mangel des Ofens zurückgehen, den wir zu vertreten haben. Schäden und Störungen meldet ihr uns bitte sofort. Wir empfehlen, die eigene Privathaftpflichtversicherung zu prüfen.</p>
+    </div>
+    <div>
+      <h3>C5 · Teig</h3>
+      <p>Teig ist mindestens 3 Tage im Voraus und ab {preise.diy.minDough} Ballen zu bestellen. Er ist ein frisches Lebensmittel: Ab der Übergabe ist der Mieter für die Kühlung (max. 5 °C) und die Verwendung gemäss unseren Hinweisen verantwortlich. Bestellter Teig wird extra für euch angesetzt und ist auch bei einer Absage weniger als 3 Tage vor der Abholung geschuldet.</p>
+    </div>
+    <div>
+      <h3>C6 · Stornierung der Miete</h3>
+      <p>Eine bestätigte Ofenmiete könnt ihr bis 7 Tage vor der Abholung kostenlos stornieren. Danach verrechnen wir 50 % der Ofenmiete, weniger als 48 Stunden vorher oder bei Nichtabholung 100 % der Ofenmiete. Bereits angesetzter Teig wird gemäss C5 verrechnet. Bei Unwetterwarnung suchen wir gemeinsam einen Ersatztermin.</p>
+    </div>
+  </div>
+  <p class="small">Stand: November 2026</p>
+</LegalLayout>

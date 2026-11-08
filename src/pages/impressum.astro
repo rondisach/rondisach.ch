@@ -7,15 +7,40 @@ import kontakt from '../data/kontakt.json';
   <h2>Impressum</h2>
   <div class="cols">
     <div>
-      <p><strong>rondisach Pizza-Catering</strong><br />Maurice Stofer<br />{kontakt.street}<br />{kontakt.zip} {kontakt.city}, Schweiz</p>
+      <h3>Anbieter</h3>
+      <p>
+        <strong>rondisach Pizza-Catering</strong><br />
+        {kontakt.owners}<br />
+        {kontakt.street}<br />
+        {kontakt.zip} {kontakt.city}, Schweiz
+      </p>
+      <p>rondisach wird von {kontakt.owners} gemeinsam als einfache Gesellschaft (Art. 530 ff. OR) betrieben und ist nicht im Handelsregister eingetragen.</p>
     </div>
     <div>
+      <h3>Kontakt</h3>
       <p>
         Telefon: <a href={`tel:${kontakt.phone.replace(/\s/g, '')}`}>{kontakt.phoneDisplay}</a><br />
         E-Mail: <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a><br />
         Website: <a href="https://rondisach.ch/">rondisach.ch</a>
       </p>
-      <p>Verantwortlich für den Inhalt: Maurice Stofer.</p>
+      <p>Verantwortlich für den Inhalt dieser Website: {kontakt.owners}, Adresse wie oben.</p>
+    </div>
+    <div>
+      <h3>Haftung für Inhalte</h3>
+      <p>Wir erstellen die Inhalte dieser Website mit Sorgfalt. Für Richtigkeit, Vollständigkeit und Aktualität können wir jedoch keine Gewähr übernehmen. Preise und Angaben auf der Website sind unverbindlich; massgebend sind Offerte, Bestätigung und unsere <a href="/agb.html">AGB</a>.</p>
+    </div>
+    <div>
+      <h3>Haftung für Links</h3>
+      <p>Unsere Website enthält Links zu Websites Dritter (z. B. Google, WhatsApp, Veranstalter). Auf deren Inhalte haben wir keinen Einfluss und übernehmen dafür keine Verantwortung. Verantwortlich sind die jeweiligen Betreiber.</p>
+    </div>
+    <div>
+      <h3>Urheberrechte</h3>
+      <p>Texte, Fotos, Logo und Gestaltung dieser Website gehören rondisach oder den jeweiligen Berechtigten. Eine Verwendung ausserhalb dieser Website ist nur mit unserer vorgängigen schriftlichen Zustimmung erlaubt.</p>
+    </div>
+    <div>
+      <h3>Datenschutz</h3>
+      <p>Wie wir mit Personendaten umgehen, lest ihr in unserer <a href="/datenschutz.html">Datenschutzerklärung</a>.</p>
     </div>
   </div>
+  <p class="small">Stand: November 2026</p>
 </LegalLayout>

@@ -199,6 +199,7 @@ content:
     path: src/data/kontakt.json
     format: json
     fields:
+      - { name: owners, label: Inhaber (Impressum, Datenschutz, AGB), type: string, description: "z. B. Andrin Käch und Maurice Stofer" }
       - { name: email, label: E-Mail (auch Empfänger des Formulars), type: string }
       - { name: phone, label: Telefon international, type: string }
       - { name: phoneDisplay, label: Telefon wie angezeigt, type: string }

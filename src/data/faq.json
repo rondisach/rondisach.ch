@@ -32,9 +32,9 @@
     },
     {
       "question": "Wie wird gebucht und storniert?",
-      "answer": "Nach eurer Anfrage erhaltet ihr eine Offerte. Verbindlich wird der Auftrag mit eurer schriftlichen Bestätigung.",
-      "linkText": "Buchung & Storno",
-      "link": "/buchung-storno.html"
+      "answer": "Nach eurer Anfrage erhaltet ihr eine Offerte. Verbindlich wird der Auftrag mit eurer schriftlichen Bestätigung. Stornierungen sind bis 14 Tage vor dem Anlass kostenlos, danach gelten unsere AGB.",
+      "linkText": "AGB",
+      "link": "/agb.html"
     }
   ],
   "ofen": [
@@ -68,7 +68,9 @@
     },
     {
       "question": "Wie funktioniert die Kaution?",
-      "answer": "Pro Ofen hinterlegt ihr CHF 300 und bekommt sie bei der Rückgabe zurück. Bitte bringt Ofen und Schieber grob gereinigt zurück."
+      "answer": "Pro Ofen hinterlegt ihr CHF 300 und bekommt sie bei der Rückgabe zurück. Bitte bringt Ofen und Schieber grob gereinigt zurück. Alle Mietbedingungen findet ihr in unseren AGB.",
+      "linkText": "AGB Ofenmiete",
+      "link": "/agb.html#ofenmiete"
     }
   ]
 }
