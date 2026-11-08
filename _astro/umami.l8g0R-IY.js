@@ -1,0 +1,1 @@
+var e=e=>{let t=()=>window.umami?.track(e);window.umami?t():window.addEventListener(`load`,t,{once:!0})},t=t=>e(t),n=(t,n)=>e(e=>({...e,url:t,title:n}));export{n,t};
