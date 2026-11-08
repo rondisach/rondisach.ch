@@ -8,7 +8,7 @@
     },
     {
       "question": "Bietet ihr auch Apéro, Beilagen oder Dessert an?",
-      "answer": "Unser Fokus liegt auf Pizza à discrétion. Ergänzungen bieten wir ausschliesslich auf Anfrage und je nach Kapazität an. Erzählt uns von euren Wünschen – wir klären gemeinsam, was für euren Anlass möglich ist."
+      "answer": "Unser Fokus ist Pizza à discrétion. Apéro, Beilagen oder Dessert machen wir auf Anfrage, je nach Kapazität."
     },
     {
       "question": "Wo seid ihr unterwegs?",
@@ -32,7 +32,7 @@
     },
     {
       "question": "Wie wird gebucht und storniert?",
-      "answer": "Nach eurer Anfrage erhaltet ihr eine Offerte. Verbindlich wird der Auftrag mit eurer schriftlichen Bestätigung. Stornierungen sind bis 14 Tage vor dem Anlass kostenlos, danach gelten unsere AGB.",
+      "answer": "Nach eurer Anfrage bekommt ihr eine Offerte. Verbindlich wird es mit eurer schriftlichen Bestätigung. Bis 14 Tage vorher könnt ihr kostenlos stornieren.",
       "linkText": "AGB",
       "link": "/agb.html"
     }
@@ -60,7 +60,7 @@
     },
     {
       "question": "Wann holen wir Ofen und Teig ab?",
-      "answer": "Der Teig muss 4–5 Stunden vor der ersten Pizza aus dem Kühlschrank. Backt ihr am Abholtag, holt ihr Ofen und Teig darum etwa 5 Stunden vorher ab. Bis dann reift der Teig bei uns im Kühlschrank, danach bleibt er zugedeckt bei Raumtemperatur. Backt ihr erst später, zum Beispiel Abholung am Freitag und Backen am Samstag, gebt im Formular den Backtag an. Dann setzen wir den Teig so an, dass er einen Tag bei uns und den letzten Tag bei euch im Kühlschrank reift. Am Backtag nehmt ihr ihn 4–5 Stunden vor der ersten Pizza heraus."
+      "answer": "Backt ihr am Abholtag, holt ihr Ofen und Teig etwa 5 Stunden vor der ersten Pizza ab – so lange braucht der Teig bei Raumtemperatur. Backt ihr erst später, gebt den Backtag im Formular an: Dann kommt der Teig bei euch in den Kühlschrank und 4–5 Stunden vor dem Backen heraus."
     },
     {
       "question": "Passt der Ofen in unser Auto?",

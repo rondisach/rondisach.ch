@@ -12,6 +12,7 @@ import termine from '../data/termine.json';
 import faq from '../data/faq.json';
 
 const chf = (n: number) => `CHF ${n.toLocaleString('de-CH')}`;
+const ovenPrice = Math.min(...preise.diy.items.filter((i) => i.unit.includes('Tag')).map((i) => i.price));
 const facts = [
   { value: '100 %', label: 'Handarbeit' },
   { value: '48 h', label: 'Teigruhe' },
@@ -94,17 +95,17 @@ const events = termine.events
       </div>
       <div>
         <p class="story">Wir sind Maurice und Andrin aus der Region Luzern – wir kochen gerne und machen Menschen damit eine Freude.</p>
-        <p class="lead">Was mit gemeinsamem Kochen, Ausprobieren und Essen für Freunde und Familie angefangen hat, wurde mit der Zeit zu einer echten Leidenschaft. Vieles haben wir uns selbst beigebracht, immer wieder getestet und Schritt für Schritt verbessert.</p>
-        <details class="fold" open>
+        <details class="fold">
           <summary>mehr über uns lesen</summary>
+        <p class="lead">Was mit gemeinsamem Kochen, Ausprobieren und Essen für Freunde und Familie angefangen hat, wurde mit der Zeit zu einer echten Leidenschaft. Vieles haben wir uns selbst beigebracht, immer wieder getestet und Schritt für Schritt verbessert.</p>
         <p class="lead">Besonders hängen geblieben ist die Pizza. Für uns braucht guter Teig vor allem Zeit, gute Zutaten und etwas Geduld. Deshalb bereiten wir unseren Teig selbst zu, lassen ihn lange reifen und backen jede Pizza direkt vor Ort bei hoher Temperatur.</p>
         <p class="lead">Mit <strong>rondisach</strong> möchten wir genau das an euren Anlass bringen: ehrliches, unkompliziertes Essen, sorgfältig vorbereitet und frisch für eure Gäste gemacht. Ohne unnötigen Schnickschnack – dafür mit viel Freude an dem, was wir tun.</p>
+        </details>
         <ul class="dots">
           <li>selbst erlernt</li>
           <li>von Hand gemacht</li>
           <li>aus Luzern</li>
         </ul>
-        </details>
       </div>
     </div>
   </section>
@@ -139,7 +140,7 @@ const events = termine.events
           <div class="kicker">03 · unsere pizzen</div>
           <h2 class="title">was kommt auf<br />euren teller?</h2>
         </div>
-        <p class="lead">Hier seht ihr einige unserer Favoriten. <strong>Ihr habt eine Lieblingspizza oder einen besonderen Wunsch?</strong> Sagt uns einfach, worauf ihr Lust habt – die Auswahl stellen wir passend zu eurem Anlass zusammen.</p>
+        <p class="lead">Eine Auswahl unserer Favoriten. <strong>Eure Lieblingspizza fehlt?</strong> Sagt es uns.</p>
       </div>
       <PizzaMenu pizzas={pizzas} />
     </div>
@@ -169,10 +170,16 @@ const events = termine.events
             <ul class="ticks">{pk.features.map((f) => <li>{f}</li>)}</ul>
           </article>
         ))}
+        <article class="package">
+          <h3>selber backen.</h3>
+          <p class="pkDesc">Für kleinere Runden: Ihr mietet unseren Ofen und backt selbst – auf Wunsch mit unserem Teig.</p>
+          <div class="price">ab {chf(ovenPrice)} <small>/ Ofen &amp; Tag</small></div>
+          <a class="btn btn--outline pkBtn" href="/ofen-mieten.html">ofen mieten →</a>
+        </article>
       </div>
       <div class="swipeDots" aria-hidden="true"></div>
 
-      <details class="fold fold--box" open>
+      <details class="fold fold--box">
         <summary>anfahrt &amp; bedingungen</summary>
       <div class="travel">
         {preise.travel.map((t) => <div class="travelBox"><strong>{t.title}</strong>{t.text}</div>)}
@@ -210,7 +217,7 @@ const events = termine.events
           <label class="full">Gewünschter Umfang
             <select name="package">
               <option>Pizza à discrétion</option>
-              <option>Rundum – auf Anfrage</option>
+              <option>Pizza mit Apéro, Beilagen oder Dessert</option>
               <option>Noch offen / beraten lassen</option>
             </select>
           </label>
@@ -224,10 +231,10 @@ const events = termine.events
     </div>
   </section>
 
-  <!-- 06 Stimmen: zentriert -->
+  <!-- 06 Rezensionen: zentriert -->
   <section class="section reviews" id="stimmen">
     <div class="wrap reviewsIn">
-      <div class="kicker">06 · kundenstimmen</div>
+      <div class="kicker">06 · rezensionen</div>
       <h2 class="title">das sagen unsere gäste.</h2>
       <div class="ratingCard">
         <div class="ratingScore">{rezensionen.rating.toFixed(1).replace('.', ',')}</div>
@@ -277,12 +284,7 @@ const events = termine.events
 <script>
   import { track, trackPage } from '../lib/umami';
 
-  // Auf dem Handy sind Details zugeklappt, auf grossen Bildschirmen immer offen.
-  const small = window.matchMedia('(max-width: 620px)');
-  const folds = document.querySelectorAll<HTMLDetailsElement>('details.fold');
-  const syncFolds = () => folds.forEach((d) => (d.open = !small.matches));
-  syncFolds();
-  small.addEventListener('change', syncFolds);
+  // Details sind auf allen Bildschirmen zugeklappt und lassen sich bei Bedarf öffnen.
 
   // Punkte unter den seitlich wischbaren Reihen zeigen, welche Karte gerade sichtbar ist.
   document.querySelectorAll<HTMLElement>('.swipeRow').forEach((row) => {
@@ -509,47 +511,48 @@ const events = termine.events
     }
   }
 
-  /* Zuklappbare Details: Knopf nur auf dem Handy sichtbar */
+  /* Zuklappbare Details: auf allen Bildschirmen zum Aufklappen */
   .fold > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 14px 0;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .fold > summary::-webkit-details-marker {
     display: none;
+  }
+  .fold > summary::after {
+    content: '+';
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+  }
+  .fold[open] > summary::after {
+    transform: rotate(45deg);
+  }
+  .fold--box > summary {
+    margin-top: 12px;
+    padding: 16px 20px;
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+  }
+  .fold--box[open] > summary {
+    margin-bottom: 12px;
+  }
+  .pkBtn {
+    margin-top: auto;
+    align-self: flex-start;
   }
   .swipeDots {
     display: none;
   }
   @media (max-width: 620px) {
-    .fold > summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 8px;
-      padding: 14px 0;
-      font-weight: 700;
-      cursor: pointer;
-      list-style: none;
-      border-top: 1px solid var(--line);
-    }
-    .fold > summary::-webkit-details-marker {
-      display: none;
-    }
-    .fold > summary::after {
-      content: '+';
-      font-size: 22px;
-      line-height: 1;
-      transition: transform 0.2s ease;
-    }
-    .fold[open] > summary::after {
-      transform: rotate(45deg);
-    }
-    .fold--box > summary {
-      margin-top: 12px;
-      padding: 16px 20px;
-      border: 2px solid var(--ink);
-      border-radius: 18px;
-    }
-    .fold--box[open] > summary {
-      margin-bottom: 12px;
-    }
 
     /* Seitlich wischen statt untereinander */
     .swipeRow {
