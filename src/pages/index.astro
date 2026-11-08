@@ -95,7 +95,7 @@ const events = termine.events
       <div>
         <p class="story">Wir sind Maurice und Andrin aus der Region Luzern – wir kochen gerne und machen Menschen damit eine Freude.</p>
         <p class="lead">Was mit gemeinsamem Kochen, Ausprobieren und Essen für Freunde und Familie angefangen hat, wurde mit der Zeit zu einer echten Leidenschaft. Vieles haben wir uns selbst beigebracht, immer wieder getestet und Schritt für Schritt verbessert.</p>
-        <details class="fold" open>
+        <details class="fold">
           <summary>mehr über uns lesen</summary>
         <p class="lead">Besonders hängen geblieben ist die Pizza. Für uns braucht guter Teig vor allem Zeit, gute Zutaten und etwas Geduld. Deshalb bereiten wir unseren Teig selbst zu, lassen ihn lange reifen und backen jede Pizza direkt vor Ort bei hoher Temperatur.</p>
         <p class="lead">Mit <strong>rondisach</strong> möchten wir genau das an euren Anlass bringen: ehrliches, unkompliziertes Essen, sorgfältig vorbereitet und frisch für eure Gäste gemacht. Ohne unnötigen Schnickschnack – dafür mit viel Freude an dem, was wir tun.</p>
@@ -172,7 +172,7 @@ const events = termine.events
       </div>
       <div class="swipeDots" aria-hidden="true"></div>
 
-      <details class="fold fold--box" open>
+      <details class="fold fold--box">
         <summary>anfahrt &amp; bedingungen</summary>
       <div class="travel">
         {preise.travel.map((t) => <div class="travelBox"><strong>{t.title}</strong>{t.text}</div>)}
@@ -277,12 +277,7 @@ const events = termine.events
 <script>
   import { track, trackPage } from '../lib/umami';
 
-  // Auf dem Handy sind Details zugeklappt, auf grossen Bildschirmen immer offen.
-  const small = window.matchMedia('(max-width: 620px)');
-  const folds = document.querySelectorAll<HTMLDetailsElement>('details.fold');
-  const syncFolds = () => folds.forEach((d) => (d.open = !small.matches));
-  syncFolds();
-  small.addEventListener('change', syncFolds);
+  // Details sind auf allen Bildschirmen zugeklappt und lassen sich bei Bedarf öffnen.
 
   // Punkte unter den seitlich wischbaren Reihen zeigen, welche Karte gerade sichtbar ist.
   document.querySelectorAll<HTMLElement>('.swipeRow').forEach((row) => {
@@ -509,47 +504,44 @@ const events = termine.events
     }
   }
 
-  /* Zuklappbare Details: Knopf nur auf dem Handy sichtbar */
+  /* Zuklappbare Details: auf allen Bildschirmen zum Aufklappen */
   .fold > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 14px 0;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .fold > summary::-webkit-details-marker {
     display: none;
+  }
+  .fold > summary::after {
+    content: '+';
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+  }
+  .fold[open] > summary::after {
+    transform: rotate(45deg);
+  }
+  .fold--box > summary {
+    margin-top: 12px;
+    padding: 16px 20px;
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+  }
+  .fold--box[open] > summary {
+    margin-bottom: 12px;
   }
   .swipeDots {
     display: none;
   }
   @media (max-width: 620px) {
-    .fold > summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 8px;
-      padding: 14px 0;
-      font-weight: 700;
-      cursor: pointer;
-      list-style: none;
-      border-top: 1px solid var(--line);
-    }
-    .fold > summary::-webkit-details-marker {
-      display: none;
-    }
-    .fold > summary::after {
-      content: '+';
-      font-size: 22px;
-      line-height: 1;
-      transition: transform 0.2s ease;
-    }
-    .fold[open] > summary::after {
-      transform: rotate(45deg);
-    }
-    .fold--box > summary {
-      margin-top: 12px;
-      padding: 16px 20px;
-      border: 2px solid var(--ink);
-      border-radius: 18px;
-    }
-    .fold--box[open] > summary {
-      margin-bottom: 12px;
-    }
 
     /* Seitlich wischen statt untereinander */
     .swipeRow {
