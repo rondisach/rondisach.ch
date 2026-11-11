@@ -31,29 +31,19 @@
       "name": "Salami",
       "ingredients": "Tomate · Fior di Latte · Salami · Olivenöl",
       "image": "/src/assets/uploads/pizza-salami.webp",
-      "alt": "Pizza Salami mit Fior di Latte",
-      "tags": []
+      "alt": "Pizza Salami mit Fior di Latte"
     },
     {
       "name": "Prosciutto Crudo",
       "ingredients": "Tomate · Fior di Latte · Rohschinken · Rucola · Parmesan · Cherrytomaten",
       "image": "/src/assets/uploads/pizza-crudo.webp",
-      "alt": "Pizza Prosciutto Crudo mit Rucola",
-      "tags": []
+      "alt": "Pizza Prosciutto Crudo mit Rucola"
     },
     {
       "name": "Salsiccia",
       "ingredients": "Tomate · Pecorino · Fior di Latte · Salsiccia · rote Zwiebeln · Ricotta",
       "image": "/src/assets/uploads/pizza-salsiccia.webp",
-      "alt": "Pizza Salsiccia mit roten Zwiebeln und Ricotta",
-      "tags": []
-    },
-    {
-      "name": "Mortadella & Burrata",
-      "ingredients": "Crème · Fior di Latte · Mortadella · Burrata · Pistazien",
-      "image": "/src/assets/uploads/pizza-mortadella.webp",
-      "alt": "Pizza Mortadella mit Burrata und Pistazien",
-      "tags": []
+      "alt": "Pizza Salsiccia mit roten Zwiebeln und Ricotta"
     }
   ]
 }
