@@ -7,7 +7,7 @@
       "price": 28,
       "highlight": true,
       "features": [
-        "Ab 15 Personen · Mindestauftragswert CHF 600",
+        "Ab 30 Personen · Mindestauftragswert CHF 900",
         "Gemeinsam abgestimmte Pizza-Auswahl",
         "Ofen, Aufbau und frische Zubereitung vor Ort inklusive",
         "2 Stunden Pizzaservice inklusive (ab der ersten Pizza, ohne Auf- und Abbau)"
@@ -25,8 +25,8 @@
       ]
     }
   ],
-  "minGuests": 15,
-  "minOrder": 600,
+  "minGuests": 30,
+  "minOrder": 900,
   "travel": [
     {
       "title": "Anfahrt bis 15 km",
