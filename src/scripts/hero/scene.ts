@@ -52,6 +52,7 @@ import {
   buildWheelbarrow,
 } from './props';
 import { PIZZA_KINDS, buildVariantPizza } from './pizzas';
+import { batchStatic } from './batch';
 
 export interface HeroScene {
   setProgress(p: number): void;
@@ -60,6 +61,8 @@ export interface HeroScene {
   start(): void;
   stop(): void;
   dispose(): void;
+  /** Nur zum Messen: Zeichenaufrufe, Dreiecke und aktuelle Auflösung. */
+  info(): { calls: number; triangles: number; pixelRatio: number };
 }
 
 /** Anteil des Scrollwegs für den Spaziergang; der Rest gehört dem Ofen. */
@@ -349,8 +352,23 @@ export function createHeroScene(
   const cheeseRaw = new Color(COLORS.cheeseRaw);
   const cheeseBaked = new Color(COLORS.cheeseBaked);
 
+  // Was sich bewegt, wirft keinen eigenen Schatten: Die Schatten werden nur einmal berechnet (siehe unten).
+  for (const mover of [...kids, waiter, andrin, peel, pz.pizza]) {
+    mover.traverse((o) => {
+      if (o instanceof Mesh) o.castShadow = false;
+    });
+  }
+  // Alles Unbewegte zu wenigen Netzen zusammenfassen – das macht den grössten Unterschied beim Ruckeln.
+  batchStatic(scene, [...people, waiter, andrin, rig, swingTree.swing, fireflies.points]);
+  // Die Sonne steht still: Schatten einmal berechnen statt in jedem Bild.
+  sun.shadow.autoUpdate = false;
+  let shadowFrames = 3;
+
   let target = 0;
   let current = 0;
+  let lastTime = 0;
+  let slow = 0;
+  let measured = 0;
   let raf = 0;
   let running = false;
   let portrait = false;
@@ -462,9 +480,28 @@ export function createHeroScene(
   }
 
   function frame(time: number) {
+    const dt = time - lastTime;
+    lastTime = time;
     current += (target - current) * 0.1;
     apply(current, time);
+    if (shadowFrames > 0) {
+      shadowFrames--;
+      sun.shadow.needsUpdate = true;
+    }
     renderer.render(scene, camera);
+    // Ruckelt es auf diesem Gerät, die Auflösung schrittweise senken (nie wieder erhöhen).
+    if (dt > 0 && dt < 250) {
+      measured++;
+      if (dt > 24) slow++;
+      if (measured >= 90) {
+        const ratio = renderer.getPixelRatio();
+        if (slow > 45 && ratio > 1) {
+          renderer.setPixelRatio(Math.max(1, ratio - 0.25));
+          resize();
+        }
+        measured = slow = 0;
+      }
+    }
     if (running) raf = requestAnimationFrame(frame);
   }
 
@@ -479,12 +516,14 @@ export function createHeroScene(
     start() {
       if (running) return;
       running = true;
+      lastTime = 0;
       raf = requestAnimationFrame(frame);
     },
     stop() {
       running = false;
       cancelAnimationFrame(raf);
     },
+    info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio() }),
     dispose() {
       this.stop();
       ro.disconnect();
