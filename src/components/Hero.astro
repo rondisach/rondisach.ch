@@ -40,7 +40,10 @@ const captions = [
       </div>
 
       <div class="heroStatic">
-        <Image class="heroPizza" src={heroPizza} alt="Neapolitanische Margherita von rondisach" widths={[420, 640, 900]} sizes="(max-width: 920px) 90vw, 540px" loading="eager" fetchpriority="high" />
+        <!-- Die Pizza rollt herein und dreht sich beim Scrollen mit (--spin); der Schatten bleibt dabei ruhig liegen. -->
+        <div class="pizzaWrap">
+          <Image class="heroPizza" src={heroPizza} alt="Neapolitanische Margherita von rondisach" widths={[420, 640, 900]} sizes="(max-width: 920px) 100vw, 540px" loading="eager" fetchpriority="high" />
+        </div>
         <Image class="heroLogo" src={logo} alt="rondisach Pizza Catering" widths={[240, 480]} sizes="240px" loading="eager" />
         <div class="stamp">handgemacht · vor ort</div>
       </div>
@@ -81,9 +84,32 @@ const captions = [
   // Anteil des Scrollwegs für den Spaziergang; der Rest gehört dem Ofen und dem kurzen Halt am Schluss.
   const WALK_SHARE = 0.52;
 
+  // Leichte Variante (Handy, kein WebGL): Die Pizza dreht sich beim Scrollen mit.
+  function spinOnScroll() {
+    const wrap = hero?.querySelector<HTMLElement>('.pizzaWrap');
+    if (!hero || !wrap || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let queued = false;
+    const update = () => {
+      queued = false;
+      // Nur solange die Pizza im Bild ist
+      if (hero.dataset.mode !== 'static' || hero.getBoundingClientRect().bottom < 0) return;
+      wrap.style.setProperty('--spin', `${(window.scrollY * 0.16).toFixed(1)}deg`);
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+  }
+
   async function init() {
     // Auf dem Handy bleibt das leichte Bild – schneller und schont den Akku. Entschieden hat das Skript oben im Abschnitt.
-    if (!hero || !canvas || hero.dataset.mode !== 'loading') return;
+    if (!hero || !canvas || hero.dataset.mode !== 'loading') return spinOnScroll();
     const { createHeroScene } = await import('../scripts/hero/scene');
     const text = hero.querySelector<HTMLElement>('.heroText')!;
     const veil = hero.querySelector<HTMLElement>('.veil')!;
@@ -148,6 +174,7 @@ const captions = [
   init().catch((err) => {
     console.warn('[rondisach] 3D-Hero konnte nicht geladen werden', err);
     if (hero) hero.dataset.mode = 'static';
+    spinOnScroll();
   });
 </script>
 
@@ -190,13 +217,66 @@ const captions = [
     position: relative;
     min-height: clamp(380px, 46vw, 560px);
   }
-  .heroPizza {
+  .pizzaWrap {
     position: absolute;
     width: min(88%, 540px);
+    aspect-ratio: 1;
     right: 0;
     top: 2%;
-    transform: rotate(5deg);
-    filter: drop-shadow(0 24px 24px rgba(0, 0, 0, 0.15));
+    --spin: 0deg;
+  }
+  /* Weicher Schatten unter der Pizza – eigenes Element, damit er sich nicht mitdreht */
+  .pizzaWrap::before {
+    content: '';
+    position: absolute;
+    inset: 9% 6% -3%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(40, 24, 10, 0.3), rgba(40, 24, 10, 0.16) 62%, rgba(40, 24, 10, 0) 100%);
+  }
+  .heroPizza {
+    position: relative;
+    width: 100%;
+    transform: rotate(calc(5deg + var(--spin)));
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero[data-mode='static'] .heroPizza {
+      animation: rollIn 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+    .hero[data-mode='static'] .pizzaWrap::before {
+      animation: fadeIn 0.6s ease 0.7s both;
+    }
+    .hero[data-mode='static'] .stamp {
+      animation: popIn 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.8s both;
+    }
+    .hero[data-mode='static'] .heroLogo {
+      animation: riseIn 0.5s ease 1s both;
+    }
+  }
+  @keyframes rollIn {
+    from {
+      transform: translateX(75%) rotate(calc(100deg + var(--spin)));
+    }
+    to {
+      transform: translateX(0) rotate(calc(5deg + var(--spin)));
+    }
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes popIn {
+    from {
+      opacity: 0;
+      transform: scale(0.3) rotate(-18deg);
+    }
+  }
+  @keyframes riseIn {
+    from {
+      opacity: 0;
+      transform: translateY(14px) rotate(-2deg);
+    }
   }
   .heroLogo {
     position: absolute;
@@ -511,15 +591,20 @@ const captions = [
     .heroActions .btn {
       justify-content: center;
     }
+    /* Handy: Pizza gross und rechts angeschnitten – der Blickfang im ersten Bildschirm */
     .heroStatic {
       min-height: 0;
-      aspect-ratio: 1 / 0.82;
+      aspect-ratio: 1 / 0.92;
     }
-    .heroPizza {
-      width: 80%;
+    .pizzaWrap {
+      width: 106%;
+      right: -28%;
+      top: -5%;
     }
     .heroLogo {
-      width: 38%;
+      width: 31%;
+      left: 0;
+      bottom: -3%;
     }
     .hero:not([data-mode='static']) .veil {
       width: 100%;
