@@ -1,10 +1,10 @@
 // Fasst alle unbewegten Teile der Szene zu wenigen grossen Netzen zusammen.
 // Der Garten besteht aus fast 2000 Einzelteilen; jedes kostet pro Bild einen Zeichenaufruf. Zusammengefasst sind es noch ein paar Dutzend.
-import { BufferAttribute, BufferGeometry, InstancedMesh, Mesh, MeshStandardMaterial, type Object3D } from 'three';
+import { BufferAttribute, BufferGeometry, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, type Object3D } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /** Zwei Materialien mit gleichem Schlüssel sehen gleich aus und dürfen zusammengefasst werden. */
-function key(m: MeshStandardMaterial, mesh: Mesh) {
+function key(m: MeshStandardMaterial, mesh: Mesh, shadows: boolean) {
   return [
     m.color.getHex(),
     m.roughness,
@@ -14,8 +14,8 @@ function key(m: MeshStandardMaterial, mesh: Mesh) {
     m.flatShading,
     m.side,
     m.fog,
-    mesh.castShadow,
-    mesh.receiveShadow,
+    shadows && mesh.castShadow,
+    shadows && mesh.receiveShadow,
   ].join('|');
 }
 
@@ -27,12 +27,18 @@ function batchable(o: Object3D): o is Mesh<BufferGeometry, MeshStandardMaterial>
   return !!o.geometry.attributes.position && !!o.geometry.attributes.normal;
 }
 
-/** Alles unter `root` zusammenfassen, ausser den Ästen in `dynamic` (Dinge, die sich bewegen). */
-export function batchStatic(root: Object3D, dynamic: Object3D[]) {
+/**
+ * Alles unter `root` zusammenfassen, ausser den Ästen in `dynamic` (Dinge, die sich bewegen).
+ * Die Netze hängen danach an `root` und bewegen sich mit ihm – so lässt sich auch eine einzelne Figur zusammenfassen.
+ * Mit `shadows: false` werden Teile mit und ohne Schattenwurf gemischt (das ganze Netz wirft dann Schatten).
+ */
+export function batchStatic(root: Object3D, dynamic: Object3D[], shadows = true) {
   const skip = new Set(dynamic);
   const groups = new Map<string, { material: MeshStandardMaterial; cast: boolean; receive: boolean; parts: BufferGeometry[] }>();
   const done: Mesh[] = [];
-  root.updateMatrixWorld(true);
+  root.updateWorldMatrix(true, true);
+  const toRoot = new Matrix4().copy(root.matrixWorld).invert();
+  const local = new Matrix4();
 
   const visit = (o: Object3D) => {
     if (skip.has(o) || !o.visible) return;
@@ -42,8 +48,9 @@ export function batchStatic(root: Object3D, dynamic: Object3D[]) {
       const g = new BufferGeometry();
       g.setAttribute('position', (src.attributes.position as BufferAttribute).clone());
       g.setAttribute('normal', (src.attributes.normal as BufferAttribute).clone());
-      g.applyMatrix4(o.matrixWorld);
-      if (o.matrixWorld.determinant() < 0) {
+      local.multiplyMatrices(toRoot, o.matrixWorld);
+      g.applyMatrix4(local);
+      if (local.determinant() < 0) {
         // Gespiegelte Teile: Umlaufsinn der Dreiecke umdrehen
         for (const name of ['position', 'normal']) {
           const a = g.attributes[name].array as Float32Array;
@@ -57,9 +64,10 @@ export function batchStatic(root: Object3D, dynamic: Object3D[]) {
         }
       }
       if (src !== o.geometry) src.dispose();
-      const k = key(o.material, o);
+      const k = key(o.material, o, shadows);
       let entry = groups.get(k);
       if (!entry) groups.set(k, (entry = { material: o.material, cast: o.castShadow, receive: o.receiveShadow, parts: [] }));
+      if (!shadows) entry.cast ||= o.castShadow;
       entry.parts.push(g);
       done.push(o);
     }

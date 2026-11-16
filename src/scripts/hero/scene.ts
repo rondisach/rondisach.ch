@@ -11,12 +11,16 @@ import {
   HemisphereLight,
   MathUtils,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   PCFSoftShadowMap,
   PerspectiveCamera,
+  PlaneGeometry,
   PointLight,
   Quaternion,
   Scene,
+  SRGBColorSpace,
+  TextureLoader,
   Vector3,
   WebGLRenderer,
   type Material,
@@ -64,7 +68,7 @@ export interface HeroScene {
   stop(): void;
   dispose(): void;
   /** Nur zum Messen: Zeichenaufrufe, Dreiecke und aktuelle Auflösung. */
-  info(): { calls: number; triangles: number; pixelRatio: number };
+  info(): { calls: number; triangles: number; pixelRatio: number; fps: number };
 }
 
 /** Anteil des Scrollwegs für den Spaziergang; der Rest gehört dem Ofen. */
@@ -80,12 +84,21 @@ export interface StandAnchor {
 export function createHeroScene(
   canvas: HTMLCanvasElement,
   onProgress?: (p: number, anchor: StandAnchor) => void,
+  /** Foto der fertigen Pizza (freigestellt): Im Finale wird aus der gezeichneten Pizza die echte. */
+  pizzaPhoto?: string,
 ): HeroScene {
   const small = Math.min(window.innerWidth, window.innerHeight) < 700;
   const rand = rng(7);
 
   const renderer = new WebGLRenderer({ canvas, antialias: !small, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
+  // Nie mehr Bildpunkte zeichnen als nötig: Auf scharfen, grossen Bildschirmen wäre es sonst das Vierfache – das bremst vor allem Safari.
+  const PIXEL_BUDGET = 2_300_000;
+  let quality = 1;
+  const pixelRatio = () => {
+    const area = Math.max(1, canvas.clientWidth * canvas.clientHeight);
+    return Math.max(0.6, Math.min(window.devicePixelRatio, small ? 1.5 : 2, Math.sqrt(PIXEL_BUDGET / area)) * quality);
+  };
+  renderer.setPixelRatio(pixelRatio());
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFSoftShadowMap;
 
@@ -358,6 +371,24 @@ export function createHeroScene(
   // Aufhelllicht, damit die servierte Pizza vor der Abendsonne nicht im Schatten liegt
   const serveLight = new PointLight(0xfff0dc, 0, 2.2, 1.5);
   scene.add(serveLight);
+  // Die echte Pizza als Bild, das immer zur Kamera schaut
+  const photoMat = new MeshBasicMaterial({ transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false });
+  const photo = new Mesh(new PlaneGeometry(0.31, 0.31), photoMat);
+  photo.renderOrder = 10;
+  photo.visible = false;
+  steam.points.renderOrder = 11;
+  scene.add(photo);
+  let photoReady = false;
+  if (pizzaPhoto) {
+    new TextureLoader().load(pizzaPhoto, (tex) => {
+      tex.colorSpace = SRGBColorSpace;
+      tex.anisotropy = 4;
+      photoMat.map = tex;
+      photoMat.needsUpdate = true;
+      photoReady = true;
+    });
+  }
+  const Z_AXIS = new Vector3(0, 0, 1);
   const rimRaw = new Vector3(0.97, 0.97, 0.5);
   const rimBaked = new Vector3(1, 1, 0.88);
   const tmpA = new Vector3();
@@ -385,7 +416,14 @@ export function createHeroScene(
     });
   }
   // Alles Unbewegte zu wenigen Netzen zusammenfassen – das macht den grössten Unterschied beim Ruckeln.
-  batchStatic(scene, [...people, waiter, andrin, rig, swingTree.swing, fireflies.points]);
+  // Die meisten Gäste bleiben an ihrem Platz: Nur Arme und Kopf bewegen sich, der Rest geht mit dem Garten zusammen.
+  const movers = [...kids, waiter, andrin];
+  const limbs = (p: Person) => [p.userData.armL, p.userData.armR, p.userData.head];
+  const seated = people.filter((p) => !movers.includes(p));
+  batchStatic(scene, [...movers, rig, swingTree.swing, fireflies.points, ...seated.flatMap(limbs)]);
+  // Wer sich als Ganzes bewegt, wird für sich zusammengefasst. Das Tablett des Helfers wird ein- und ausgeblendet und bleibt eigenständig.
+  for (const person of movers) batchStatic(person, [...limbs(person), ...(person === waiter ? [tray] : [])], false);
+  for (const person of [...seated, ...movers]) for (const part of limbs(person)) batchStatic(part, [], false);
   // Die Sonne steht still: Schatten einmal berechnen statt in jedem Bild.
   sun.shadow.autoUpdate = false;
   let shadowFrames = 3;
@@ -395,6 +433,7 @@ export function createHeroScene(
   let lastTime = 0;
   let slow = 0;
   let measured = 0;
+  let fps = 60;
   let raf = 0;
   let running = false;
   let portrait = false;
@@ -403,6 +442,7 @@ export function createHeroScene(
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     if (!w || !h) return;
+    renderer.setPixelRatio(pixelRatio());
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     // Erst bei deutlichem Hochformat (Handy) weiter weg; die Karten-Variante bleibt nah dran.
@@ -485,7 +525,8 @@ export function createHeroScene(
     if (serve > 0) {
       rig.getWorldQuaternion(qRig);
       qFrom.copy(qRig).multiply(pz.pizza.quaternion);
-      qTilt.setFromAxisAngle(X_AXIS, 1.08);
+      // Mit Foto dreht sich die Pizza ganz zur Kamera, damit beide deckungsgleich sind
+      qTilt.setFromAxisAngle(X_AXIS, photoReady ? Math.PI / 2 : 1.08);
       qSpin.setFromAxisAngle(Y_AXIS, Math.PI + time * 0.00028);
       qTo.copy(camera.quaternion).multiply(qTilt).multiply(qSpin);
       qFrom.slerp(qTo, serve);
@@ -495,8 +536,19 @@ export function createHeroScene(
       rig.localToWorld(tmpA.copy(pz.pizza.position));
       tmpA.lerp(tmpB, serve);
       tmpA.y += Math.sin(serve * Math.PI) * 0.12;
+      // Aus der gezeichneten Pizza wird das Foto
+      const real = photoReady ? seg(serve, 0.5, 0.85) : 0;
+      photo.visible = real > 0;
+      photoMat.opacity = real;
+      photo.position.copy(tmpA);
+      photo.quaternion.copy(camera.quaternion).multiply(qSpin.setFromAxisAngle(Z_AXIS, -time * 0.00022));
+      photo.scale.setScalar(0.72 + 0.28 * serve);
+      pz.pizza.visible = real < 1;
       pz.pizza.position.copy(rig.worldToLocal(tmpA));
       pz.pizza.quaternion.copy(qRig.invert().multiply(qFrom));
+    } else {
+      photo.visible = false;
+      pz.pizza.visible = true;
     }
     serveLight.position.copy(camera.position);
     serveLight.intensity = serve * 1.6;
@@ -555,18 +607,18 @@ export function createHeroScene(
     current += (target - current) * 0.1;
     apply(current, time);
     render();
-    // Ruckelt es auf diesem Gerät, die Auflösung schrittweise senken (nie wieder erhöhen).
+    // Ruckelt es auf diesem Gerät, die Auflösung rasch senken (nie wieder erhöhen).
     if (dt > 0 && dt < 250 && document.visibilityState === 'visible') {
       measured++;
-      if (dt > 24) slow++;
-      if (measured >= 90) {
-        const ratio = renderer.getPixelRatio();
-        if (slow > 45 && ratio > 1) {
-          renderer.setPixelRatio(Math.max(1, ratio - 0.25));
+      if (dt > 22) slow++;
+      if (measured >= 40) {
+        if (slow > 20 && quality > 0.5) {
+          quality = Math.max(0.5, quality - 0.17);
           resize();
         }
         measured = slow = 0;
       }
+      fps += (1000 / dt - fps) * 0.1;
     }
     if (running) raf = requestAnimationFrame(frame);
   }
@@ -591,7 +643,7 @@ export function createHeroScene(
       running = false;
       cancelAnimationFrame(raf);
     },
-    info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio() }),
+    info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio(), fps }),
     dispose() {
       this.stop();
       ro.disconnect();
