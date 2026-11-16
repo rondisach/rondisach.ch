@@ -15,6 +15,7 @@ import {
   PCFSoftShadowMap,
   PerspectiveCamera,
   PointLight,
+  Quaternion,
   Scene,
   Vector3,
   WebGLRenderer,
@@ -53,6 +54,7 @@ import {
 } from './props';
 import { PIZZA_KINDS, buildVariantPizza } from './pizzas';
 import { batchStatic } from './batch';
+import { buildPuffs } from './effects';
 
 export interface HeroScene {
   setProgress(p: number): void;
@@ -287,7 +289,7 @@ export function createHeroScene(
   rig.rotation.y = RIG_TURN;
   rig.position.set(0.25, 0.91, STAND_Z - 0.12);
   scene.add(rig);
-  const { oven, flameList, fireLight, stoneTop, frontZ } = buildOven();
+  const { oven, flameList, fireLight, stoneTop, frontZ, glow } = buildOven();
   rig.add(oven);
   const peel = buildPeel();
   rig.add(peel);
@@ -311,7 +313,7 @@ export function createHeroScene(
   scene.add(standLight);
 
   const PEEL_OUT = new Vector3(0, stoneTop + 0.005, frontZ + 0.62);
-  const PEEL_IN = new Vector3(0, stoneTop + 0.005, -0.08);
+  const PEEL_IN = new Vector3(0, stoneTop + 0.005, 0.16);
 
   // Kamerafahrt in einer S-Kurve durch den Garten: am Trampolin vorbei, um den Apfelbaum, am Hochbeet vorbei zum Stand.
   const camPath = new CatmullRomCurve3([
@@ -343,7 +345,31 @@ export function createHeroScene(
   const anchorNdc = new Vector3();
   const anchor: StandAnchor = { x: 0, y: 0, visible: false };
   const standCenter = new Vector3(0, 0, -9.2);
-  const closePos = new Vector3(2.3, 1.5, STAND_Z + 2.7);
+  // Schluss: erst nah vor die Ofenöffnung, dann zurück – die fertige Pizza kommt mit zum Betrachter.
+  const ovenFront = new Vector3(Math.sin(RIG_TURN), 0, Math.cos(RIG_TURN));
+  const mouthLook = new Vector3().copy(rig.position).addScaledVector(ovenFront, 0.26).setY(rig.position.y + 0.13);
+  const mouthPos = new Vector3(rig.position.x + Math.sin(RIG_TURN - 0.5) * 0.84, rig.position.y + 0.2, rig.position.z + Math.cos(RIG_TURN - 0.5) * 0.84);
+  const finalPos = new Vector3(2.5, 1.55, STAND_Z + 3.3);
+  const finalLook = new Vector3(0.2, 1.3, STAND_Z);
+
+  const sparks = buildPuffs({ count: 26, color: 0xffb04a, glow: true, size: 26, rise: 0.34, spread: 0.3, life: 1500 });
+  const steam = buildPuffs({ count: 14, color: 0xfff6ea, glow: false, size: 70, rise: 0.26, spread: 0.06, life: 2800 });
+  scene.add(sparks.points, steam.points);
+  // Aufhelllicht, damit die servierte Pizza vor der Abendsonne nicht im Schatten liegt
+  const serveLight = new PointLight(0xfff0dc, 0, 2.2, 1.5);
+  scene.add(serveLight);
+  const rimRaw = new Vector3(0.97, 0.97, 0.5);
+  const rimBaked = new Vector3(1, 1, 0.88);
+  const tmpA = new Vector3();
+  const tmpB = new Vector3();
+  const sparkOrigin = new Vector3();
+  const qRig = new Quaternion();
+  const qFrom = new Quaternion();
+  const qTo = new Quaternion();
+  const qTilt = new Quaternion();
+  const qSpin = new Quaternion();
+  const X_AXIS = new Vector3(1, 0, 0);
+  const Y_AXIS = new Vector3(0, 1, 0);
 
   const doughRaw = new Color(COLORS.doughRaw);
   const doughBaked = new Color(COLORS.doughBaked);
@@ -383,6 +409,8 @@ export function createHeroScene(
     portrait = w / h < 0.75;
     camera.fov = portrait ? 62 : 45;
     camera.updateProjectionMatrix();
+    const pixelScale = (h * renderer.getPixelRatio()) / 900;
+    sparks.points.userData.pixelScale = steam.points.userData.pixelScale = pixelScale;
   }
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
@@ -398,13 +426,15 @@ export function createHeroScene(
     lookAt.copy(lookAhead).setY(1.25).lerp(signLook, seg(walk, 0.5, 0.78)).lerp(standLook, seg(walk, 0.84, 1));
     // Am Anfang geradeaus durch den Rosenbogen schauen
     lookAt.lerp(startLook, 1 - seg(walk, 0, 0.14));
-    // Am Schluss etwas näher an den Ofen
-    const close = seg(prog, WALK_END, 0.86);
-    camPos.lerp(closePos, close * 0.45);
+    // Ofen-Szene am Stand: nah heran, Pizza rein, backen, raus – und dann kommt sie zum Betrachter.
+    const f = MathUtils.clamp((prog - WALK_END) / (1 - WALK_END), 0, 1);
+    const closeIn = seg(f, 0, 0.16);
+    const pullBack = seg(f, 0.62, 0.84);
+    camPos.lerp(mouthPos, closeIn).lerp(finalPos, pullBack);
+    lookAt.lerp(mouthLook, closeIn).lerp(finalLook, pullBack);
     if (portrait) {
-      // Hochformat: etwas weiter zurück und leicht nach rechts schauen, damit der ganze Stand ins Bild passt
-      lookAt.x += close * 0.45;
-      camPos.sub(lookAt).multiplyScalar(1.3).add(lookAt);
+      // Hochformat: etwas weiter zurück, damit Ofen und Stand ins Bild passen
+      camPos.sub(lookAt).multiplyScalar(1 + 0.3 * closeIn).add(lookAt);
     }
     camera.position.copy(camPos);
     if (!lookReady) {
@@ -414,30 +444,35 @@ export function createHeroScene(
     steadyLook.lerp(lookAt, 0.08);
     camera.lookAt(steadyLook);
 
-    // Ofen-Szene am Stand (gleicher Ablauf wie früher, auf den letzten Teil des Scrollwegs verdichtet)
-    const f = MathUtils.clamp((prog - WALK_END) / (1 - WALK_END), 0, 1);
-    // Eine durchgehende Bewegung: Schaufel mit Pizza rein, kurz backen, mit der fertigen Pizza wieder raus.
-    const inA = seg(f, 0.05, 0.32);
-    const bake = seg(f, 0.3, 0.68);
-    const outB = seg(f, 0.68, 0.95);
-    peel.position.lerpVectors(PEEL_OUT, PEEL_IN, inA - outB);
+    const inA = seg(f, 0.12, 0.26);
+    const bake = seg(f, 0.26, 0.56);
+    const outB = seg(f, 0.56, 0.68);
+    const serve = seg(f, 0.66, 0.86);
+    // Die Schaufel legt die Pizza ab, zieht sich während des Backens zurück und holt sie danach wieder.
+    const away = seg(f, 0.26, 0.33) - seg(f, 0.49, 0.56);
+    peel.position.lerpVectors(PEEL_OUT, PEEL_IN, inA - away - outB);
     peel.position.y += Math.sin(outB * Math.PI) * 0.04 + outB * 0.06;
     peel.rotation.x = -outB * 0.12;
-    pz.pizza.position.set(peel.position.x, peel.position.y + 0.014, peel.position.z);
-    pz.pizza.rotation.x = peel.rotation.x;
-    pz.pizza.rotation.y = seg(f, 0.42, 0.56) * Math.PI;
+    pz.pizza.position.lerpVectors(PEEL_OUT, PEEL_IN, inA - outB);
+    pz.pizza.position.y = peel.position.y + 0.014;
+    pz.pizza.rotation.set(peel.rotation.x, seg(f, 0.36, 0.5) * Math.PI, 0);
+    // Der Rand geht im Ofen auf, der Käse verläuft
+    pz.rim.scale.lerpVectors(rimRaw, rimBaked, seg(f, 0.28, 0.5));
+    const melt = seg(f, 0.3, 0.52);
+    pz.cheeseBlobs.forEach((b) => b.scale.set(b.userData.size.x * (1 + melt * 0.3), b.userData.size.y * (1 - melt * 0.35), b.userData.size.z * (1 + melt * 0.3)));
     pz.dough.color.copy(doughRaw).lerp(doughBaked, bake);
     pz.crust.color.copy(crustRaw).lerp(crustBaked, bake);
     pz.cheese.color.copy(cheeseRaw).lerp(cheeseBaked, bake * 0.8);
     pz.charSpots.forEach((s, i) => (s.visible = bake > 0.35 + (i % 6) * 0.08));
 
-    const heat = 0.7 + bake * (1 - outB) * 0.6;
+    const heat = 0.7 + seg(f, 0.2, 0.4) * (1 - outB) * 0.75;
     flameList.forEach((fl) => {
       const k = 0.75 + Math.sin(time * 0.012 + fl.userData.phase) * 0.18 + Math.sin(time * 0.031 + fl.userData.phase) * 0.08;
       fl.scale.set(1, k * heat, 1);
       fl.position.y = stoneTop + 0.08 + (k * heat * 0.22) / 2 - 0.05;
     });
-    fireLight.intensity = (1.6 + Math.sin(time * 0.02) * 0.25) * heat;
+    fireLight.intensity = (0.09 + Math.sin(time * 0.02) * 0.015) * heat;
+    glow.emissiveIntensity = 0.3 + (heat - 0.7) * 0.6 + Math.sin(time * 0.015) * 0.04;
 
     // Andrin hält den Griff der Schaufel
     peel.updateWorldMatrix(true, false);
@@ -445,6 +480,32 @@ export function createHeroScene(
     // Er steht hinter dem Tisch in der Verlängerung der Schaufel und hält den Griff.
     andrin.position.set(handleEnd.x + Math.sin(RIG_TURN) * 0.42, 0, handleEnd.z + Math.cos(RIG_TURN) * 0.42);
     andrin.rotation.y = RIG_TURN + Math.PI;
+
+    // Servieren: Die Pizza löst sich von der Schaufel und schwebt vor die Kamera, mit der Oberseite zum Betrachter.
+    if (serve > 0) {
+      rig.getWorldQuaternion(qRig);
+      qFrom.copy(qRig).multiply(pz.pizza.quaternion);
+      qTilt.setFromAxisAngle(X_AXIS, 1.08);
+      qSpin.setFromAxisAngle(Y_AXIS, Math.PI + time * 0.00028);
+      qTo.copy(camera.quaternion).multiply(qTilt).multiply(qSpin);
+      qFrom.slerp(qTo, serve);
+      // Zielpunkt im Blickfeld: rechts der Mitte, im Hochformat mittig und etwas tiefer
+      camera.updateMatrixWorld();
+      tmpB.set(portrait ? 0 : 0.2, portrait ? -0.1 : -0.015, portrait ? -0.82 : -0.62).applyMatrix4(camera.matrixWorld);
+      rig.localToWorld(tmpA.copy(pz.pizza.position));
+      tmpA.lerp(tmpB, serve);
+      tmpA.y += Math.sin(serve * Math.PI) * 0.12;
+      pz.pizza.position.copy(rig.worldToLocal(tmpA));
+      pz.pizza.quaternion.copy(qRig.invert().multiply(qFrom));
+    }
+    serveLight.position.copy(camera.position);
+    serveLight.intensity = serve * 1.6;
+
+    // Funken aus der Öffnung, solange gebacken wird; Dampf über der fertigen Pizza
+    rig.localToWorld(sparkOrigin.set(-0.2, stoneTop + 0.1, 0.35));
+    sparks.update(time, seg(f, 0.22, 0.34) * (1 - seg(f, 0.58, 0.7)), sparkOrigin);
+    rig.localToWorld(tmpA.copy(pz.pizza.position));
+    steam.update(time, seg(f, 0.5, 0.6), tmpA);
 
     // Kinder hüpfen auf dem Trampolin, die Schaukel schwingt leicht
     kids.forEach((k, i) => {
@@ -464,7 +525,7 @@ export function createHeroScene(
     tray.visible = dir > 0;
 
     // Wenn die fertige Pizza aus dem Ofen kommt, jubeln die Leute in der Nähe
-    const cheer = seg(f, 0.82, 0.92);
+    const cheer = seg(f, 0.72, 0.82);
     people.forEach((p) => {
       p.userData.cheer = p.position.distanceTo(standCenter) < 5 ? cheer : 0;
       animatePerson(p, time);
@@ -479,18 +540,23 @@ export function createHeroScene(
     onProgress?.(prog, anchor);
   }
 
-  function frame(time: number) {
-    const dt = time - lastTime;
-    lastTime = time;
-    current += (target - current) * 0.1;
-    apply(current, time);
+  function render() {
+    // Die ersten Bilder berechnen die Schatten, danach bleiben sie stehen.
     if (shadowFrames > 0) {
       shadowFrames--;
       sun.shadow.needsUpdate = true;
     }
     renderer.render(scene, camera);
+  }
+
+  function frame(time: number) {
+    const dt = time - lastTime;
+    lastTime = time;
+    current += (target - current) * 0.1;
+    apply(current, time);
+    render();
     // Ruckelt es auf diesem Gerät, die Auflösung schrittweise senken (nie wieder erhöhen).
-    if (dt > 0 && dt < 250) {
+    if (dt > 0 && dt < 250 && document.visibilityState === 'visible') {
       measured++;
       if (dt > 24) slow++;
       if (measured >= 90) {
@@ -512,6 +578,8 @@ export function createHeroScene(
     jump(v) {
       target = current = MathUtils.clamp(v, 0, 1);
       lookReady = false;
+      apply(current, performance.now());
+      render();
     },
     start() {
       if (running) return;
