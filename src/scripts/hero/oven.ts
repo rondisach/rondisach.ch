@@ -1,6 +1,6 @@
 // Bausteine für den Pizzastand: Ofen, Schaufel und Pizza – alles aus einfachen Formen, ohne externe Modelle.
 import {
-  DoubleSide,
+  BackSide,
   BoxGeometry,
   CircleGeometry,
   ConeGeometry,
@@ -108,24 +108,16 @@ export function buildOven() {
   shell.receiveShadow = true;
   oven.add(shell);
 
-  // Die Wände glühen von innen; wie stark, steuert die Szene über `glow`.
-  const insideMat = new MeshStandardMaterial({ color: COLORS.ovenInside, roughness: 0.9, side: DoubleSide, emissive: 0x7a1f06, emissiveIntensity: 0.3 });
-  // Dunkle Auskleidung des Durchgangs: Ohne sie sähe man innen die helle Aussenhülle statt eines heissen Ofens.
-  // Die Fase der Hülle verengt den Durchgang um 3,5 cm – die Auskleidung muss noch etwas kleiner sein, sonst verschwindet sie in der Wand.
-  const linerBottom = mouthBottom + 0.04;
-  const linerH = mouthTop - 0.04 - linerBottom;
-  const linerGeo = new BoxGeometry(mouthW - 0.085, linerH, D - 0.02);
-  // Vorderseite weglassen (5. Fläche der Box), sonst wäre die Öffnung zu
-  linerGeo.setIndex(Array.from(linerGeo.index!.array).filter((_, i) => i < 24 || i >= 30));
-  const liner = new Mesh(linerGeo, insideMat);
-  liner.position.set(0, linerBottom + linerH / 2, 0);
-  oven.add(liner);
+  // Innenraum: Box mit BackSide-Material → von aussen durch die Öffnung sichtbar, Frontfläche wird ausgeblendet.
+  const insideMat = new MeshStandardMaterial({ color: COLORS.ovenInside, roughness: 0.9, side: BackSide });
+  const cavity = new Mesh(new BoxGeometry(W - 0.16, mouthTop + 0.08 - mouthBottom + 0.12, D - 0.1), insideMat);
+  cavity.position.set(0, (mouthBottom + mouthTop + 0.08) / 2 + 0.02, -0.02);
+  oven.add(cavity);
 
   // Pizzastein
-  // Dunkler, heisser Stein: Im Ofen fällt kein Tageslicht, das Leuchten kommt von der Glut.
-  const stoneMat = new MeshStandardMaterial({ color: 0x1c1410, roughness: 0.95, emissive: 0x8a3a12, emissiveIntensity: 0.55 });
-  const stone = new Mesh(new BoxGeometry(mouthW - 0.1, 0.03, D - 0.06), stoneMat);
-  stone.position.set(0, linerBottom + 0.006, 0);
+  const stoneMat = new MeshStandardMaterial({ color: COLORS.stone, roughness: 0.95, emissive: 0x3a1608, emissiveIntensity: 0.35 });
+  const stone = new Mesh(new BoxGeometry(W - 0.2, 0.03, D - 0.16), stoneMat);
+  stone.position.set(0, mouthBottom + 0.005, -0.03);
   stone.receiveShadow = true;
   oven.add(stone);
 
@@ -176,21 +168,19 @@ export function buildOven() {
 
   // Flammen entlang der linken Innenwand
   const flames = new Group();
-  // Nur Eigenleuchten, kein Streulicht: sonst überstrahlen die Flammen zu einer hellen Fläche.
-  const flameMat = new MeshStandardMaterial({ color: 0x000000, emissive: COLORS.flame, emissiveIntensity: 2.4, transparent: true, opacity: 0.95, roughness: 1 });
-  const coreMat = new MeshStandardMaterial({ color: 0x000000, emissive: COLORS.flameCore, emissiveIntensity: 1.4, roughness: 1 });
+  const flameMat = new MeshStandardMaterial({
+    color: COLORS.flame,
+    emissive: COLORS.flame,
+    emissiveIntensity: 2.2,
+    transparent: true,
+    opacity: 0.9,
+    roughness: 1,
+  });
+  const coreMat = new MeshStandardMaterial({ color: COLORS.flameCore, emissive: COLORS.flameCore, emissiveIntensity: 2.6, roughness: 1 });
   const flameList: Mesh[] = [];
   for (let i = 0; i < 9; i++) {
     const f = new Mesh(new ConeGeometry(0.045, 0.22, 10), i % 3 === 0 ? coreMat : flameMat);
-    f.position.set(-mouthW / 2 + 0.1, mouthBottom + 0.13, -D / 2 + 0.18 + i * 0.12);
-    f.userData.phase = Math.random() * Math.PI * 2;
-    flames.add(f);
-    flameList.push(f);
-  }
-  // Zweite Reihe an der Rückwand – von vorne durch die Öffnung gut sichtbar
-  for (let i = 0; i < 8; i++) {
-    const f = new Mesh(new ConeGeometry(0.05, 0.24, 10), i % 3 === 1 ? coreMat : flameMat);
-    f.position.set(-mouthW / 2 + 0.14 + i * 0.12, mouthBottom + 0.13, -D / 2 + 0.1);
+    f.position.set(-W / 2 + 0.16, mouthBottom + 0.1, -D / 2 + 0.18 + i * 0.12);
     f.userData.phase = Math.random() * Math.PI * 2;
     flames.add(f);
     flameList.push(f);
@@ -201,7 +191,7 @@ export function buildOven() {
   fireLight.position.set(-0.45, mouthBottom + 0.22, 0);
   oven.add(fireLight);
 
-  return { oven, flameList, fireLight, stoneTop: linerBottom + 0.022, frontZ: D / 2, glow: insideMat };
+  return { oven, flameList, fireLight, stoneTop: mouthBottom + 0.02, frontZ: D / 2 };
 }
 
 export function buildPeel() {
@@ -264,7 +254,6 @@ export function buildPizza() {
     const b = new Mesh(blobGeo, cheese);
     b.position.set(x, 0.022, z);
     b.scale.set(1 + Math.random() * 0.35, 0.22, 1 + Math.random() * 0.35);
-    b.userData.size = b.scale.clone();
     pizza.add(b);
     cheeseBlobs.push(b);
   }
@@ -293,6 +282,6 @@ export function buildPizza() {
     charSpots.push(s);
   }
 
-  return { pizza, dough, crust, cheese, charSpots, rim, cheeseBlobs };
+  return { pizza, dough, crust, cheese, charSpots };
 }
 

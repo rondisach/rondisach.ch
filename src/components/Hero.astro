@@ -7,8 +7,7 @@ import logo from '../assets/brand/rondisach-logo.webp';
 const captions = [
   { from: 0.3, to: 0.44, kicker: 'eure gäste', text: 'Alle sitzen zusammen, essen, lachen.' },
   { from: 0.48, to: 0.64, kicker: 'pizza à discrétion', text: 'Es kommt laufend frisch Pizza nach.' },
-  { from: 0.745, to: 0.815, kicker: 'und wir?', text: 'Wir stehen am Ofen und backen direkt vor Ort.' },
-  { from: 0.83, to: 0.895, kicker: '500 grad', text: 'Nach 90 Sekunden ist sie fertig.' },
+  { from: 0.74, to: 0.95, kicker: 'und wir?', text: 'Wir stehen am Ofen und backen direkt vor Ort.' },
 ];
 ---
 
@@ -62,12 +61,6 @@ const captions = [
         </div>
         <!-- Knopf, der am Stand «klebt» und mit der Kamera mitwandert -->
         <a class="standCta" href="#anfrage" tabindex="-1"><span class="pulse" aria-hidden="true"></span>Jetzt Termin anfragen</a>
-        <!-- Finale: Die fertige Pizza schwebt rechts im Bild, daneben die Einladung -->
-        <div class="finale">
-          <div class="kicker">frisch aus dem ofen</div>
-          <p>Die nächste backen wir für euch.</p>
-          <a class="btn finaleBtn" href="#anfrage" tabindex="-1">Jetzt Termin anfragen</a>
-        </div>
         <div class="scrollHint" aria-hidden="true"><span>scrollen</span></div>
       </div>
     </div>
@@ -79,10 +72,6 @@ const captions = [
   const canvas = hero?.querySelector<HTMLCanvasElement>('.heroCanvas');
     // Die Animation startet nicht ganz hinten im Garten, sondern schon ein Stück weiter vorne.
   const START = 0.22;
-  // Bis hierhin (Fortschritt der Szene) dauert der Spaziergang, danach kommt der Ofen.
-  const WALK_END = 0.74;
-  // Anteil des Scrollwegs für den Spaziergang; der Rest gehört dem Ofen und dem kurzen Halt am Schluss.
-  const WALK_SHARE = 0.52;
 
   // Leichte Variante (Handy, kein WebGL): Die Pizza dreht sich beim Scrollen mit.
   function spinOnScroll() {
@@ -111,15 +100,12 @@ const captions = [
     // Auf dem Handy bleibt das leichte Bild – schneller und schont den Akku. Entschieden hat das Skript oben im Abschnitt.
     if (!hero || !canvas || hero.dataset.mode !== 'loading') return spinOnScroll();
     const { createHeroScene } = await import('../scripts/hero/scene');
-    const { default: pizzaPhoto } = await import('../assets/uploads/pizza-margherita.webp?url');
     const text = hero.querySelector<HTMLElement>('.heroText')!;
     const veil = hero.querySelector<HTMLElement>('.veil')!;
     const stage = hero.querySelector<HTMLElement>('.stage')!;
     const sticky = hero.querySelector<HTMLElement>('.heroSticky')!;
     const captions = Array.from(hero.querySelectorAll<HTMLElement>('.caption'));
     const standCta = hero.querySelector<HTMLElement>('.standCta')!;
-    const finale = hero.querySelector<HTMLElement>('.finale')!;
-    const finaleBtn = hero.querySelector<HTMLAnchorElement>('.finaleBtn')!;
 
     // Stile nur schreiben, wenn sich der Wert ändert – sonst muss der Browser in jedem Bild neu zusammensetzen.
     const last = new WeakMap<HTMLElement, Record<string, string>>();
@@ -147,17 +133,12 @@ const captions = [
         set(c, 'opacity', o.toFixed(2));
         set(c, 'transform', `translateY(${Math.round((1 - o) * 16)}px)`);
       }
-      // Der Knopf klebt am Stand, bis die Kamera zum Ofen fährt; im Finale steht er neben der Pizza.
-      const oven = (p - WALK_END) / (1 - WALK_END);
-      const show = p > 0.66 && oven < 0.05 && anchor.visible;
-      const end = oven > 0.84;
-      finale.classList.toggle('show', end);
-      finaleBtn.tabIndex = end ? 0 : -1;
+      const show = p > 0.66 && anchor.visible;
       standCta.classList.toggle('show', show);
       standCta.tabIndex = show ? 0 : -1;
       // Nie oben aus der Animation herausragen lassen
       if (show) set(standCta, 'transform', `translate(${anchor.x.toFixed(1)}px, ${Math.max(anchor.y, 76).toFixed(1)}px) translate(-50%, -100%)`);
-        }, pizzaPhoto);
+    });
     scene.jump(START);
     if (import.meta.env.DEV) (window as unknown as { __hero: typeof scene }).__hero = scene;
     // Mit ?fps in der Adresse zeigt eine kleine Anzeige Bildrate, Auflösung und Zeichenaufrufe.
@@ -176,11 +157,7 @@ const captions = [
       const rect = hero.getBoundingClientRect();
       const travel = rect.height - sticky.offsetHeight;
       const prog = travel > 0 ? Math.min(1, Math.max(0, -rect.top / travel)) : 0;
-      const p =
-        prog < WALK_SHARE
-          ? START + (prog / WALK_SHARE) * (WALK_END - START)
-          : WALK_END + ((prog - WALK_SHARE) / (1 - WALK_SHARE)) * (1 - WALK_END);
-      scene.setProgress(p);
+      scene.setProgress(START + prog * (1 - START));
       hero.classList.toggle('scrolled', prog > 0.02);
     };
     update();
@@ -419,43 +396,6 @@ const captions = [
   .standCta:hover {
     background: var(--ink);
   }
-  .finale {
-    position: absolute;
-    z-index: 4;
-    left: var(--gutter);
-    top: 50%;
-    width: min(46%, 580px);
-    padding: clamp(22px, 2.6vw, 36px);
-    border-radius: var(--radius);
-    background: rgba(18, 18, 18, 0.86);
-    transform: translateY(calc(-50% + 20px));
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .finale.show {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(-50%);
-  }
-  .finale .kicker {
-    color: #f6c48a;
-  }
-  .finale p {
-    margin: 10px 0 26px;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(36px, 4.6vw, 68px);
-    line-height: 0.94;
-    letter-spacing: -0.05em;
-    color: var(--cream);
-  }
-  .finaleBtn {
-    background: var(--accent);
-    border-color: var(--cream);
-    color: #fff;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-  }
   .pulse {
     position: relative;
     width: 10px;
@@ -501,7 +441,7 @@ const captions = [
 
   /* ---------- Animation (Vollbild) ---------- */
   .hero:not([data-mode='static']) {
-    height: 340vh;
+    height: 287vh;
   }
   .hero:not([data-mode='static']) .heroSticky {
     position: sticky;
@@ -569,16 +509,7 @@ const captions = [
       gap: 8px;
     }
     .hero:not([data-mode='static']) {
-      height: 300vh;
-    }
-    .finale {
-      top: 12%;
-      width: auto;
-      right: var(--gutter);
-      transform: translateY(20px);
-    }
-    .finale.show {
-      transform: none;
+      height: 256vh;
     }
     .hero:not([data-mode='static']) h1 {
       font-size: clamp(48px, 13vw, 84px);
