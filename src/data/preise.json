@@ -7,9 +7,10 @@
       "price": 28,
       "highlight": true,
       "features": [
-        "Ab 15 Personen · Mindestauftragswert CHF 600",
+        "Ab 30 Personen · Mindestauftragswert CHF 900",
         "Gemeinsam abgestimmte Pizza-Auswahl",
-        "Ofen, Aufbau und frische Zubereitung vor Ort inklusive"
+        "Ofen, Aufbau und frische Zubereitung vor Ort inklusive",
+        "2 Stunden Pizzaservice inklusive (ab der ersten Pizza, ohne Auf- und Abbau)"
       ]
     },
     {
@@ -24,8 +25,8 @@
       ]
     }
   ],
-  "minGuests": 15,
-  "minOrder": 600,
+  "minGuests": 30,
+  "minOrder": 900,
   "travel": [
     {
       "title": "Anfahrt bis 15 km",
@@ -84,5 +85,5 @@
       }
     ]
   },
-  "fineprint": "Bei kleinen Pizza-Caterings kann der effektive Preis pro Person wegen des Mindestauftragswerts über dem ausgewiesenen Ab-Preis liegen. Die genannten Preise verstehen sich in CHF als Endpreise; allfällige gesetzlich geschuldete Abgaben sind darin enthalten. Zusatzwünsche, besondere Menükomponenten, erschwerte örtliche Bedingungen oder kleinere Gruppen können den Preis verändern. Verbindlich sind ausschliesslich Leistungsumfang und Gesamtpreis der persönlichen Offerte."
+  "fineprint": "Bei kleinen Pizza-Caterings kann der effektive Preis pro Person wegen des Mindestauftragswerts über dem ausgewiesenen Ab-Preis liegen. Verlängerung des Pizzaservice: CHF 50 pro angefangene halbe Stunde, auf Wunsch auch spontan vor Ort. Die genannten Preise verstehen sich in CHF als Endpreise; allfällige gesetzlich geschuldete Abgaben sind darin enthalten. Zusatzwünsche, besondere Menükomponenten, erschwerte örtliche Bedingungen oder kleinere Gruppen können den Preis verändern. Verbindlich sind ausschliesslich Leistungsumfang und Gesamtpreis der persönlichen Offerte."
 }

@@ -2,7 +2,7 @@
   "catering": [
     {
       "question": "Ab wie vielen Personen bucht ihr?",
-      "answer": "Caterings sind ab 15 Personen möglich, der Mindestauftragswert liegt bei CHF 600. Für kleinere Runden lohnt sich vielleicht unsere Ofenmiete.",
+      "answer": "Caterings sind ab 30 Personen möglich, der Mindestauftragswert liegt bei CHF 900. Für kleinere Runden lohnt sich vielleicht unsere Ofenmiete.",
       "linkText": "Ofen mieten",
       "link": "/ofen-mieten.html"
     },
@@ -27,14 +27,18 @@
       "answer": "Ja. Mehrere unserer Pizzen sind vegetarisch, die Marinara ist vegan. Bei Allergien oder Wünschen wie glutenfrei sprecht uns bei der Anfrage an."
     },
     {
+      "question": "Wie lange backt ihr?",
+      "answer": "Im Preis sind 2 Stunden Pizzaservice ab der ersten Pizza inbegriffen, Auf- und Abbau nicht mitgerechnet. Wollt ihr länger, verlängern wir gerne: CHF 50 pro angefangene halbe Stunde."
+    },
+    {
       "question": "Wie früh sollten wir buchen?",
       "answer": "So früh wie möglich, besonders für Samstage im Sommer. Kurzfristige Anfragen versuchen wir trotzdem möglich zu machen."
     },
     {
       "question": "Wie wird gebucht und storniert?",
-      "answer": "Nach eurer Anfrage erhaltet ihr eine Offerte. Verbindlich wird der Auftrag mit eurer schriftlichen Bestätigung.",
-      "linkText": "Buchung & Storno",
-      "link": "/buchung-storno.html"
+      "answer": "Nach eurer Anfrage erhaltet ihr eine Offerte. Verbindlich wird der Auftrag mit eurer schriftlichen Bestätigung. Stornierungen sind bis 14 Tage vor dem Anlass kostenlos, danach gelten unsere AGB.",
+      "linkText": "AGB",
+      "link": "/agb.html"
     }
   ],
   "ofen": [
@@ -68,7 +72,9 @@
     },
     {
       "question": "Wie funktioniert die Kaution?",
-      "answer": "Pro Ofen hinterlegt ihr CHF 300 und bekommt sie bei der Rückgabe zurück. Bitte bringt Ofen und Schieber grob gereinigt zurück."
+      "answer": "Pro Ofen hinterlegt ihr CHF 300 und bekommt sie bei der Rückgabe zurück. Bitte bringt Ofen und Schieber grob gereinigt zurück. Alle Mietbedingungen findet ihr in unseren AGB.",
+      "linkText": "AGB Ofenmiete",
+      "link": "/agb.html#ofenmiete"
     }
   ]
 }

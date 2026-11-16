@@ -109,12 +109,25 @@ const jsonLd = {
           <a href="/ofen-mieten.html">ofen mieten</a>
           <a href="/impressum.html">impressum</a>
           <a href="/datenschutz.html">datenschutz</a>
-          <a href="/buchung-storno.html">buchung &amp; storno</a>
+          <a href="/agb.html">AGB</a>
         </div>
       </div>
       <div class="wrap footBottom">© {new Date().getFullYear()} rondisach · eifach e rondi sach.</div>
     </footer>
     <a class="mobileCta btn" href="/#anfrage">anfragen</a>
+    <a
+      class="waFloat"
+      href={`https://wa.me/${kontakt.whatsapp}?text=${encodeURIComponent('Hoi rondisach! ')}`}
+      target="_blank"
+      rel="noopener"
+      aria-label="Frage per WhatsApp stellen"
+      data-umami-event="WhatsApp geklickt (Button)"
+    >
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+        <path fill="currentColor" d="M12 3C6.98 3 3 6.69 3 11.25c0 2.4 1.1 4.56 2.87 6.07L5 21l4.02-1.94c.94.27 1.94.44 2.98.44 5.02 0 9-3.69 9-8.25S17.02 3 12 3Zm-4 9.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/>
+      </svg>
+      <span class="waLabel">fragen per WhatsApp</span>
+    </a>
     <script>
       // Der schwebende Anfragen-Knopf verschwindet, solange schon ein Anfrage-Knopf, das Formular oder der Footer sichtbar ist.
       const cta = document.querySelector<HTMLElement>('.mobileCta');
@@ -200,6 +213,29 @@ const jsonLd = {
   .mobileCta {
     display: none;
   }
+  .waFloat {
+    position: fixed;
+    right: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 56px;
+    padding: 0 22px 0 16px;
+    border-radius: 999px;
+    background: #25d366;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .waFloat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  }
   @media (max-width: 760px) {
     .footIn {
       grid-template-columns: 1fr;
@@ -214,6 +250,18 @@ const jsonLd = {
       z-index: 30;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
       transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .waFloat {
+      right: auto;
+      left: 16px;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      width: 52px;
+      height: 52px;
+      padding: 0;
+      justify-content: center;
+    }
+    .waLabel {
+      display: none;
     }
     .mobileCta.away {
       opacity: 0;
