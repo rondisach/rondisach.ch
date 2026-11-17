@@ -52,6 +52,7 @@ import {
   buildWheelbarrow,
 } from './props';
 import { PIZZA_KINDS, buildVariantPizza } from './pizzas';
+import { batchStatic } from './batch';
 
 export interface HeroScene {
   setProgress(p: number): void;
@@ -208,7 +209,9 @@ export function createHeroScene(
     // Alle sitzen auf der abgewandten Seite – so bleibt der Blick auf die Pizzen frei.
     for (const [x, side] of [[-0.65, -1], [0, -1], [0.65, -1]] as const) {
       if (small && rand() > 0.6) continue;
-      const p = buildPerson({ rand, pose: 'sit', hold: rand() > 0.45 ? 'slice' : 'glass' });
+      // Nicht alle essen gerade: manche trinken, andere plaudern nur
+      const r = rand();
+      const p = buildPerson({ rand, pose: 'sit', hold: r > 0.55 ? 'slice' : r > 0.25 ? 'glass' : null });
       p.position.set(x, 0, side * 0.62);
       p.rotation.y = side < 0 ? 0 : Math.PI;
       g.add(p);
@@ -226,8 +229,9 @@ export function createHeroScene(
     { x: -3.2, z: 2.6, r: 1.9, hold: 'slice' },
     { x: -3.8, z: 3.3, r: 2.7, hold: 'glass' },
     { x: 3.6, z: -4.0, r: -0.8, hold: 'slice' },
-    { x: -2.4, z: -7.4, r: Math.PI + 0.5, hold: 'glass' },
-    { x: -1.7, z: -6.8, r: Math.PI + 0.2, hold: null },
+    // Abseits vom Weg des Helfers, damit er nicht durch sie hindurchläuft
+    { x: -3.6, z: -7.6, r: -0.69, hold: 'glass' },
+    { x: -4.1, z: -7.0, r: 2.45, hold: null },
   ].filter((_, i) => !small || i % 2 === 0 || i >= 5);
   for (const s of standing) {
     const p = buildPerson({ rand, hold: s.hold as 'glass' | 'slice' | null });
@@ -262,7 +266,8 @@ export function createHeroScene(
   waiter.add(tray);
   scene.add(waiter);
   const waiterA = new Vector3(-1.9, 0, -8.2);
-  const waiterB = new Vector3(-2.9, 0, -5.9);
+  // Endet kurz hinter dem Tisch, ohne die Gäste dort zu streifen
+  const waiterB = new Vector3(-2.7, 0, -6.3);
 
   // Der rondisach-Stand
   const STAND_Z = -9.2;
@@ -332,6 +337,7 @@ export function createHeroScene(
   // Geglätteter Blickpunkt, damit die Kamera ruhig bleibt
   const steadyLook = new Vector3();
   let lookReady = false;
+  let lookFollow = 0.08;
   const camPos = new Vector3();
   const lookAt = new Vector3();
   const handleEnd = new Vector3();
@@ -341,6 +347,26 @@ export function createHeroScene(
   const anchor: StandAnchor = { x: 0, y: 0, visible: false };
   const standCenter = new Vector3(0, 0, -9.2);
   const closePos = new Vector3(2.3, 1.5, STAND_Z + 2.7);
+
+  // Unbewegte Teile zusammenfassen: gleiches Bild, gleiche Schatten, aber nur noch ein Bruchteil der Zeichenaufrufe.
+  // Alles, was sich bewegt, bleibt für sich und wirft weiterhin seinen eigenen Schatten.
+  // Gäste an Tischen und in Grüppchen bleiben an ihrem Platz: Ihr Körper gehört zum Garten, nur Arme und Kopf bewegen sich.
+  const movers: Person[] = [...kids, waiter, andrin];
+  const figures = [...people.filter((p) => !movers.includes(p)), ...movers];
+  const limbs = (p: Person) => [p.userData.armL, p.userData.armR, p.userData.head];
+  batchStatic(scene, [...movers, ...figures.flatMap(limbs), rig, swingTree.swing, fireflies.points]);
+  // Ofen: nur Flammen, Schaufel und Pizza bewegen sich
+  batchStatic(rig, [peel, pz.pizza, ...flameList]);
+  for (const f of figures) {
+    const { armL, armR, foreL, foreR, head } = f.userData;
+    if (movers.includes(f)) batchStatic(f, [armL, armR, head, tray]);
+    batchStatic(head);
+    batchStatic(armL, [foreL]);
+    batchStatic(armR, [foreR]);
+    batchStatic(foreL);
+    // Das Glas dreht sich gegenüber dem Unterarm (bleibt aufrecht) – darf also nicht mit ihm verschmelzen
+    batchStatic(foreR, f.userData.glass ? [f.userData.glass] : []);
+  }
 
   const doughRaw = new Color(COLORS.doughRaw);
   const doughBaked = new Color(COLORS.doughBaked);
@@ -393,7 +419,7 @@ export function createHeroScene(
       steadyLook.copy(lookAt);
       lookReady = true;
     }
-    steadyLook.lerp(lookAt, 0.08);
+    steadyLook.lerp(lookAt, lookFollow);
     camera.lookAt(steadyLook);
 
     // Ofen-Szene am Stand (gleicher Ablauf wie früher, auf den letzten Teil des Scrollwegs verdichtet)
@@ -461,8 +487,13 @@ export function createHeroScene(
     onProgress?.(prog, anchor);
   }
 
+  let lastTime = 0;
   function frame(time: number) {
-    current += (target - current) * 0.1;
+    // Nachlauf nach der vergangenen Zeit statt pro Bild: gleich weich bei 60, 120 oder schwankenden Bildern pro Sekunde.
+    const dt = lastTime ? Math.min(0.1, (time - lastTime) / 1000) : 1 / 60;
+    lastTime = time;
+    current += (target - current) * (1 - Math.exp(-6.3 * dt));
+    lookFollow = 1 - Math.exp(-5 * dt);
     apply(current, time);
     renderer.render(scene, camera);
     if (running) raf = requestAnimationFrame(frame);
@@ -479,6 +510,7 @@ export function createHeroScene(
     start() {
       if (running) return;
       running = true;
+      lastTime = 0;
       raf = requestAnimationFrame(frame);
     },
     stop() {

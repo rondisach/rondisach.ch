@@ -238,10 +238,19 @@ export function buildStringLights(poles: Vector3[], bulbsPerSpan = 10) {
 
 export interface Person extends Group {
   userData: {
+    /** Schultergelenke */
     armL: Object3D;
     armR: Object3D;
+    /** Ellbogengelenke (Kinder der Schultern) */
+    foreL: Object3D;
+    foreR: Object3D;
     head: Object3D;
     phase: number;
+    /** Eigenes Tempo, damit nicht alle gleichzeitig abbeissen */
+    pace: number;
+    sit: boolean;
+    /** Gehaltenes Glas – wird aufrecht gehalten, egal wie der Arm steht */
+    glass?: Object3D;
     action: 'eat' | 'drink' | 'talk' | 'work' | 'toast' | 'none';
     /** 0–1: wie stark die Figur gerade jubelt (z. B. wenn die Pizza aus dem Ofen kommt) */
     cheer?: number;
@@ -326,32 +335,47 @@ export function buildPerson({ rand, pose = 'stand', apron = false, hold = null, 
   }
   p.add(head);
 
-  // Arme mit Drehpunkt an der Schulter
-  const armGeo = new CapsuleGeometry(0.045, 0.46, 4, 10);
-  armGeo.translate(0, -0.27, 0);
-  const arms = [-1, 1].map((side) => {
-    const pivot = new Object3D();
-    pivot.position.set(side * 0.22, hip + 0.56, 0);
-    const arm = new Mesh(armGeo, shirtMat);
-    arm.castShadow = true;
-    const hand = new Mesh(new SphereGeometry(0.045, 12, 10), skin);
-    hand.position.y = -0.56;
-    pivot.add(arm, hand);
-    p.add(pivot);
-    return pivot;
+  // Arme mit Schulter- und Ellbogengelenk, damit Essen und Trinken natürlich aussehen
+  const upperGeo = new CapsuleGeometry(0.046, 0.21, 4, 10);
+  upperGeo.translate(0, -0.14, 0);
+  const foreGeo = new CapsuleGeometry(0.042, 0.21, 4, 10);
+  foreGeo.translate(0, -0.14, 0);
+  const handGeo = new SphereGeometry(0.045, 12, 10);
+  const joints = [-1, 1].map((side) => {
+    const shoulder = new Object3D();
+    shoulder.position.set(side * 0.22, hip + 0.56, 0);
+    const upper = new Mesh(upperGeo, shirtMat);
+    upper.castShadow = true;
+    const elbow = new Object3D();
+    elbow.position.y = -0.28;
+    const fore = new Mesh(foreGeo, shirtMat);
+    fore.castShadow = true;
+    const hand = new Mesh(handGeo, skin);
+    hand.position.y = -0.29;
+    elbow.add(fore, hand);
+    shoulder.add(upper, elbow);
+    p.add(shoulder);
+    return { shoulder, elbow };
   });
 
+  let glass: Object3D | undefined;
   if (hold) {
     const item = hold === 'slice' ? buildSlice() : buildGlass();
-    item.position.set(0, -0.6, 0.06);
-    arms[1].add(item);
+    if (hold === 'glass') glass = item;
+    item.position.set(0, -0.32, 0.06);
+    joints[1].elbow.add(item);
   }
 
   p.userData = {
-    armL: arms[0],
-    armR: arms[1],
+    armL: joints[0].shoulder,
+    armR: joints[1].shoulder,
+    foreL: joints[0].elbow,
+    foreR: joints[1].elbow,
     head,
     phase: rand() * Math.PI * 2,
+    pace: 0.75 + rand() * 0.5,
+    sit,
+    glass,
     action: hold === 'slice' ? 'eat' : hold === 'glass' ? 'drink' : 'talk',
   };
   return p;
@@ -387,42 +411,131 @@ function buildGlass() {
   return g;
 }
 
-/** Kleine Bewegungen, damit die Gäste lebendig wirken. */
+const ease = (x: number) => x * x * (3 - 2 * x);
+const mix = (a: number, b: number, k: number) => a + (b - a) * k;
+
+/**
+ * Hüllkurve für eine Handlung, die ab und zu vorkommt (abbeissen, trinken, anstossen):
+ * meistens 0, dann sanft auf 1, kurz halten und sanft zurück. `len` ist der Anteil eines Durchgangs.
+ */
+function now(s: number, rate: number, len: number) {
+  const u = s * rate - Math.floor(s * rate);
+  if (u > len) return 0;
+  const x = u / len;
+  return ease(Math.min(1, x / 0.3)) * (1 - ease(Math.max(0, (x - 0.65) / 0.35)));
+}
+
+/** Wie lange die letzte Handlung her ist, als Anteil eines Durchgangs (zum Kauen danach). */
+function since(s: number, rate: number, len: number) {
+  const u = s * rate - Math.floor(s * rate);
+  return u > len ? u - len : 1;
+}
+
+/** Ruhige, natürliche Bewegungen: essen, trinken, plaudern – die Arme bleiben meistens unten. */
 export function animatePerson(p: Person, t: number) {
-  const { armL, armR, head, phase, action } = p.userData;
+  const { armL, armR, foreL, foreR, head, phase, action, sit } = p.userData;
+  const pace = p.userData.pace ?? 1;
   const cheer = p.userData.cheer ?? 0;
   const s = t * 0.001 + phase;
-  head.rotation.y = Math.sin(s * 0.7) * 0.35 * (1 - cheer);
-  head.rotation.x = Math.sin(s * 1.3) * 0.05 - cheer * 0.15;
+  // 'none': Die Haltung wird von aussen gesetzt (Helfer mit Tablett, Andrin an der Schaufel), nur der Kopf bewegt sich.
+  if (action === 'none') {
+    head.rotation.y = Math.sin(s * 0.31 * pace) * 0.2;
+    return;
+  }
+
+  let sipping = 0;
+
+  // Kopf: langsam umherschauen, mit den Nachbarn reden
+  let yaw = Math.sin(s * 0.31 * pace) * 0.3 + Math.sin(s * 0.83 + 1.3) * 0.06;
+  let pitch = Math.sin(s * 0.57) * 0.04;
+
+  // Grundhaltung: Arme locker, leicht vom Körper weg
+  armL.rotation.set(0.02, 0, -0.07);
+  armR.rotation.set(0.02, 0, 0.07);
+  foreL.rotation.set(-0.15, 0, 0);
+  foreR.rotation.set(-0.15, 0, 0);
+
   if (action === 'eat' || action === 'drink') {
-    // Ab und zu zum Mund führen
-    const lift = Math.pow(Math.max(0, Math.sin(s * 0.9)), 3);
-    armR.rotation.x = -0.9 - lift * 1.5;
-    armR.rotation.z = lift * 0.25;
-    armL.rotation.x = Math.sin(s) * 0.05;
+    const eat = action === 'eat';
+    // Stück bzw. Glas vor dem Körper, die andere Hand liegt auf dem Tisch oder hängt locker
+    armR.rotation.x = sit ? -0.38 : -0.22;
+    foreR.rotation.x = eat ? -1.0 : -1.3;
+    if (sit) {
+      armL.rotation.x = -0.32;
+      foreL.rotation.x = -1.0;
+    }
+    // Ab und zu abbeissen oder einen Schluck nehmen – jede Person in ihrem eigenen Takt
+    const rate = (eat ? 0.1 : 0.075) * pace;
+    const len = eat ? 0.24 : 0.3;
+    const lift = now(s, rate, len);
+    if (!eat) sipping = lift;
+    armR.rotation.x = mix(armR.rotation.x, -1.12, lift);
+    armR.rotation.z = mix(armR.rotation.z, -0.32, lift);
+    foreR.rotation.x = mix(foreR.rotation.x, eat ? -2.25 : -2.35, lift);
+    yaw *= 1 - lift;
+    // Beim Abbeissen leicht nach vorne, beim Trinken den Kopf etwas zurück
+    pitch += eat ? lift * 0.14 : -lift * 0.2;
+    if (eat) {
+      // Danach kurz kauen
+      const after = since(s, rate, len);
+      if (after < 0.2) pitch += Math.sin(s * 11) * 0.025 * (1 - after / 0.2);
+    }
   } else if (action === 'toast') {
-    // Gläser heben und anstossen
-    const up = Math.pow(Math.max(0, Math.sin(s * 0.8)), 2);
-    armR.rotation.x = -0.7 - up * 1.6;
-    armL.rotation.x = Math.sin(s * 1.3) * 0.1;
+    // Glas vor der Brust, ab und zu anstossen (nach vorne, nicht in die Luft)
+    armR.rotation.x = -0.25;
+    foreR.rotation.x = -1.3;
+    const clink = now(s, 0.085 * pace, 0.22);
+    armR.rotation.x = mix(armR.rotation.x, -0.95, clink);
+    foreR.rotation.x = mix(foreR.rotation.x, -0.85, clink);
+    yaw *= 1 - clink;
+    // Und danach ein Schluck
+    const sip = now(s + 4.5 / pace, 0.085 * pace, 0.2);
+    sipping = sip;
+    armR.rotation.x = mix(armR.rotation.x, -1.1, sip);
+    armR.rotation.z = mix(armR.rotation.z, -0.3, sip);
+    foreR.rotation.x = mix(foreR.rotation.x, -2.35, sip);
+    pitch -= sip * 0.2;
   } else if (action === 'talk') {
-    armR.rotation.x = -0.4 + Math.sin(s * 2.1) * 0.35;
-    armL.rotation.x = -0.2 + Math.sin(s * 1.7 + 1) * 0.2;
+    // Beim Erzählen bewegen sich vor allem die Unterarme, sanft und unregelmässig
+    const g1 = Math.sin(s * 1.1) * Math.sin(s * 0.37 + 0.8);
+    const g2 = Math.sin(s * 0.9 + 2) * Math.sin(s * 0.29);
+    if (sit) {
+      // Am Tisch: Unterarme liegen auf, eine Hand erzählt mit
+      armR.rotation.x = -0.34 + g1 * 0.08;
+      foreR.rotation.x = -1.0 + Math.max(0, g1) * 0.5;
+      armL.rotation.x = -0.32;
+      foreL.rotation.x = -1.0 + Math.max(0, g2) * 0.2;
+      yaw *= 1.4;
+    } else {
+      armR.rotation.x = -0.12 + g1 * 0.1;
+      foreR.rotation.x = -0.65 + g1 * 0.35;
+      armL.rotation.x = -0.06 + g2 * 0.06;
+      foreL.rotation.x = -0.35 + g2 * 0.25;
+    }
   } else if (action === 'work') {
-    // Teig ausziehen
-    armL.rotation.x = -1.05 + Math.sin(s * 4) * 0.12;
-    armR.rotation.x = -1.05 + Math.sin(s * 4 + Math.PI) * 0.12;
-    armL.rotation.z = -0.25 + Math.sin(s * 4) * 0.1;
-    armR.rotation.z = 0.25 - Math.sin(s * 4) * 0.1;
+    // Teig ausziehen, Hände vor dem Körper über dem Tisch
+    const k = Math.sin(s * 3.2);
+    armL.rotation.set(-0.6, 0, -0.18 - k * 0.08);
+    armR.rotation.set(-0.6, 0, 0.18 - k * 0.08);
+    foreL.rotation.x = -0.75 + k * 0.12;
+    foreR.rotation.x = -0.75 - k * 0.12;
+    pitch += 0.25;
+    yaw *= 0.3;
   }
-  if (cheer > 0 && action !== 'work' && action !== 'none') {
-    // Arme in die Luft
-    const wave = Math.sin(s * 9) * 0.15;
-    armL.rotation.x += (-2.8 + wave - armL.rotation.x) * cheer;
-    armR.rotation.x += (-2.8 - wave - armR.rotation.x) * cheer;
-    armL.rotation.z += (-0.35 - armL.rotation.z) * cheer;
-    armR.rotation.z += (0.35 - armR.rotation.z) * cheer;
+
+  // Wenn die Pizza aus dem Ofen kommt: aufschauen und kurz nicken – keine hochgerissenen Arme
+  if (cheer > 0) {
+    yaw *= 1 - cheer;
+    pitch = mix(pitch, -0.12 + Math.sin(s * 6) * 0.05, cheer);
   }
+  const { glass } = p.userData;
+  if (glass) {
+    // Glas aufrecht halten (Arm- und Ellbogenwinkel ausgleichen), beim Trinken zum Mund kippen
+    glass.rotation.x = -(armR.rotation.x + foreR.rotation.x) - sipping * 0.9;
+    glass.rotation.z = -armR.rotation.z;
+  }
+  head.rotation.y = yaw;
+  head.rotation.x = pitch;
 }
 
 export function buildTable(rand: () => number, kinds: PizzaKind[] = []) {
