@@ -52,7 +52,6 @@ import {
   buildWheelbarrow,
 } from './props';
 import { PIZZA_KINDS, buildVariantPizza } from './pizzas';
-import { batchStatic } from './batch';
 
 export interface HeroScene {
   setProgress(p: number): void;
@@ -61,8 +60,6 @@ export interface HeroScene {
   start(): void;
   stop(): void;
   dispose(): void;
-  /** Nur zum Messen: Zeichenaufrufe, Dreiecke und aktuelle Auflösung. */
-  info(): { calls: number; triangles: number; pixelRatio: number; fps: number };
 }
 
 /** Anteil des Scrollwegs für den Spaziergang; der Rest gehört dem Ofen. */
@@ -83,14 +80,7 @@ export function createHeroScene(
   const rand = rng(7);
 
   const renderer = new WebGLRenderer({ canvas, antialias: !small, powerPreference: 'high-performance' });
-  // Nie mehr Bildpunkte zeichnen als nötig: Auf scharfen, grossen Bildschirmen wäre es sonst das Vierfache – das bremst vor allem Safari.
-  const PIXEL_BUDGET = 2_300_000;
-  let quality = 1;
-  const pixelRatio = () => {
-    const area = Math.max(1, canvas.clientWidth * canvas.clientHeight);
-    return Math.max(0.6, Math.min(window.devicePixelRatio, small ? 1.5 : 2, Math.sqrt(PIXEL_BUDGET / area)) * quality);
-  };
-  renderer.setPixelRatio(pixelRatio());
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFSoftShadowMap;
 
@@ -359,31 +349,8 @@ export function createHeroScene(
   const cheeseRaw = new Color(COLORS.cheeseRaw);
   const cheeseBaked = new Color(COLORS.cheeseBaked);
 
-  // Was sich bewegt, wirft keinen eigenen Schatten: Die Schatten werden nur einmal berechnet (siehe unten).
-  for (const mover of [...kids, waiter, andrin, peel, pz.pizza]) {
-    mover.traverse((o) => {
-      if (o instanceof Mesh) o.castShadow = false;
-    });
-  }
-  // Alles Unbewegte zu wenigen Netzen zusammenfassen – das macht den grössten Unterschied beim Ruckeln.
-  // Die meisten Gäste bleiben an ihrem Platz: Nur Arme und Kopf bewegen sich, der Rest geht mit dem Garten zusammen.
-  const movers = [...kids, waiter, andrin];
-  const limbs = (p: Person) => [p.userData.armL, p.userData.armR, p.userData.head];
-  const seated = people.filter((p) => !movers.includes(p));
-  batchStatic(scene, [...movers, rig, swingTree.swing, fireflies.points, ...seated.flatMap(limbs)]);
-  // Wer sich als Ganzes bewegt, wird für sich zusammengefasst. Das Tablett des Helfers wird ein- und ausgeblendet und bleibt eigenständig.
-  for (const person of movers) batchStatic(person, [...limbs(person), ...(person === waiter ? [tray] : [])], false);
-  for (const person of [...seated, ...movers]) for (const part of limbs(person)) batchStatic(part, [], false);
-  // Die Sonne steht still: Schatten einmal berechnen statt in jedem Bild.
-  sun.shadow.autoUpdate = false;
-  let shadowFrames = 3;
-
   let target = 0;
   let current = 0;
-  let lastTime = 0;
-  let slow = 0;
-  let measured = 0;
-  let fps = 60;
   let raf = 0;
   let running = false;
   let portrait = false;
@@ -392,7 +359,6 @@ export function createHeroScene(
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     if (!w || !h) return;
-    renderer.setPixelRatio(pixelRatio());
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     // Erst bei deutlichem Hochformat (Handy) weiter weg; die Karten-Variante bleibt nah dran.
@@ -495,34 +461,10 @@ export function createHeroScene(
     onProgress?.(prog, anchor);
   }
 
-  function render() {
-    // Die ersten Bilder berechnen die Schatten, danach bleiben sie stehen.
-    if (shadowFrames > 0) {
-      shadowFrames--;
-      sun.shadow.needsUpdate = true;
-    }
-    renderer.render(scene, camera);
-  }
-
   function frame(time: number) {
-    const dt = time - lastTime;
-    lastTime = time;
     current += (target - current) * 0.1;
     apply(current, time);
-    render();
-    // Ruckelt es auf diesem Gerät, die Auflösung rasch senken (nie wieder erhöhen).
-    if (dt > 0 && dt < 250 && document.visibilityState === 'visible') {
-      measured++;
-      if (dt > 22) slow++;
-      if (measured >= 40) {
-        if (slow > 20 && quality > 0.5) {
-          quality = Math.max(0.5, quality - 0.17);
-          resize();
-        }
-        measured = slow = 0;
-      }
-      fps += (1000 / dt - fps) * 0.1;
-    }
+    renderer.render(scene, camera);
     if (running) raf = requestAnimationFrame(frame);
   }
 
@@ -533,21 +475,16 @@ export function createHeroScene(
     jump(v) {
       target = current = MathUtils.clamp(v, 0, 1);
       lookReady = false;
-      // Sofort zeichnen, damit das erste Bild nicht auf den nächsten Takt warten muss
-      apply(current, performance.now());
-      render();
     },
     start() {
       if (running) return;
       running = true;
-      lastTime = 0;
       raf = requestAnimationFrame(frame);
     },
     stop() {
       running = false;
       cancelAnimationFrame(raf);
     },
-    info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio(), fps }),
     dispose() {
       this.stop();
       ro.disconnect();

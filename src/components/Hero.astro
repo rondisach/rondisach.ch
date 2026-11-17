@@ -13,18 +13,6 @@ const captions = [
 
 <!-- Die ganze Seite scrollt durch den Garten; ohne WebGL, auf dem Handy oder bei reduzierter Bewegung bleibt das statische Bild. -->
 <section class="hero" data-mode="static" aria-label="Einleitung">
-  <!-- Entscheidet noch vor dem ersten Bild, ob die Animation kommt. So erscheint am Desktop nie kurz die Handyansicht,
-       sondern sofort ein Standbild des Gartens, das in die echte Szene überblendet. -->
-  <script is:inline>
-    (function () {
-      var hero = document.currentScript.parentElement;
-      try {
-        if (window.matchMedia('(max-width: 760px)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        var c = document.createElement('canvas');
-        if (c.getContext('webgl2') || c.getContext('webgl')) hero.dataset.mode = 'loading';
-      } catch (e) {}
-    })();
-  </script>
   <div class="heroSticky">
     <div class="veil" aria-hidden="true"></div>
     <div class="wrap heroGrid">
@@ -39,10 +27,7 @@ const captions = [
       </div>
 
       <div class="heroStatic">
-        <!-- Die Pizza rollt herein und dreht sich beim Scrollen mit (--spin); der Schatten bleibt dabei ruhig liegen. -->
-        <div class="pizzaWrap">
-          <Image class="heroPizza" src={heroPizza} alt="Neapolitanische Margherita von rondisach" widths={[420, 640, 900]} sizes="(max-width: 920px) 100vw, 540px" loading="eager" fetchpriority="high" />
-        </div>
+        <Image class="heroPizza" src={heroPizza} alt="Neapolitanische Margherita von rondisach" widths={[420, 640, 900]} sizes="(max-width: 920px) 90vw, 540px" loading="eager" fetchpriority="high" />
         <Image class="heroLogo" src={logo} alt="rondisach Pizza Catering" widths={[240, 480]} sizes="240px" loading="eager" />
         <div class="stamp">handgemacht · vor ort</div>
       </div>
@@ -70,35 +55,23 @@ const captions = [
 <script>
   const hero = document.querySelector<HTMLElement>('.hero');
   const canvas = hero?.querySelector<HTMLCanvasElement>('.heroCanvas');
-    // Die Animation startet nicht ganz hinten im Garten, sondern schon ein Stück weiter vorne.
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Die Animation startet nicht ganz hinten im Garten, sondern schon ein Stück weiter vorne.
   const START = 0.22;
 
-  // Leichte Variante (Handy, kein WebGL): Die Pizza dreht sich beim Scrollen mit.
-  function spinOnScroll() {
-    const wrap = hero?.querySelector<HTMLElement>('.pizzaWrap');
-    if (!hero || !wrap || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let queued = false;
-    const update = () => {
-      queued = false;
-      // Nur solange die Pizza im Bild ist
-      if (hero.dataset.mode !== 'static' || hero.getBoundingClientRect().bottom < 0) return;
-      wrap.style.setProperty('--spin', `${(window.scrollY * 0.16).toFixed(1)}deg`);
-    };
-    window.addEventListener(
-      'scroll',
-      () => {
-        if (!queued) {
-          queued = true;
-          requestAnimationFrame(update);
-        }
-      },
-      { passive: true },
-    );
+  function webglOk() {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
   }
 
   async function init() {
-    // Auf dem Handy bleibt das leichte Bild – schneller und schont den Akku. Entschieden hat das Skript oben im Abschnitt.
-    if (!hero || !canvas || hero.dataset.mode !== 'loading') return spinOnScroll();
+    // Auf dem Handy bleibt das statische Bild – schneller und schont den Akku.
+    const phone = window.matchMedia('(max-width: 760px)').matches;
+    if (!hero || !canvas || reduce.matches || phone || !webglOk()) return;
     const { createHeroScene } = await import('../scripts/hero/scene');
     const text = hero.querySelector<HTMLElement>('.heroText')!;
     const veil = hero.querySelector<HTMLElement>('.veil')!;
@@ -107,50 +80,29 @@ const captions = [
     const captions = Array.from(hero.querySelectorAll<HTMLElement>('.caption'));
     const standCta = hero.querySelector<HTMLElement>('.standCta')!;
 
-    // Stile nur schreiben, wenn sich der Wert ändert – sonst muss der Browser in jedem Bild neu zusammensetzen.
-    const last = new WeakMap<HTMLElement, Record<string, string>>();
-    const set = (el: HTMLElement, prop: 'opacity' | 'transform' | 'pointerEvents', value: string) => {
-      let cache = last.get(el);
-      if (!cache) last.set(el, (cache = {}));
-      if (cache[prop] === value) return;
-      cache[prop] = value;
-      el.style[prop] = value;
-    };
-
     const scene = createHeroScene(canvas, (p, anchor) => {
       // Einleitung blendet beim Losgehen aus
       const introOut = Math.min(1, Math.max(0, (p - START - 0.01) / 0.08));
-      const introOpacity = (1 - introOut).toFixed(2);
-      set(text, 'opacity', introOpacity);
-      set(veil, 'opacity', introOpacity);
-      set(text, 'transform', `translateY(${Math.round(-introOut * 24)}px)`);
-      set(text, 'pointerEvents', introOut > 0.5 ? 'none' : '');
+      text.style.opacity = veil.style.opacity = String(1 - introOut);
+      text.style.transform = `translateY(${-introOut * 24}px)`;
+      text.style.pointerEvents = introOut > 0.5 ? 'none' : '';
       for (const c of captions) {
         const from = Number(c.dataset.from);
         const to = Number(c.dataset.to);
         const fade = 0.04;
         const o = Math.min(Math.max((p - from) / fade, 0), 1, Math.max((to - p) / fade, 0));
-        set(c, 'opacity', o.toFixed(2));
-        set(c, 'transform', `translateY(${Math.round((1 - o) * 16)}px)`);
+        c.style.opacity = String(o);
+        c.style.transform = `translateY(${(1 - o) * 16}px)`;
       }
       const show = p > 0.66 && anchor.visible;
       standCta.classList.toggle('show', show);
       standCta.tabIndex = show ? 0 : -1;
       // Nie oben aus der Animation herausragen lassen
-      if (show) set(standCta, 'transform', `translate(${anchor.x.toFixed(1)}px, ${Math.max(anchor.y, 76).toFixed(1)}px) translate(-50%, -100%)`);
+      standCta.style.transform = `translate(${anchor.x}px, ${Math.max(anchor.y, 76)}px) translate(-50%, -100%)`;
     });
     scene.jump(START);
+    hero.dataset.mode = '3d';
     if (import.meta.env.DEV) (window as unknown as { __hero: typeof scene }).__hero = scene;
-    // Mit ?fps in der Adresse zeigt eine kleine Anzeige Bildrate, Auflösung und Zeichenaufrufe.
-    if (new URLSearchParams(location.search).has('fps')) {
-      const meter = document.createElement('div');
-      meter.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:999;padding:6px 10px;border-radius:8px;background:#121212;color:#fff;font:600 12px/1.3 ui-monospace,monospace';
-      document.body.append(meter);
-      setInterval(() => {
-        const i = scene.info();
-        meter.textContent = `${Math.round(i.fps)} fps · ×${i.pixelRatio.toFixed(2)} · ${i.calls} calls`;
-      }, 500);
-    }
 
     // Der Scroll-Fortschritt durch den hohen Abschnitt steuert die Animation.
     const update = () => {
@@ -166,15 +118,11 @@ const captions = [
 
     // Nur rendern, solange die Animation sichtbar ist – spart Akku.
     new IntersectionObserver(([entry]) => (entry.isIntersecting ? scene.start() : scene.stop())).observe(stage);
-    // Erst wenn die Szene wirklich gezeichnet ist, vom Standbild überblenden.
-    scene.start();
-    requestAnimationFrame(() => requestAnimationFrame(() => (hero.dataset.mode = '3d')));
   }
 
   init().catch((err) => {
     console.warn('[rondisach] 3D-Hero konnte nicht geladen werden', err);
     if (hero) hero.dataset.mode = 'static';
-    spinOnScroll();
   });
 </script>
 
@@ -217,66 +165,13 @@ const captions = [
     position: relative;
     min-height: clamp(380px, 46vw, 560px);
   }
-  .pizzaWrap {
+  .heroPizza {
     position: absolute;
     width: min(88%, 540px);
-    aspect-ratio: 1;
     right: 0;
     top: 2%;
-    --spin: 0deg;
-  }
-  /* Weicher Schatten unter der Pizza – eigenes Element, damit er sich nicht mitdreht */
-  .pizzaWrap::before {
-    content: '';
-    position: absolute;
-    inset: 9% 6% -3%;
-    border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(40, 24, 10, 0.3), rgba(40, 24, 10, 0.16) 62%, rgba(40, 24, 10, 0) 100%);
-  }
-  .heroPizza {
-    position: relative;
-    width: 100%;
-    transform: rotate(calc(5deg + var(--spin)));
-    will-change: transform;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .hero[data-mode='static'] .heroPizza {
-      animation: rollIn 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    }
-    .hero[data-mode='static'] .pizzaWrap::before {
-      animation: fadeIn 0.6s ease 0.7s both;
-    }
-    .hero[data-mode='static'] .stamp {
-      animation: popIn 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.8s both;
-    }
-    .hero[data-mode='static'] .heroLogo {
-      animation: riseIn 0.5s ease 1s both;
-    }
-  }
-  @keyframes rollIn {
-    from {
-      transform: translateX(75%) rotate(calc(100deg + var(--spin)));
-    }
-    to {
-      transform: translateX(0) rotate(calc(5deg + var(--spin)));
-    }
-  }
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-  }
-  @keyframes popIn {
-    from {
-      opacity: 0;
-      transform: scale(0.3) rotate(-18deg);
-    }
-  }
-  @keyframes riseIn {
-    from {
-      opacity: 0;
-      transform: translateY(14px) rotate(-2deg);
-    }
+    transform: rotate(5deg);
+    filter: drop-shadow(0 24px 24px rgba(0, 0, 0, 0.15));
   }
   .heroLogo {
     position: absolute;
@@ -315,11 +210,6 @@ const captions = [
     width: 100%;
     height: 100%;
     display: block;
-    opacity: 0;
-    transition: opacity 0.7s ease;
-  }
-  .hero[data-mode='3d'] .heroCanvas {
-    opacity: 1;
   }
   .captions {
     position: absolute;
@@ -335,7 +225,9 @@ const captions = [
     max-width: min(520px, 100%);
     padding: 16px 20px;
     border-radius: 20px;
-    background: rgba(18, 18, 18, 0.86);
+    background: rgba(18, 18, 18, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: var(--cream);
     opacity: 0;
     will-change: opacity, transform;
@@ -440,10 +332,10 @@ const captions = [
   }
 
   /* ---------- Animation (Vollbild) ---------- */
-  .hero:not([data-mode='static']) {
+  .hero[data-mode='3d'] {
     height: 287vh;
   }
-  .hero:not([data-mode='static']) .heroSticky {
+  .hero[data-mode='3d'] .heroSticky {
     position: sticky;
     top: var(--nav-h);
     height: calc(100svh - var(--nav-h));
@@ -452,23 +344,21 @@ const captions = [
     display: flex;
     align-items: flex-start;
   }
-  .hero:not([data-mode='static']) .heroGrid {
+  .hero[data-mode='3d'] .heroGrid {
     position: static;
     display: block;
     padding-top: clamp(28px, 6vh, 72px);
   }
-  .hero:not([data-mode='static']) .stage {
+  .hero[data-mode='3d'] .stage {
     display: block;
     position: absolute;
     inset: 0;
     --cap-x: var(--gutter);
     --cap-y: clamp(40px, 9vh, 88px);
     --cap-size: clamp(22px, 2.6vw, 32px);
-    /* Standbild der Szene, sichtbar bis die Animation geladen ist */
-    background: #e9b98a url('../assets/brand/hero-poster.webp') center / cover no-repeat;
   }
   /* Unten weich in die Seite überblenden */
-  .hero:not([data-mode='static']) .stage::after {
+  .hero[data-mode='3d'] .stage::after {
     content: '';
     position: absolute;
     left: 0;
@@ -479,7 +369,7 @@ const captions = [
     pointer-events: none;
   }
   /* Heller Schleier über die ganze Höhe, damit der Text gut lesbar ist */
-  .hero:not([data-mode='static']) .veil {
+  .hero[data-mode='3d'] .veil {
     display: block;
     position: absolute;
     inset: 0 auto 0 0;
@@ -489,16 +379,16 @@ const captions = [
     pointer-events: none;
     will-change: opacity;
   }
-  .hero:not([data-mode='static']) .heroText {
+  .hero[data-mode='3d'] .heroText {
     position: relative;
     z-index: 2;
     max-width: 640px;
     will-change: opacity, transform;
   }
-  .hero:not([data-mode='static']) .captions {
+  .hero[data-mode='3d'] .captions {
     z-index: 3;
   }
-  .hero:not([data-mode='static']) .scrollHint {
+  .hero[data-mode='3d'] .scrollHint {
     bottom: 22px;
     z-index: 3;
   }
@@ -508,13 +398,13 @@ const captions = [
       grid-template-columns: 1fr;
       gap: 8px;
     }
-    .hero:not([data-mode='static']) {
+    .hero[data-mode='3d'] {
       height: 256vh;
     }
-    .hero:not([data-mode='static']) h1 {
+    .hero[data-mode='3d'] h1 {
       font-size: clamp(48px, 13vw, 84px);
     }
-    .hero:not([data-mode='static']) .heroLead {
+    .hero[data-mode='3d'] .heroLead {
       font-size: 17px;
     }
   }
@@ -541,22 +431,17 @@ const captions = [
     .heroActions .btn {
       justify-content: center;
     }
-    /* Handy: Pizza gross und rechts angeschnitten – der Blickfang im ersten Bildschirm */
     .heroStatic {
       min-height: 0;
-      aspect-ratio: 1 / 0.92;
+      aspect-ratio: 1 / 0.82;
     }
-    .pizzaWrap {
-      width: 106%;
-      right: -28%;
-      top: -5%;
+    .heroPizza {
+      width: 80%;
     }
     .heroLogo {
-      width: 31%;
-      left: 0;
-      bottom: -3%;
+      width: 38%;
     }
-    .hero:not([data-mode='static']) .veil {
+    .hero[data-mode='3d'] .veil {
       width: 100%;
       background: linear-gradient(180deg, rgba(243, 238, 228, 0.92) 0%, rgba(243, 238, 228, 0.85) 55%, rgba(243, 238, 228, 0) 80%);
     }
