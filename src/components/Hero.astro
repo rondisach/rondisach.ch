@@ -80,25 +80,41 @@ const captions = [
     const captions = Array.from(hero.querySelectorAll<HTMLElement>('.caption'));
     const standCta = hero.querySelector<HTMLElement>('.standCta')!;
 
+    // Stile nur schreiben, wenn sie sich wirklich ändern – sonst rechnet der Browser jedes Bild die Seite neu.
+    const last = new WeakMap<HTMLElement, Record<string, string>>();
+    const set = (el: HTMLElement, prop: 'opacity' | 'transform' | 'pointerEvents', value: string) => {
+      let cache = last.get(el);
+      if (!cache) last.set(el, (cache = {}));
+      if (cache[prop] === value) return;
+      cache[prop] = value;
+      el.style[prop] = value;
+    };
+    const round = (v: number) => Math.round(v * 1000) / 1000;
+    let ctaShown: boolean | null = null;
+
     const scene = createHeroScene(canvas, (p, anchor) => {
       // Einleitung blendet beim Losgehen aus
       const introOut = Math.min(1, Math.max(0, (p - START - 0.01) / 0.08));
-      text.style.opacity = veil.style.opacity = String(1 - introOut);
-      text.style.transform = `translateY(${-introOut * 24}px)`;
-      text.style.pointerEvents = introOut > 0.5 ? 'none' : '';
+      set(text, 'opacity', String(round(1 - introOut)));
+      set(veil, 'opacity', String(round(1 - introOut)));
+      set(text, 'transform', `translateY(${round(-introOut * 24)}px)`);
+      set(text, 'pointerEvents', introOut > 0.5 ? 'none' : '');
       for (const c of captions) {
         const from = Number(c.dataset.from);
         const to = Number(c.dataset.to);
         const fade = 0.04;
         const o = Math.min(Math.max((p - from) / fade, 0), 1, Math.max((to - p) / fade, 0));
-        c.style.opacity = String(o);
-        c.style.transform = `translateY(${(1 - o) * 16}px)`;
+        set(c, 'opacity', String(round(o)));
+        set(c, 'transform', `translateY(${round((1 - o) * 16)}px)`);
       }
       const show = p > 0.66 && anchor.visible;
-      standCta.classList.toggle('show', show);
-      standCta.tabIndex = show ? 0 : -1;
+      if (show !== ctaShown) {
+        ctaShown = show;
+        standCta.classList.toggle('show', show);
+        standCta.tabIndex = show ? 0 : -1;
+      }
       // Nie oben aus der Animation herausragen lassen
-      standCta.style.transform = `translate(${anchor.x}px, ${Math.max(anchor.y, 76)}px) translate(-50%, -100%)`;
+      if (show) set(standCta, 'transform', `translate(${anchor.x.toFixed(1)}px, ${Math.max(anchor.y, 76).toFixed(1)}px) translate(-50%, -100%)`);
     });
     scene.jump(START);
     hero.dataset.mode = '3d';
@@ -225,9 +241,8 @@ const captions = [
     max-width: min(520px, 100%);
     padding: 16px 20px;
     border-radius: 20px;
-    background: rgba(18, 18, 18, 0.78);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* Ohne Unschärfe dahinter: Die müsste sonst bei jedem Bild der Animation neu berechnet werden (bremst v. a. Safari). */
+    background: rgba(18, 18, 18, 0.84);
     color: var(--cream);
     opacity: 0;
     will-change: opacity, transform;
