@@ -12,6 +12,8 @@ photos:
     alt: "Frisch gebackene Pizza mit Salami und Basilikum"
   - image: "/src/assets/uploads/abend-pizza-vegi.webp"
     alt: "Vegetarische Pizza mit Aubergine und Zucchetti"
+  - image: "/src/assets/uploads/nah-pizza-vegetariana.webp"
+    alt: "Pizza Vegetariana mit gegrillter Aubergine, Zucchetti und Cherrytomate auf dem Holzbrett"
   - image: "/src/assets/uploads/abend-buffet.webp"
     alt: "Pizza-Buffet mit verschiedenen Sorten auf Holzbrettern"
 ---
