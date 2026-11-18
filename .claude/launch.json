@@ -1,0 +1,8 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "rondisach", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev", "--", "--port", "4321", "--host"], "port": 4321 },
+    { "name": "cv", "runtimeExecutable": "node", "runtimeArgs": ["/Users/andrinkach/Documents/andrin-kaech-cv/serve.mjs"], "port": 5180 },
+    { "name": "website", "runtimeExecutable": "node", "runtimeArgs": ["/Users/andrinkach/Documents/andrin-kaech-website/serve.mjs"], "port": 5181 }
+  ]
+}
