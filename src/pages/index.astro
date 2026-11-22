@@ -55,6 +55,19 @@ const events = termine.events
     {facts.map((f) => <div class="fact"><strong>{f.value}</strong><span>{f.label}</span></div>)}
   </div>
 
+  <!-- Handy: Schnellzugriff auf die wichtigsten Abschnitte -->
+  <nav class="quickNav" aria-label="Schnellzugriff">
+    <div class="quickNavIn">
+      {events.length > 0 && <a href="#termine">termine</a>}
+      <a href="#pizzen">pizzen</a>
+      <a href="#preise">preise</a>
+      <a href="#ablauf">ablauf</a>
+      <a href="#stimmen">bewertungen</a>
+      <a href="#fragen">fragen</a>
+      <a href="#anfrage" class="qnMain">anfragen</a>
+    </div>
+  </nav>
+
   {
     events.length > 0 && (
       <section class="wrap termine" id="termine" aria-labelledby="termine-title">
@@ -412,6 +425,57 @@ const events = termine.events
     }
     .fact:nth-child(-n + 2) {
       border-bottom: 1px solid var(--ink);
+    }
+  }
+
+  /* Schnellzugriff (nur Handy) */
+  .quickNav {
+    display: none;
+  }
+  @media (max-width: 620px) {
+    .factbar {
+      margin-top: 20px;
+    }
+    .fact {
+      padding: 12px 14px;
+    }
+    .quickNav {
+      display: block;
+      margin-top: 18px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .quickNav::-webkit-scrollbar {
+      display: none;
+    }
+    .quickNavIn {
+      display: flex;
+      gap: 8px;
+      width: max-content;
+      padding-inline: var(--gutter);
+    }
+    .quickNav a {
+      display: inline-flex;
+      align-items: center;
+      height: 38px;
+      padding: 0 16px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .quickNav a.qnMain {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .story {
+      font-size: 23px;
+      margin-bottom: 20px;
     }
   }
 

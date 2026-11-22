@@ -1,7 +1,17 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import heroPizza from '../assets/uploads/pizza-margherita.webp';
 import logo from '../assets/brand/rondisach-logo.webp';
+import pizzen from '../data/pizzen.json';
+import { upload } from '../lib/images';
+
+// Pizzen für die Handy-Animation: die ersten vier aus dem Menü (im Editor änderbar).
+const loopSources = pizzen.pizzas
+  .map((p) => upload(p.image))
+  .filter((i): i is NonNullable<typeof i> => !!i)
+  .slice(0, 4);
+const loopPizzas = (await Promise.all(loopSources.map((src) => getImage({ src, width: 640, format: 'webp' })))).map((r) => r.src);
+const loopWords = ['so lecker!', 'mmmh …', 'no eis?'];
 
 // Texte, die während dem Spaziergang durch den Garten eingeblendet werden (Fortschritt von–bis).
 const captions = [
@@ -18,8 +28,9 @@ const captions = [
     <div class="wrap heroGrid">
       <div class="heroText">
         <div class="kicker">pizza catering · luzern &amp; umgebung</div>
-        <h1>eifach<br />e rondi sach.</h1>
+        <h1>eifach<br class="brDesk" /> e <span class="hl">rondi</span><br class="brMob" /> sach.</h1>
         <p class="heroLead">Das könnte euer nächster Anlass sein: handgemachte Pizza, direkt vor euren Gästen gebacken.</p>
+        <p class="heroLeadShort">Pizza Catering für Luzern und Umgebung.</p>
         <div class="heroActions">
           <a class="btn" href="#anfrage">pizza anfragen</a>
           <a class="btn btn--outline" href="#preise">unser angebot</a>
@@ -30,6 +41,32 @@ const captions = [
         <Image class="heroPizza" src={heroPizza} alt="Neapolitanische Margherita von rondisach" widths={[420, 640, 900]} sizes="(max-width: 920px) 90vw, 540px" loading="eager" fetchpriority="high" />
         <Image class="heroLogo" src={logo} alt="rondisach Pizza Catering" widths={[240, 480]} sizes="240px" loading="eager" />
         <div class="stamp">handgemacht · vor ort</div>
+        <!-- Handy: kleine Pizza-Animation (Schaufel, Dampf, Hände holen sich die Stücke) -->
+        <div class="loop" aria-hidden="true" data-pizzas={JSON.stringify(loopPizzas)} data-words={JSON.stringify(loopWords)}>
+          <div class="loopPizza">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div class="slice" style={`--i:${i}`}><img alt="" decoding="async" /></div>
+            ))}
+          </div>
+          <svg class="peel" viewBox="0 0 200 330" aria-hidden="true">
+            <defs>
+              <pattern id="holes" width="12" height="12" patternUnits="userSpaceOnUse">
+                <circle cx="6" cy="6" r="2.2" fill="#9a9a96" />
+              </pattern>
+            </defs>
+            <rect x="88" y="190" width="24" height="140" rx="10" fill="#8a5a36" />
+            <rect x="92" y="176" width="16" height="30" rx="4" fill="#b9b9b4" />
+            <path d="M14 20 Q14 6 28 6 H172 Q186 6 186 20 V170 Q186 186 170 188 L112 196 H88 L30 188 Q14 186 14 170 Z" fill="#d9d9d4" stroke="#b5b5b0" stroke-width="2" />
+            <path d="M24 18 H176 V172 L112 184 H88 L24 172 Z" fill="url(#holes)" opacity=".55" />
+          </svg>
+          <svg class="steam" viewBox="0 0 120 80" aria-hidden="true">
+            <path d="M30 78 C18 62 42 52 30 36 C20 22 38 12 32 2" />
+            <path d="M60 78 C48 60 72 50 60 34 C50 20 68 10 62 0" />
+            <path d="M90 78 C78 62 102 52 90 36 C80 22 98 12 92 2" />
+          </svg>
+          <div class="arms"></div>
+          <div class="word"></div>
+        </div>
       </div>
 
       <div class="stage">
@@ -124,6 +161,128 @@ const captions = [
     console.warn('[rondisach] 3D-Hero konnte nicht geladen werden', err);
     if (hero) hero.dataset.mode = 'static';
   });
+</script>
+
+<script>
+  // ---------- Handy: Pizza-Animation im Loop ----------
+  const loop = document.querySelector<HTMLElement>('.loop');
+  const heroEl = document.querySelector<HTMLElement>('.hero');
+  const motionOk = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const phoneMq = window.matchMedia('(max-width: 760px)');
+
+  if (loop && heroEl && motionOk && phoneMq.matches) startLoop(loop, heroEl);
+
+  function startLoop(loop: HTMLElement, hero: HTMLElement) {
+    const pizzas: string[] = JSON.parse(loop.dataset.pizzas || '[]');
+    const words: string[] = JSON.parse(loop.dataset.words || '[]');
+    if (!pizzas.length) return;
+    const pizza = loop.querySelector<HTMLElement>('.loopPizza')!;
+    const slices = Array.from(loop.querySelectorAll<HTMLElement>('.slice'));
+    const imgs = slices.map((s) => s.querySelector('img')!);
+    const peel = loop.querySelector<SVGElement>('.peel')!;
+    const steam = Array.from(loop.querySelectorAll<SVGPathElement>('.steam path'));
+    const armsBox = loop.querySelector<HTMLElement>('.arms')!;
+    const word = loop.querySelector<HTMLElement>('.word')!;
+
+    // Bilder vorladen
+    pizzas.forEach((src) => (new Image().src = src));
+
+    // Sechs Arme, jeder holt sich ein Stück. Farben passend zur Marke.
+    const sleeves = ['#b83c2e', '#121212', '#d9a441', '#4f6b52', '#3d5a80', '#c97b63'];
+    const skins = ['#f1c7a5', '#c68b62', '#8d5a3b', '#e8b48f', '#a86f4c', '#f5d2b8'];
+    const arms = slices.map((_, i) => {
+      const el = document.createElement('div');
+      el.className = 'arm';
+      el.innerHTML = `<svg viewBox="0 0 260 40" preserveAspectRatio="none"><path d="M44 8 L260 6 V34 L44 32 Z" fill="${sleeves[i]}"/><rect x="40" y="7" width="10" height="26" rx="3" fill="rgba(255,255,255,.35)"/><path d="M42 11 C30 9 16 8 8 12 C2 15 2 25 8 28 C16 32 30 31 42 29 Z" fill="${skins[i]}"/><path d="M30 10 C24 4 16 3 13 6 C11 9 16 11 22 12 Z" fill="${skins[i]}"/></svg>`;
+      armsBox.appendChild(el);
+      return el;
+    });
+
+    const angle = (i: number) => i * 60 - 60; // Mitte des Stücks (Grad, 0 = rechts)
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const anim = (el: Element, kf: Keyframe[], o: KeyframeAnimationOptions) => el.animate(kf, { fill: 'forwards', ...o }).finished;
+    let visible = true;
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(loop);
+    const waitVisible = async () => {
+      while (!visible || document.hidden) await sleep(400);
+    };
+
+    async function cycle(n: number) {
+      const R = pizza.offsetWidth / 2;
+      loop.style.setProperty('--pw', `${R * 2}px`);
+      imgs.forEach((img) => (img.src = pizzas[n % pizzas.length]));
+      slices.forEach((s) => s.getAnimations().forEach((a) => a.cancel()));
+      arms.forEach((a) => a.getAnimations().forEach((x) => x.cancel()));
+      word.getAnimations().forEach((a) => a.cancel());
+      word.textContent = words[n % words.length] || '';
+
+      // 1. Pizza kommt auf der Schaufel herein
+      const from = 'translate(-95%, 85%) rotate(-28deg)';
+      await Promise.all([
+        anim(pizza, [{ transform: from, opacity: 1 }, { transform: 'none', opacity: 1 }], { duration: 950, easing: 'cubic-bezier(.2,.8,.2,1)' }),
+        anim(peel, [{ transform: from, opacity: 1 }, { transform: 'none', opacity: 1 }], { duration: 950, easing: 'cubic-bezier(.2,.8,.2,1)' }),
+      ]);
+      // 2. Schaufel zieht schnell weg, Pizza bleibt liegen
+      await Promise.all([
+        anim(peel, [{ transform: 'none', opacity: 1 }, { transform: 'translate(-120%, 110%) rotate(-28deg)', opacity: 1, offset: 0.85 }, { transform: 'translate(-130%, 120%) rotate(-28deg)', opacity: 0 }], { duration: 420, easing: 'cubic-bezier(.6,0,.9,.4)' }),
+        anim(pizza, [{ transform: 'scale(1.03)' }, { transform: 'scale(.98)' }, { transform: 'none' }], { duration: 500, delay: 260 }),
+      ]);
+
+      // 3. Dampf steigt auf
+      steam.forEach((p, i) =>
+        p.animate(
+          [
+            { opacity: 0, transform: 'translateY(14px)' },
+            { opacity: 0.7, offset: 0.4 },
+            { opacity: 0, transform: 'translateY(-26px)' },
+          ],
+          { duration: 1800, delay: i * 220, easing: 'ease-out' },
+        ),
+      );
+      await sleep(1500);
+
+      // 4. Hände kommen und holen sich die Stücke
+      const grab = R * 0.5;
+      await Promise.all(
+        arms.map((a, i) =>
+          anim(a, [{ transform: `rotate(${angle(i)}deg) translateX(${R * 3}px)` }, { transform: `rotate(${angle(i)}deg) translateX(${grab}px)` }], {
+            duration: 520,
+            delay: i * 110,
+            easing: 'cubic-bezier(.2,.8,.2,1)',
+          }),
+        ),
+      );
+      await sleep(180);
+      const away = R * 3.2;
+      await Promise.all(
+        slices.flatMap((s, i) => {
+          const a = (angle(i) * Math.PI) / 180;
+          const opt = { duration: 650, delay: i * 90, easing: 'cubic-bezier(.5,0,.8,.4)' };
+          return [
+            anim(s, [{ transform: 'none' }, { transform: `translate(${Math.cos(a) * away}px, ${Math.sin(a) * away}px)` }], opt),
+            anim(arms[i], [{ transform: `rotate(${angle(i)}deg) translateX(${grab}px)` }, { transform: `rotate(${angle(i)}deg) translateX(${grab + away}px)` }], opt),
+          ];
+        }),
+      );
+
+      // 5. Kurzer Spruch
+      await anim(word, [{ opacity: 0, transform: 'translate(-50%,-50%) rotate(-4deg) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1.08)', offset: 0.7 }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1)' }], { duration: 380, easing: 'ease-out' });
+      await sleep(1100);
+      await anim(word, [{ opacity: 1 }, { opacity: 0 }], { duration: 300 });
+    }
+
+    hero.classList.add('looping');
+    (async () => {
+      for (let n = 0; ; n++) {
+        await waitVisible();
+        try {
+          await cycle(n);
+        } catch {
+          await sleep(500);
+        }
+      }
+    })();
+  }
 </script>
 
 <style>
@@ -444,6 +603,162 @@ const captions = [
     .hero[data-mode='3d'] .veil {
       width: 100%;
       background: linear-gradient(180deg, rgba(243, 238, 228, 0.92) 0%, rgba(243, 238, 228, 0.85) 55%, rgba(243, 238, 228, 0) 80%);
+    }
+  }
+  /* ---------- Handy-Animation ---------- */
+  .loop,
+  .heroLeadShort,
+  .brMob {
+    display: none;
+  }
+  .loop {
+    position: absolute;
+    inset: 0;
+    --p: min(70%, 290px);
+  }
+  .loopPizza {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--p);
+    aspect-ratio: 1;
+    margin: calc(var(--p) / -2) 0 0 calc(var(--p) / -2);
+    z-index: 2;
+    opacity: 0;
+    filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.16));
+  }
+  .slice {
+    position: absolute;
+    inset: 0;
+    /* Tortenstück: 60° pro Stück, Mitte bei (i·60° − 60°) */
+    --a0: calc(var(--i) * 60deg - 90deg);
+    clip-path: polygon(
+      50% 50%,
+      calc(50% + 80% * cos(var(--a0))) calc(50% + 80% * sin(var(--a0))),
+      calc(50% + 80% * cos(var(--a0) + 30deg)) calc(50% + 80% * sin(var(--a0) + 30deg)),
+      calc(50% + 80% * cos(var(--a0) + 60deg)) calc(50% + 80% * sin(var(--a0) + 60deg))
+    );
+  }
+  .slice img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .peel {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--p) * 1.12);
+    margin: calc(var(--p) * -0.56) 0 0 calc(var(--p) * -0.56);
+    z-index: 1;
+    opacity: 0;
+    transform-origin: 50% 28%;
+  }
+  .steam {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--p) * 0.6);
+    margin: calc(var(--p) * -0.82) 0 0 calc(var(--p) * -0.3);
+    z-index: 3;
+    overflow: visible;
+  }
+  .steam path {
+    fill: none;
+    stroke: rgba(120, 110, 98, 0.35);
+    stroke-width: 5;
+    stroke-linecap: round;
+    opacity: 0;
+    filter: blur(1.5px);
+  }
+  .arms {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .arms :global(.arm) {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: calc(var(--pw, 260px) * -0.055);
+    width: calc(var(--pw, 260px) * 1.6);
+    height: calc(var(--pw, 260px) * 0.11);
+    transform-origin: 0 50%;
+    transform: translateX(-9999px);
+  }
+  .arms :global(.arm svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .word {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 5;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(34px, 11vw, 48px);
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    white-space: nowrap;
+    opacity: 0;
+  }
+
+  @media (max-width: 760px) {
+    .hero.looping .loop {
+      display: block;
+    }
+    .hero.looping .heroPizza,
+    .hero.looping .heroLogo,
+    .hero.looping .stamp {
+      display: none;
+    }
+  }
+
+  /* Handy: Bild oben, darunter kurz und klar Titel, ein Satz, ein Knopf */
+  @media (max-width: 620px) {
+    .hero {
+      overflow-x: clip;
+    }
+    .heroStatic {
+      order: -1;
+      aspect-ratio: auto;
+      height: min(78vw, 42svh);
+    }
+    .hero:not(.looping) .heroStatic {
+      height: auto;
+      aspect-ratio: 1 / 0.82;
+    }
+    .heroText {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+    .heroText .kicker,
+    .heroLead,
+    .heroActions .btn--outline,
+    .brDesk {
+      display: none;
+    }
+    .brMob {
+      display: inline;
+    }
+    h1 {
+      font-size: clamp(46px, 14vw, 64px);
+      margin: 4px 0 12px;
+    }
+    .hl {
+      color: var(--accent);
+    }
+    .heroLeadShort {
+      display: block;
+      margin: 0 auto 20px;
+      max-width: 30ch;
+      color: var(--ink-2);
+      font-size: 16px;
+      line-height: 1.4;
     }
   }
 </style>

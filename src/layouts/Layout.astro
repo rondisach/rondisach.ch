@@ -140,6 +140,12 @@ const jsonLd = {
         });
         targets.forEach((t) => io.observe(t));
       }
+      // Auf dem Handy erscheint der WhatsApp-Knopf erst nach dem Einstieg, damit er nichts verdeckt.
+      const wa = document.querySelector<HTMLElement>('.waFloat');
+      const heroSec = document.querySelector('.hero');
+      if (wa && heroSec) {
+        new IntersectionObserver(([e]) => wa.classList.toggle('away', e.intersectionRatio > 0.35), { threshold: [0, 0.35, 1] }).observe(heroSec);
+      }
     </script>
   </body>
 </html>
@@ -262,6 +268,14 @@ const jsonLd = {
     }
     .waLabel {
       display: none;
+    }
+    .waFloat {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .waFloat.away {
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
     }
     .mobileCta.away {
       opacity: 0;
