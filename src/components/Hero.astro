@@ -41,7 +41,7 @@ const captions = [
         <Image class="heroPizza" src={heroPizza} alt="Neapolitanische Margherita von rondisach" widths={[420, 640, 900]} sizes="(max-width: 920px) 90vw, 540px" loading="eager" fetchpriority="high" />
         <Image class="heroLogo" src={logo} alt="rondisach Pizza Catering" widths={[240, 480]} sizes="240px" loading="eager" />
         <div class="stamp">handgemacht · vor ort</div>
-        <!-- Handy: kleine Pizza-Animation (Schaufel, Dampf, Hände holen sich die Stücke) -->
+        <!-- Handy: kleine Pizza-Animation (Schaufel, Hände holen sich die Stücke) -->
         <div class="loop" aria-hidden="true" data-pizzas={JSON.stringify(loopPizzas)} data-words={JSON.stringify(loopWords)}>
           <div class="loopPizza">
             {Array.from({ length: 6 }, (_, i) => (
@@ -58,11 +58,6 @@ const captions = [
             <rect x="92" y="176" width="16" height="30" rx="4" fill="#b9b9b4" />
             <path d="M14 20 Q14 6 28 6 H172 Q186 6 186 20 V170 Q186 186 170 188 L112 196 H88 L30 188 Q14 186 14 170 Z" fill="#d9d9d4" stroke="#b5b5b0" stroke-width="2" />
             <path d="M24 18 H176 V172 L112 184 H88 L24 172 Z" fill="url(#holes)" opacity=".55" />
-          </svg>
-          <svg class="steam" viewBox="0 0 120 80" aria-hidden="true">
-            <path d="M30 78 C18 62 42 52 30 36 C20 22 38 12 32 2" />
-            <path d="M60 78 C48 60 72 50 60 34 C50 20 68 10 62 0" />
-            <path d="M90 78 C78 62 102 52 90 36 C80 22 98 12 92 2" />
           </svg>
           <div class="arms"></div>
           <div class="word"></div>
@@ -180,7 +175,6 @@ const captions = [
     const slices = Array.from(loop.querySelectorAll<HTMLElement>('.slice'));
     const imgs = slices.map((s) => s.querySelector('img')!);
     const peel = loop.querySelector<SVGElement>('.peel')!;
-    const steam = Array.from(loop.querySelectorAll<SVGPathElement>('.steam path'));
     const armsBox = loop.querySelector<HTMLElement>('.arms')!;
     const word = loop.querySelector<HTMLElement>('.word')!;
 
@@ -193,7 +187,7 @@ const captions = [
     const arms = slices.map((_, i) => {
       const el = document.createElement('div');
       el.className = 'arm';
-      el.innerHTML = `<svg viewBox="0 0 260 40" preserveAspectRatio="none"><path d="M44 8 L260 6 V34 L44 32 Z" fill="${sleeves[i]}"/><rect x="40" y="7" width="10" height="26" rx="3" fill="rgba(255,255,255,.35)"/><path d="M42 11 C30 9 16 8 8 12 C2 15 2 25 8 28 C16 32 30 31 42 29 Z" fill="${skins[i]}"/><path d="M30 10 C24 4 16 3 13 6 C11 9 16 11 22 12 Z" fill="${skins[i]}"/></svg>`;
+      el.innerHTML = `<svg viewBox="0 0 150 40" preserveAspectRatio="none"><path d="M44 8 L140 5 Q150 5 150 14 V26 Q150 35 140 35 L44 32 Z" fill="${sleeves[i]}"/><rect x="40" y="7" width="10" height="26" rx="3" fill="rgba(255,255,255,.35)"/><path d="M42 11 C30 9 16 8 8 12 C2 15 2 25 8 28 C16 32 30 31 42 29 Z" fill="${skins[i]}"/><path d="M30 10 C24 4 16 3 13 6 C11 9 16 11 22 12 Z" fill="${skins[i]}"/></svg>`;
       armsBox.appendChild(el);
       return el;
     });
@@ -216,36 +210,24 @@ const captions = [
       word.getAnimations().forEach((a) => a.cancel());
       word.textContent = words[n % words.length] || '';
 
-      // 1. Pizza kommt auf der Schaufel herein
-      const from = 'translate(-95%, 85%) rotate(-28deg)';
+      // 1. Pizza kommt auf der Schaufel von links herein (Stiel zeigt nach links)
+      const off = loop.offsetWidth / 2 + R * 2.4;
+      const ease = 'cubic-bezier(.2,.8,.2,1)';
       await Promise.all([
-        anim(pizza, [{ transform: from, opacity: 1 }, { transform: 'none', opacity: 1 }], { duration: 950, easing: 'cubic-bezier(.2,.8,.2,1)' }),
-        anim(peel, [{ transform: from, opacity: 1 }, { transform: 'none', opacity: 1 }], { duration: 950, easing: 'cubic-bezier(.2,.8,.2,1)' }),
+        anim(pizza, [{ transform: `translateX(${-off}px)`, opacity: 1 }, { transform: 'none', opacity: 1 }], { duration: 900, easing: ease }),
+        anim(peel, [{ transform: `translateX(${-off}px) rotate(90deg)`, opacity: 1 }, { transform: 'rotate(90deg)', opacity: 1 }], { duration: 900, easing: ease }),
       ]);
-      // 2. Schaufel zieht schnell weg, Pizza bleibt liegen
+      await sleep(150);
+      // 2. Pizza abstellen: Schaufel zieht nach links weg, Pizza bleibt liegen
       await Promise.all([
-        anim(peel, [{ transform: 'none', opacity: 1 }, { transform: 'translate(-120%, 110%) rotate(-28deg)', opacity: 1, offset: 0.85 }, { transform: 'translate(-130%, 120%) rotate(-28deg)', opacity: 0 }], { duration: 420, easing: 'cubic-bezier(.6,0,.9,.4)' }),
-        anim(pizza, [{ transform: 'scale(1.03)' }, { transform: 'scale(.98)' }, { transform: 'none' }], { duration: 500, delay: 260 }),
+        anim(peel, [{ transform: 'rotate(90deg)', opacity: 1 }, { transform: `translateX(${-off}px) rotate(90deg)`, opacity: 1 }], { duration: 480, easing: 'cubic-bezier(.6,0,.9,.4)' }),
+        anim(pizza, [{ transform: 'translateX(-4px)' }, { transform: 'translateX(2px)' }, { transform: 'none' }], { duration: 420, delay: 120 }),
       ]);
-
-      // 3. Dampf steigt auf
-      steam.forEach((p, i) =>
-        p.animate(
-          [
-            { opacity: 0, transform: 'translateY(14px)' },
-            { opacity: 0.7, offset: 0.4 },
-            { opacity: 0, transform: 'translateY(-26px)' },
-          ],
-          { duration: 1800, delay: i * 220, easing: 'ease-out' },
-        ),
-      );
-      await sleep(1500);
-
-      // 4. Hände kommen und holen sich die Stücke
+      // 3. Hände kommen und holen sich die Stücke
       const grab = R * 0.5;
       await Promise.all(
         arms.map((a, i) =>
-          anim(a, [{ transform: `rotate(${angle(i)}deg) translateX(${R * 3}px)` }, { transform: `rotate(${angle(i)}deg) translateX(${grab}px)` }], {
+          anim(a, [{ transform: `rotate(${angle(i)}deg) translateX(${R * 2.6}px)`, opacity: 0 }, { transform: `rotate(${angle(i)}deg) translateX(${R * 2}px)`, opacity: 1, offset: 0.2 }, { transform: `rotate(${angle(i)}deg) translateX(${grab}px)`, opacity: 1 }], {
             duration: 520,
             delay: i * 110,
             easing: 'cubic-bezier(.2,.8,.2,1)',
@@ -265,7 +247,7 @@ const captions = [
         }),
       );
 
-      // 5. Kurzer Spruch
+      // 4. Kurzer Spruch
       await anim(word, [{ opacity: 0, transform: 'translate(-50%,-50%) rotate(-4deg) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1.08)', offset: 0.7 }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1)' }], { duration: 380, easing: 'ease-out' });
       await sleep(1100);
       await anim(word, [{ opacity: 1 }, { opacity: 0 }], { duration: 300 });
@@ -653,23 +635,7 @@ const captions = [
     z-index: 1;
     opacity: 0;
     transform-origin: 50% 28%;
-  }
-  .steam {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: calc(var(--p) * 0.6);
-    margin: calc(var(--p) * -0.82) 0 0 calc(var(--p) * -0.3);
-    z-index: 3;
-    overflow: visible;
-  }
-  .steam path {
-    fill: none;
-    stroke: rgba(120, 110, 98, 0.35);
-    stroke-width: 5;
-    stroke-linecap: round;
-    opacity: 0;
-    filter: blur(1.5px);
+    transform: rotate(90deg);
   }
   .arms {
     position: absolute;
@@ -682,7 +648,7 @@ const captions = [
     left: 50%;
     top: 50%;
     margin-top: calc(var(--pw, 260px) * -0.055);
-    width: calc(var(--pw, 260px) * 1.6);
+    width: calc(var(--pw, 260px) * 0.58);
     height: calc(var(--pw, 260px) * 0.11);
     transform-origin: 0 50%;
     transform: translateX(-9999px);
