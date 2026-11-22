@@ -11,7 +11,7 @@ const loopSources = pizzen.pizzas
   .filter((i): i is NonNullable<typeof i> => !!i)
   .slice(0, 4);
 const loopPizzas = (await Promise.all(loopSources.map((src) => getImage({ src, width: 640, format: 'webp' })))).map((r) => r.src);
-const loopWords = ['so lecker!', 'mmmh …', 'no eis?'];
+const loopWords = ['so lecker!', 'mmmh …'];
 
 // Texte, die während dem Spaziergang durch den Garten eingeblendet werden (Fortschritt von–bis).
 const captions = [
@@ -50,14 +50,26 @@ const captions = [
           </div>
           <svg class="peel" viewBox="0 0 200 330" aria-hidden="true">
             <defs>
-              <pattern id="holes" width="12" height="12" patternUnits="userSpaceOnUse">
-                <circle cx="6" cy="6" r="2.2" fill="#9a9a96" />
+              <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f1f1ee" />
+                <stop offset=".45" stop-color="#cfcfca" />
+                <stop offset=".7" stop-color="#e6e6e2" />
+                <stop offset="1" stop-color="#b9b9b3" />
+              </linearGradient>
+              <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#6e4428" />
+                <stop offset=".5" stop-color="#9c6a42" />
+                <stop offset="1" stop-color="#6e4428" />
+              </linearGradient>
+              <pattern id="holes" width="11" height="11" patternUnits="userSpaceOnUse">
+                <circle cx="5.5" cy="5.5" r="2" fill="#8f8f89" />
               </pattern>
             </defs>
-            <rect x="88" y="190" width="24" height="140" rx="10" fill="#8a5a36" />
-            <rect x="92" y="176" width="16" height="30" rx="4" fill="#b9b9b4" />
-            <path d="M14 20 Q14 6 28 6 H172 Q186 6 186 20 V170 Q186 186 170 188 L112 196 H88 L30 188 Q14 186 14 170 Z" fill="#d9d9d4" stroke="#b5b5b0" stroke-width="2" />
-            <path d="M24 18 H176 V172 L112 184 H88 L24 172 Z" fill="url(#holes)" opacity=".55" />
+            <rect x="89" y="198" width="22" height="130" rx="9" fill="url(#wood)" />
+            <rect x="89" y="300" width="22" height="5" fill="rgba(0,0,0,.18)" />
+            <rect x="92" y="180" width="16" height="28" rx="3" fill="#a9a9a3" />
+            <path d="M14 20 Q14 6 28 6 H172 Q186 6 186 20 V168 Q186 184 170 187 L114 196 H86 L30 187 Q14 184 14 168 Z" fill="url(#metal)" stroke="#a5a59f" stroke-width="1.5" />
+            <path d="M26 20 H174 V166 L112 180 H88 L26 166 Z" fill="url(#holes)" opacity=".5" />
           </svg>
           <div class="arms"></div>
           <div class="word"></div>
@@ -187,10 +199,29 @@ const captions = [
     const arms = slices.map((_, i) => {
       const el = document.createElement('div');
       el.className = 'arm';
-      el.innerHTML = `<svg viewBox="0 0 150 40" preserveAspectRatio="none"><path d="M44 8 L140 5 Q150 5 150 14 V26 Q150 35 140 35 L44 32 Z" fill="${sleeves[i]}"/><rect x="40" y="7" width="10" height="26" rx="3" fill="rgba(255,255,255,.35)"/><path d="M42 11 C30 9 16 8 8 12 C2 15 2 25 8 28 C16 32 30 31 42 29 Z" fill="${skins[i]}"/><path d="M30 10 C24 4 16 3 13 6 C11 9 16 11 22 12 Z" fill="${skins[i]}"/></svg>`;
+      el.innerHTML = handSvg(sleeves[i], skins[i]);
       armsBox.appendChild(el);
       return el;
     });
+
+    // Arm von oben: Hand links (greift), Ärmel nach rechts
+    function shade(hex: string, f: number) {
+      const n = parseInt(hex.slice(1), 16);
+      const c = (v: number) => Math.max(0, Math.min(255, Math.round(v * f)));
+      return `rgb(${c(n >> 16)},${c((n >> 8) & 255)},${c(n & 255)})`;
+    }
+    function handSvg(sleeve: string, skin: string) {
+      const line = shade(skin, 0.78);
+      const fingers = [
+        [21, 11.2, 6.2],
+        [16, 17.6, 6.6],
+        [18.5, 24.2, 6.4],
+        [25, 30.4, 5.6],
+      ]
+        .map(([x, y, h]) => `<rect x="${x}" y="${y}" width="${44 - x}" height="${h}" rx="${h / 2}" fill="${skin}" stroke="${line}" stroke-width="1"/>`)
+        .join('');
+      return `<svg viewBox="0 0 170 44"><path d="M78 9 L160 7 Q170 7 170 16 V28 Q170 37 160 37 L78 35 Z" fill="${sleeve}"/><path d="M78 9 L160 7 Q170 7 170 16 V19 L78 17 Z" fill="rgba(255,255,255,.12)"/><rect x="70" y="8" width="11" height="28" rx="3" fill="${shade(sleeve, 0.8)}"/><path d="M56 13 H72 V31 H56 Z" fill="${skin}"/>${fingers}<path d="M30 10 Q34 8 46 9 Q60 10 60 22 Q60 34 46 35 Q34 36 30 34 Z" fill="${skin}" stroke="${line}" stroke-width="1"/><path d="M42 34 Q38 40 30 41 Q25 41 26 38 Q28 35 36 32 Z" fill="${skin}" stroke="${line}" stroke-width="1"/><path d="M36 15 Q44 14 52 16 M36 29 Q44 30 52 28" stroke="${line}" stroke-width=".8" fill="none" opacity=".6"/></svg>`;
+    }
 
     const angle = (i: number) => i * 60 - 60; // Mitte des Stücks (Grad, 0 = rechts)
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -214,32 +245,32 @@ const captions = [
       const off = loop.offsetWidth / 2 + R * 2.4;
       const ease = 'cubic-bezier(.2,.8,.2,1)';
       await Promise.all([
-        anim(pizza, [{ transform: `translateX(${-off}px)`, opacity: 1 }, { transform: 'none', opacity: 1 }], { duration: 900, easing: ease }),
-        anim(peel, [{ transform: `translateX(${-off}px) rotate(90deg)`, opacity: 1 }, { transform: 'rotate(90deg)', opacity: 1 }], { duration: 900, easing: ease }),
+        anim(pizza, [{ transform: `translateX(${-off}px)`, opacity: 1 }, { transform: 'none', opacity: 1 }], { duration: 650, easing: ease }),
+        anim(peel, [{ transform: `translateX(${-off}px) rotate(90deg)`, opacity: 1 }, { transform: 'rotate(90deg)', opacity: 1 }], { duration: 650, easing: ease }),
       ]);
-      await sleep(150);
+      await sleep(80);
       // 2. Pizza abstellen: Schaufel zieht nach links weg, Pizza bleibt liegen
       await Promise.all([
-        anim(peel, [{ transform: 'rotate(90deg)', opacity: 1 }, { transform: `translateX(${-off}px) rotate(90deg)`, opacity: 1 }], { duration: 480, easing: 'cubic-bezier(.6,0,.9,.4)' }),
-        anim(pizza, [{ transform: 'translateX(-4px)' }, { transform: 'translateX(2px)' }, { transform: 'none' }], { duration: 420, delay: 120 }),
+        anim(peel, [{ transform: 'rotate(90deg)', opacity: 1 }, { transform: `translateX(${-off}px) rotate(90deg)`, opacity: 1 }], { duration: 380, easing: 'cubic-bezier(.6,0,.9,.4)' }),
+        anim(pizza, [{ transform: 'translateX(-4px)' }, { transform: 'translateX(2px)' }, { transform: 'none' }], { duration: 340, delay: 90 }),
       ]);
       // 3. Hände kommen und holen sich die Stücke
       const grab = R * 0.5;
       await Promise.all(
         arms.map((a, i) =>
           anim(a, [{ transform: `rotate(${angle(i)}deg) translateX(${R * 2.6}px)`, opacity: 0 }, { transform: `rotate(${angle(i)}deg) translateX(${R * 2}px)`, opacity: 1, offset: 0.2 }, { transform: `rotate(${angle(i)}deg) translateX(${grab}px)`, opacity: 1 }], {
-            duration: 520,
-            delay: i * 110,
+            duration: 400,
+            delay: i * 70,
             easing: 'cubic-bezier(.2,.8,.2,1)',
           }),
         ),
       );
-      await sleep(180);
+      await sleep(110);
       const away = R * 3.2;
       await Promise.all(
         slices.flatMap((s, i) => {
           const a = (angle(i) * Math.PI) / 180;
-          const opt = { duration: 650, delay: i * 90, easing: 'cubic-bezier(.5,0,.8,.4)' };
+          const opt = { duration: 520, delay: i * 60, easing: 'cubic-bezier(.5,0,.8,.4)' };
           return [
             anim(s, [{ transform: 'none' }, { transform: `translate(${Math.cos(a) * away}px, ${Math.sin(a) * away}px)` }], opt),
             anim(arms[i], [{ transform: `rotate(${angle(i)}deg) translateX(${grab}px)` }, { transform: `rotate(${angle(i)}deg) translateX(${grab + away}px)` }], opt),
@@ -248,9 +279,9 @@ const captions = [
       );
 
       // 4. Kurzer Spruch
-      await anim(word, [{ opacity: 0, transform: 'translate(-50%,-50%) rotate(-4deg) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1.08)', offset: 0.7 }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1)' }], { duration: 380, easing: 'ease-out' });
-      await sleep(1100);
-      await anim(word, [{ opacity: 1 }, { opacity: 0 }], { duration: 300 });
+      await anim(word, [{ opacity: 0, transform: 'translate(-50%,-50%) rotate(-4deg) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1.08)', offset: 0.7 }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(-4deg) scale(1)' }], { duration: 300, easing: 'ease-out' });
+      await sleep(800);
+      await anim(word, [{ opacity: 1 }, { opacity: 0 }], { duration: 250 });
     }
 
     hero.classList.add('looping');
@@ -647,9 +678,10 @@ const captions = [
     position: absolute;
     left: 50%;
     top: 50%;
-    margin-top: calc(var(--pw, 260px) * -0.055);
-    width: calc(var(--pw, 260px) * 0.58);
-    height: calc(var(--pw, 260px) * 0.11);
+    margin-top: calc(var(--pw, 260px) * -0.08);
+    width: calc(var(--pw, 260px) * 0.62);
+    height: calc(var(--pw, 260px) * 0.16);
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.18));
     transform-origin: 0 50%;
     transform: translateX(-9999px);
   }
