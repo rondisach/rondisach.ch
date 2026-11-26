@@ -1,0 +1,160 @@
+---
+// Handy-Einstieg, Option «Garten»: ein kleiner 3D-Garten im Stil der grossen Szene auf dem Laptop
+// (schwebende Insel mit Stand, Ofen, Andrin, Maurice und Gästen zur goldenen Stunde).
+// Szene: src/scripts/handy/gartenScene.ts (wird nur auf dem Handy geladen).
+// Ohne WebGL oder bei reduzierter Bewegung: Foto vom Einsatz im Garten.
+import { Image } from 'astro:assets';
+import { upload } from '../lib/images';
+
+const foto = upload('/src/assets/uploads/event-edited-01.webp');
+---
+
+<section class="hg" aria-label="Einleitung">
+  <div class="kicker">pizza catering · luzern</div>
+  <h1>eifach e <span class="red">rondi</span> sach.</h1>
+
+  <div class="stage">
+    <div class="sun" aria-hidden="true"></div>
+    <canvas class="cv" aria-hidden="true"></canvas>
+    {foto && <Image class="still" src={foto} alt="Andrin und Maurice backen Pizza in einem Garten bei Sonnenuntergang" widths={[480, 720]} sizes="92vw" loading="eager" />}
+  </div>
+  <p class="hint">mit dem Finger drehen</p>
+
+  <p class="lead">Wir bringen den Ofen und backen direkt bei euch im Garten.</p>
+  <a class="btn" href="#anfrage" data-umami-event="Handy Garten: anfragen">pizza anfragen</a>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('.hg');
+  const active = (document.documentElement.dataset.handy || 'relief') === 'garten';
+  const phone = matchMedia('(max-width: 760px)').matches;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const webgl = (() => {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  })();
+
+  if (root && active && phone && !still && webgl) init(root).catch(() => root.classList.remove('live'));
+
+  async function init(root: HTMLElement) {
+    const { createGartenScene } = await import('../scripts/handy/gartenScene');
+    const canvas = root.querySelector<HTMLCanvasElement>('.cv')!;
+    root.classList.add('live');
+    const scene = createGartenScene(canvas);
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const rect = root.getBoundingClientRect();
+      scene.setScroll(-rect.top / Math.max(1, rect.height));
+    };
+    addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    update();
+    new IntersectionObserver(([e]) => (e.isIntersecting ? scene.start() : scene.stop())).observe(canvas);
+  }
+</script>
+
+<style>
+  .hg {
+    display: none;
+  }
+  @media (max-width: 760px) {
+    :global(html[data-handy='garten']) .hg {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 22px var(--gutter) 36px;
+      text-align: center;
+    }
+    .kicker {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    h1 {
+      margin: 8px 0 0;
+      font-size: clamp(46px, 14vw, 76px);
+      line-height: 0.9;
+      letter-spacing: -0.065em;
+    }
+    .red {
+      color: var(--accent);
+    }
+
+    /* Himmel zur goldenen Stunde, wie auf dem Laptop */
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1.02;
+      margin-top: 18px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: linear-gradient(to bottom, #8aa3c8 0%, #c9b4ae 38%, #f6c48a 70%, #f29a5c 100%);
+    }
+    .sun {
+      position: absolute;
+      right: 14%;
+      top: 12%;
+      width: 64px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #ffe6b0;
+      box-shadow: 0 0 40px 24px rgba(255, 194, 122, 0.55);
+    }
+    .cv {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+    .still {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hg:global(.live) .cv {
+      display: block;
+    }
+    .hg:global(.live) .still {
+      display: none;
+    }
+    .hint {
+      display: none;
+      margin: 10px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .hg:global(.live) .hint {
+      display: block;
+    }
+    .lead {
+      margin: 16px 0 20px;
+      font-size: 17px;
+      line-height: 1.45;
+      color: var(--ink-2);
+    }
+    .btn {
+      width: 100%;
+      min-height: 56px;
+      font-size: 17px;
+    }
+  }
+</style>
