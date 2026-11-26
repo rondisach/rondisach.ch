@@ -30,11 +30,11 @@
   "travel": [
     {
       "title": "Anfahrt bis 15 km",
-      "text": "CHF 50 pauschal ab 6010 Kriens."
+      "text": "CHF 50 pauschal ab 6010 Kriens (einfache Strecke)."
     },
     {
       "title": "Weitere Distanz",
-      "text": "CHF 1.50 pro zusätzlichem Kilometer der einfachen Strecke; die Rückfahrt ist im Tarif berücksichtigt."
+      "text": "CHF 2 pro zusätzlichem Kilometer der einfachen Strecke; die Rückfahrt ist im Tarif berücksichtigt. Ab 60 km einfache Strecke berechnen wir die Anfahrt individuell in der Offerte."
     }
   ],
   "diy": {
