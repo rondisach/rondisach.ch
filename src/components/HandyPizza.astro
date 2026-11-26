@@ -1,64 +1,36 @@
 ---
-// Handy-Einstieg (bis 760px Breite) statt des grossen 3D-Gartens: eine echte Pizza in 3D, gesteuert durch Scrollen.
-// Die Pizza steigt auf, der farbige Teller dahinter wächst zum ganzen Hintergrund, dann wendet sie sich wie eine Münze
-// durch alle Sorten aus pizzen.json – Farbe, Riesenwort und Karte wechseln mit. Am Schluss fällt sie in Stücke,
-// und der Anfrage-Knopf erscheint. Szene: src/scripts/handy/pizzaScene.ts (wird nur auf dem Handy geladen).
-// Ohne WebGL oder bei reduzierter Bewegung: Standbild der ersten Pizza mit Titel und Knopf.
+// Handy-Einstieg (bis 760px Breite) statt des grossen 3D-Gartens: ruhig und einfach.
+// Titel, darunter eine Pizza in 3D – aus dem Foto berechnet, mit aufgewölbtem Rand und Belag –, die sich langsam dreht.
+// Mit dem Finger lässt sie sich drehen, Antippen zeigt die nächste Sorte aus pizzen.json. Darunter der Anfrage-Knopf.
+// Szene: src/scripts/handy/pizzaScene.ts (wird nur auf dem Handy geladen).
+// Ohne WebGL oder bei reduzierter Bewegung: einfach das Foto der ersten Pizza.
 import { Image, getImage } from 'astro:assets';
 import pizzen from '../data/pizzen.json';
-import kontakt from '../data/kontakt.json';
 import { upload } from '../lib/images';
 
-const sorten = pizzen.pizzas
-  .map((p) => ({ name: p.name, ingredients: p.ingredients, tags: p.tags ?? [], img: upload(p.image) }))
-  .filter((s) => s.img);
+const sorten = pizzen.pizzas.map((p) => ({ name: p.name, img: upload(p.image) })).filter((s) => s.img);
 const srcs = await Promise.all(sorten.map((s) => getImage({ src: s.img!, width: 768, format: 'webp' }).then((r) => r.src)));
-// Eine Farbe pro Sorte (der Reihe nach)
-const farben = ['#b83c2e', '#d9a441', '#2f5d50', '#7a2a22', '#e0896b', '#3e5c76', '#6d7f4f'];
-const daten = sorten.map((s, i) => ({ name: s.name, ingredients: s.ingredients, tags: s.tags, color: farben[i % farben.length] }));
 const erste = sorten[0];
 ---
 
-<section class="hp" aria-label="Einleitung" data-srcs={JSON.stringify(srcs)} data-sorten={JSON.stringify(daten)}>
-  <div class="stage" style={`--c:${farben[0]}`}>
-    <div class="plate" aria-hidden="true"></div>
-    <div class="wipe" aria-hidden="true"></div>
-    <div class="word" aria-hidden="true">{erste?.name.toLowerCase()}</div>
+<section class="hp" aria-label="Einleitung" data-srcs={JSON.stringify(srcs)} data-names={JSON.stringify(sorten.map((s) => s.name))}>
+  <div class="kicker">pizza catering · luzern</div>
+  <h1>eifach e <span class="red">rondi</span> sach.</h1>
 
+  <div class="stage">
     <canvas class="cv" aria-hidden="true"></canvas>
-    {erste && <Image class="still" src={erste.img!} alt="" widths={[420, 640]} sizes="80vw" loading="eager" />}
-
-    <div class="intro">
-      <div class="kicker">pizza catering · luzern</div>
-      <h1>eifach e <span class="red">rondi</span> sach.</h1>
-      <div class="hint" aria-hidden="true">scrollen <span>↓</span></div>
-    </div>
-
-    <div class="card" aria-live="polite">
-      <span class="nr">01 / {String(sorten.length).padStart(2, '0')}</span>
-      <h2>
-        <span class="name">{erste?.name}</span>
-        <span class="tags">{erste?.tags.map((t) => <span class="tag">{t}</span>)}</span>
-      </h2>
-      <p class="ing">{erste?.ingredients}</p>
-    </div>
-
-    <div class="end">
-      <h2>alles frisch.<br />direkt bei euch.</h2>
-      <p>Wir bringen den Ofen und backen, solange ihr Hunger habt.</p>
-      <div class="actions">
-        <a class="btn btn--light" href="#anfrage" data-umami-event="Handy Pizza: anfragen">pizza anfragen</a>
-        <a class="btn ghost" href={`https://wa.me/${kontakt.whatsapp}`} target="_blank" rel="noopener" data-umami-event="Handy Pizza: WhatsApp">WhatsApp</a>
-      </div>
-    </div>
-
-    <div class="bar" aria-hidden="true"><i></i></div>
+    {erste && <Image class="still" src={erste.img!} alt={`Pizza ${erste.name}`} widths={[420, 640]} sizes="84vw" loading="eager" />}
   </div>
+  <p class="label" aria-live="polite">
+    <span class="name">{erste?.name}</span>
+    <span class="hint">antippen für die nächste</span>
+  </p>
+
+  <p class="lead">Handgemachte Pizza, frisch bei euch vor Ort gebacken.</p>
+  <a class="btn" href="#anfrage" data-umami-event="Handy Pizza: anfragen">pizza anfragen</a>
 </section>
 
 <script>
-  import { INTRO, END, sorteAt } from '../scripts/handy/timeline';
-
   const root = document.querySelector<HTMLElement>('.hp');
   const phone = matchMedia('(max-width: 760px)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -71,100 +43,45 @@ const erste = sorten[0];
     }
   })();
 
-  if (root && phone && !still && webgl) init(root).catch(() => root.classList.add('static'));
-  else root?.classList.add('static');
+  if (root && phone && !still && webgl) init(root).catch(() => root.classList.remove('live'));
 
   async function init(root: HTMLElement) {
     const { createPizzaScene } = await import('../scripts/handy/pizzaScene');
     const srcs: string[] = JSON.parse(root.dataset.srcs || '[]');
-    const sorten: { name: string; ingredients: string; tags: string[]; color: string }[] = JSON.parse(root.dataset.sorten || '[]');
-    const stage = root.querySelector<HTMLElement>('.stage')!;
+    const names: string[] = JSON.parse(root.dataset.names || '[]');
     const canvas = root.querySelector<HTMLCanvasElement>('.cv')!;
-    const word = root.querySelector<HTMLElement>('.word')!;
-    const wipe = root.querySelector<HTMLElement>('.wipe')!;
-    const card = root.querySelector<HTMLElement>('.card')!;
-    const nr = card.querySelector<HTMLElement>('.nr')!;
-    const name = card.querySelector<HTMLElement>('.name')!;
-    const tags = card.querySelector<HTMLElement>('.tags')!;
-    const ing = card.querySelector<HTMLElement>('.ing')!;
-    const n = sorten.length;
+    const name = root.querySelector<HTMLElement>('.name')!;
 
-    const scene = createPizzaScene(canvas, srcs);
+    // Zuerst einblenden, damit die Leinwand beim Start ihre richtige Grösse hat
     root.classList.add('live');
-    if (import.meta.env.DEV) (window as unknown as { __pizza: typeof scene }).__pizza = scene;
+    const scene = createPizzaScene(canvas, srcs, (i) => {
+      if (name.textContent !== names[i]) {
+        name.textContent = names[i];
+        name.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 350, easing: 'ease-out' });
+      }
+    });
 
-    // Stile nur schreiben, wenn sie sich ändern
-    const cache = new Map<string, string>();
-    const set = (el: HTMLElement, prop: string, v: string) => {
-      const key = el.className + prop;
-      if (cache.get(key) === v) return;
-      cache.set(key, v);
-      el.style.setProperty(prop, v);
-    };
-    const r3 = (x: number) => (Math.round(x * 1000) / 1000).toString();
-
-    let current = 0;
-    const showSorte = (i: number) => {
-      if (i === current) return;
-      const s = sorten[i];
-      current = i;
-      // Neue Farbe wächst als Kreis aus der Pizzamitte
-      wipe.style.background = s.color;
-      wipe
-        .animate([{ clipPath: 'circle(0% at 50% 48%)' }, { clipPath: 'circle(120% at 50% 48%)' }], { duration: 650, easing: 'cubic-bezier(0.65, 0, 0.35, 1)' })
-        // Am Ende die Farbe der dann aktuellen Sorte übernehmen (bei schnellem Scrollen überholen sich die Kreise)
-        .finished.then(
-          () => stage.style.setProperty('--c', sorten[current].color),
-          () => {},
-        );
-      word.textContent = s.name.toLowerCase();
-      nr.textContent = `${String(i + 1).padStart(2, '0')} / ${String(n).padStart(2, '0')}`;
-      name.textContent = s.name;
-      tags.replaceChildren(
-        ...s.tags.map((t) => {
-          const el = document.createElement('span');
-          el.className = 'tag';
-          el.textContent = t;
-          return el;
-        }),
-      );
-      ing.textContent = s.ingredients;
-      card.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
-    };
-
-    const clamp = (x: number) => Math.min(1, Math.max(0, x));
+    // Beim Wegscrollen kippt die Pizza etwas (nur bei Änderung, über rAF gebündelt)
     let ticking = false;
     const update = () => {
       ticking = false;
       const rect = root.getBoundingClientRect();
-      const travel = rect.height - stage.offsetHeight;
-      const p = travel > 0 ? clamp(-rect.top / travel) : 0;
-      scene.setProgress(p);
-
-      const intro = clamp(p / INTRO);
-      // Sorte wechselt in der Mitte des Wendens (gleich wie in der Szene)
-      showSorte(sorteAt(p, n));
-
-      const end = clamp((p - END) / 0.1);
-      stage.classList.toggle('done', end > 0.6);
-      set(stage, '--intro', r3(intro));
-      set(stage, '--end', r3(end));
-      set(stage, '--p', r3(p));
-      // Riesenwort wandert langsam seitwärts
-      set(word, 'transform', `translateX(${r3(-p * 60)}%)`);
+      scene.setScroll(-rect.top / Math.max(1, rect.height));
     };
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(update);
-      }
-    };
-    addEventListener('scroll', onScroll, { passive: true });
-    addEventListener('resize', onScroll);
+    addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
     update();
 
-    // Nur rendern, solange die Bühne sichtbar ist
-    new IntersectionObserver(([e]) => (e.isIntersecting ? scene.start() : scene.stop())).observe(root);
+    // Nur rendern, solange die Pizza sichtbar ist
+    new IntersectionObserver(([e]) => (e.isIntersecting ? scene.start() : scene.stop())).observe(canvas);
   }
 </script>
 
@@ -179,76 +96,11 @@ const erste = sorten[0];
       display: none;
     }
     .hp {
-      display: block;
-      position: relative;
-      height: 560svh;
-    }
-    .stage {
-      position: sticky;
-      top: var(--nav-h);
-      height: calc(100svh - var(--nav-h));
-      overflow: hidden;
-      background: var(--cream);
-      --intro: 0;
-      --end: 0;
-      --p: 0;
-    }
-
-    /* Farbiger Teller unter der Pizza, der beim ersten Scrollen zum ganzen Hintergrund wird */
-    .plate {
-      position: absolute;
-      left: 50%;
-      top: 56%;
-      width: 92vw;
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background: var(--c);
-      transform: translate(-50%, -50%) scale(calc(1 + var(--intro) * 2.6));
-      transition: background 0.2s linear;
-    }
-    .wipe {
-      position: absolute;
-      inset: 0;
-      clip-path: circle(0% at 50% 48%);
-      pointer-events: none;
-    }
-
-    .word {
-      position: absolute;
-      left: 0;
-      top: 36%;
-      padding-left: 6vw;
-      white-space: nowrap;
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 38vw;
-      line-height: 1;
-      letter-spacing: -0.07em;
-      color: rgba(243, 238, 228, 0.16);
-      opacity: calc(var(--intro) * (1 - var(--end)));
-      pointer-events: none;
-    }
-
-    .cv {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-    .still {
-      display: none;
-    }
-
-    /* ---------- Titel oben, verschwindet beim Losscrollen ---------- */
-    .intro {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 20px;
-      padding: 0 var(--gutter);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 22px var(--gutter) 36px;
       text-align: center;
-      opacity: calc(1 - var(--intro) * 1.6);
-      transform: translateY(calc(var(--intro) * -40px));
     }
     .kicker {
       font-size: 13px;
@@ -266,186 +118,65 @@ const erste = sorten[0];
     .red {
       color: var(--accent);
     }
+
+    .stage {
+      position: relative;
+      width: calc(100% + var(--gutter) * 2);
+      aspect-ratio: 1 / 0.86;
+      margin-top: 6px;
+    }
+    .cv {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+    .still {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 78%;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 14px 16px rgba(60, 35, 20, 0.22));
+    }
+    .hp:global(.live) .cv {
+      display: block;
+    }
+    .hp:global(.live) .still {
+      display: none;
+    }
+
+    .label {
+      margin: -4px 0 0;
+      display: grid;
+      gap: 2px;
+    }
+    .name {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: -0.04em;
+    }
     .hint {
-      margin-top: 12px;
+      display: none;
       font-size: 13px;
-      font-weight: 700;
       color: var(--muted);
     }
-    .hint span {
-      display: inline-block;
-      animation: nudge 1.4s ease-in-out infinite;
+    .hp:global(.live) .hint {
+      display: block;
     }
 
-    /* ---------- Karte zur aktuellen Sorte ---------- */
-    .card {
-      position: absolute;
-      left: var(--gutter);
-      right: var(--gutter);
-      bottom: 92px;
-      padding: 16px 18px;
-      border-radius: 22px;
-      background: var(--ink);
-      color: var(--cream);
-      opacity: calc(min(1, var(--intro) * 2 - 1) * max(0, 1 - var(--end) * 4));
-      transform: translateY(calc((1 - min(1, var(--intro))) * 30px));
-      pointer-events: none;
-    }
-    .nr {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      opacity: 0.6;
-    }
-    .card h2 {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 2px 0 0;
-      font-size: 30px;
-      letter-spacing: -0.04em;
-      color: var(--cream);
-    }
-    .tags {
-      display: inline-flex;
-      gap: 6px;
-    }
-    .card :global(.tag) {
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: var(--cream);
-      color: var(--ink);
-      font-family: var(--font-body);
-      font-size: 12px;
-      letter-spacing: 0.02em;
-    }
-    .ing {
-      margin: 4px 0 0;
-      font-size: 15px;
-      line-height: 1.4;
-      opacity: 0.75;
-    }
-
-    /* ---------- Schluss: Knopf erscheint, wenn die Stücke wegfliegen ---------- */
-    .end {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 96px;
-      padding: 0 var(--gutter);
-      color: var(--cream);
-      /* erst, wenn die Karte weg ist */
-      opacity: clamp(0, (var(--end) - 0.3) * 1.5, 1);
-      transform: translateY(calc((1 - var(--end)) * 40px));
-      pointer-events: none;
-    }
-    .stage:global(.done) .end {
-      pointer-events: auto;
-    }
-    .end h2 {
-      margin: 0;
-      font-size: clamp(44px, 13vw, 70px);
-      line-height: 0.9;
-      letter-spacing: -0.06em;
-      color: var(--cream);
-    }
-    .end p {
-      margin: 12px 0 20px;
+    .lead {
+      margin: 18px 0 20px;
       font-size: 17px;
-      opacity: 0.85;
+      line-height: 1.45;
+      color: var(--ink-2);
     }
-    .actions {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 10px;
-    }
-    .actions .btn {
+    .btn {
+      width: 100%;
       min-height: 56px;
-      font-size: 16px;
-    }
-    .ghost {
-      background: transparent;
-      border-color: rgba(243, 238, 228, 0.6);
-      color: var(--cream);
-    }
-
-    /* Fortschritt ganz unten */
-    .bar {
-      position: absolute;
-      left: var(--gutter);
-      right: var(--gutter);
-      top: 10px;
-      height: 3px;
-      border-radius: 3px;
-      background: rgba(243, 238, 228, 0.25);
-      opacity: calc(var(--intro) * (1 - var(--end)));
-    }
-    .bar i {
-      display: block;
-      height: 100%;
-      border-radius: 3px;
-      background: var(--cream);
-      transform-origin: left;
-      transform: scaleX(var(--p));
-    }
-
-    /* ---------- Ohne 3D: Standbild ---------- */
-    .hp:global(.static) {
-      height: auto;
-    }
-    .hp:global(.static) .stage {
-      position: relative;
-      top: 0;
-      height: auto;
-      padding: 0 0 32px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .hp:global(.static) .intro,
-    .hp:global(.static) .end {
-      position: relative;
-      inset: auto;
-      opacity: 1;
-      transform: none;
-      pointer-events: auto;
-    }
-    .hp:global(.static) .still {
-      display: block;
-      position: relative;
-      width: 78vw;
-      margin: 20px 0;
-    }
-    .hp:global(.static) .plate {
-      top: 46%;
-      width: 84vw;
-      transform: translate(-50%, -50%);
-    }
-    .hp:global(.static) .end {
-      color: var(--ink);
-    }
-    .hp:global(.static) .end h2 {
-      display: none;
-    }
-    .hp:global(.static) .end p {
-      text-align: center;
-    }
-    .hp:global(.static) .ghost {
-      color: var(--ink);
-      border-color: var(--ink);
-    }
-    .hp:global(.static) .cv,
-    .hp:global(.static) .card,
-    .hp:global(.static) .bar,
-    .hp:global(.static) .hint,
-    .hp:global(.static) .word {
-      display: none;
-    }
-
-    @keyframes nudge {
-      50% {
-        transform: translateY(4px);
-      }
+      font-size: 17px;
     }
   }
 </style>

@@ -1,11 +1,10 @@
-// 3D-Pizza für den Handy-Einstieg: eine echte Pizza (Foto als Oberfläche) schwebt, dreht sich und dampft.
-// Beim Scrollen wendet sie sich wie eine Münze zur nächsten Sorte; am Schluss fällt sie in Stücke auseinander.
-// Zeitplan: siehe timeline.ts.
+// 3D-Pizza für den Handy-Einstieg: Aus dem Pizzafoto wird ein Relief berechnet –
+// der Rand wölbt sich auf, Käse, Basilikum und Belag stehen leicht vor. Seitliches Licht macht die Höhen sichtbar.
+// Die Pizza dreht sich langsam; mit dem Finger lässt sie sich drehen, Antippen zeigt die nächste Sorte.
 import {
   CanvasTexture,
   CylinderGeometry,
   DirectionalLight,
-  DoubleSide,
   Group,
   HemisphereLight,
   Mesh,
@@ -15,110 +14,251 @@ import {
   PlaneGeometry,
   Scene,
   SRGBColorSpace,
-  Sprite,
-  SpriteMaterial,
-  TextureLoader,
+  Texture,
   WebGLRenderer,
-  type Texture,
 } from 'three';
-import { END, INTRO } from './timeline';
 
 const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-const ease = (x: number) => x * x * (3 - 2 * x);
-const seg = (p: number, a: number, b: number) => ease(clamp((p - a) / (b - a)));
+const smooth = (a: number, b: number, x: number) => {
+  const t = clamp((x - a) / (b - a));
+  return t * t * (3 - 2 * t);
+};
 
-/** Weicher, runder Fleck als Textur (für Dampf und Schatten). */
-function blob(inner: string, outer: string) {
+/** Die Pizza füllt rund 88 % des Fotos (freigestellt, mittig). */
+const FILL = 0.88;
+/** Auflösung des Reliefs (Ecken pro Seite) */
+const GRID = 150;
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/** Pixel eines Bildes in einer bestimmten Grösse (kleiner = weicher). */
+function pixels(img: HTMLImageElement, size: number) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d', { willReadFrequently: true })!;
+  g.drawImage(img, 0, 0, size, size);
+  return g.getImageData(0, 0, size, size).data;
+}
+
+/**
+ * Relief aus dem Foto: Grundwölbung + aufgewölbter Rand + Belag nach Helligkeit und Farbe.
+ * Zwei Auflösungen: eine weiche (Formen) und eine feinere (Details), damit es nicht verrauscht aussieht.
+ */
+function buildRelief(img: HTMLImageElement) {
+  const S = 96;
+  const soft = pixels(img, 48);
+  const fine = pixels(img, S);
+  const sample = (d: Uint8ClampedArray, size: number, u: number, v: number) => {
+    const x = Math.min(size - 1, Math.max(0, Math.floor(u * size)));
+    const y = Math.min(size - 1, Math.max(0, Math.floor(v * size)));
+    const i = (y * size + x) * 4;
+    return [d[i] / 255, d[i + 1] / 255, d[i + 2] / 255, d[i + 3] / 255];
+  };
+
+  // Umriss der Pizza: für jede Richtung, wie weit sie reicht (Pizzen sind nie ganz rund)
+  const A = 192;
+  const alpha = pixels(img, A);
+  const RAYS = 180;
+  const edge = Array.from({ length: RAYS }, (_, k) => {
+    const a = (k / RAYS) * Math.PI * 2;
+    let r = 0.3;
+    while (r < 0.5) {
+      const x = Math.floor((0.5 + Math.cos(a) * r) * A);
+      const y = Math.floor((0.5 + Math.sin(a) * r) * A);
+      if (alpha[(y * A + x) * 4 + 3] < 128) break;
+      r += 0.002;
+    }
+    return r;
+  });
+  const edgeAt = (a: number) => {
+    const f = ((a / (Math.PI * 2)) * RAYS + RAYS) % RAYS;
+    const i = Math.floor(f);
+    const t = f - i;
+    return edge[i] * (1 - t) + edge[(i + 1) % RAYS] * t;
+  };
+
+  const geo = new PlaneGeometry(2, 2, GRID, GRID);
+  geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position;
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) {
+    const u = uv.getX(i);
+    const v = 1 - uv.getY(i);
+    // Abstand zur Mitte, 1 = Umriss der Pizza in dieser Richtung
+    const r = Math.hypot(u - 0.5, v - 0.5) / edgeAt(Math.atan2(v - 0.5, u - 0.5));
+    const [sr, sg, sb] = sample(soft, 48, u, v);
+    const [fr, fg, fb] = sample(fine, S, u, v);
+    let h: number;
+    if (r >= 1) {
+      // Ausserhalb der Pizza: flach auf Bodenhöhe, die Kante blendet das Material aus
+      h = 0;
+    } else {
+      // Leichte Wölbung zur Mitte
+      const dome = 0.035 * (1 - r * r);
+      // Aufgegangener Rand (Cornicione): Wulst kurz vor der Kante, aussen abgerundet
+      // Läuft genau am Umriss auf 0 aus, damit die Kante sauber bleibt
+      const rim = 0.1 * smooth(0.7, 0.86, r) * (1 - smooth(0.9, 1, r));
+      // Belag: helle, wenig farbige Stellen (Mozzarella) stehen vor, Basilikum und Fleisch leicht
+      const lum = 0.6 * (0.3 * sr + 0.59 * sg + 0.11 * sb) + 0.4 * (0.3 * fr + 0.59 * fg + 0.11 * fb);
+      const sat = Math.max(fr, fg, fb) - Math.min(fr, fg, fb);
+      const cheese = smooth(0.62, 0.9, lum) * (1 - smooth(0.25, 0.5, sat));
+      const green = smooth(0.05, 0.2, fg - Math.max(fr, fb));
+      const meat = smooth(0.25, 0.45, fr - fg) * smooth(0.2, 0.45, lum);
+      const inner = 1 - smooth(0.7, 0.85, r);
+      const toppings = inner * (0.028 * cheese + 0.025 * green + 0.02 * meat + 0.012 * (lum - 0.5));
+      h = dome + rim + toppings;
+    }
+    pos.setY(i, h);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** Weicher, runder Schatten als Textur. */
+function shadowTexture() {
   const c = document.createElement('canvas');
   c.width = c.height = 64;
   const g = c.getContext('2d')!;
   const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grad.addColorStop(0, inner);
-  grad.addColorStop(1, outer);
+  grad.addColorStop(0, 'rgba(60,35,20,0.42)');
+  grad.addColorStop(0.6, 'rgba(60,35,20,0.18)');
+  grad.addColorStop(1, 'rgba(60,35,20,0)');
   g.fillStyle = grad;
   g.fillRect(0, 0, 64, 64);
   return new CanvasTexture(c);
 }
 
-export function createPizzaScene(canvas: HTMLCanvasElement, srcs: string[]) {
+export function createPizzaScene(canvas: HTMLCanvasElement, srcs: string[], onChange?: (i: number) => void) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.outputColorSpace = SRGBColorSpace;
   const scene = new Scene();
-  const camera = new PerspectiveCamera(38, 1, 0.1, 50);
+  const camera = new PerspectiveCamera(30, 1, 0.1, 50);
 
-  scene.add(new HemisphereLight(0xfff3e2, 0x5a3a24, 2.1));
-  const sun = new DirectionalLight(0xffffff, 1.5);
-  sun.position.set(2.5, 5, 3);
+  scene.add(new HemisphereLight(0xfff4e6, 0x6b4a33, 1.5));
+  // Flaches, warmes Seitenlicht: so werfen Rand und Belag sichtbare Schatten auf die Pizza
+  const sun = new DirectionalLight(0xfff0dc, 2.2);
+  sun.position.set(-3, 2.2, 1.5);
   scene.add(sun);
 
-  // Texturen der Sorten; bis sie geladen sind, ist die Oberfläche teigfarben
-  const loader = new TextureLoader();
-  const textures: (Texture | null)[] = srcs.map(() => null);
-  const topMat = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, alphaTest: 0.4 });
-  const bottomMat = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, alphaTest: 0.4 });
-  const crustMat = new MeshStandardMaterial({ color: 0xa8703c, roughness: 0.9, side: DoubleSide });
-  let shown = -1;
-  const show = (i: number) => {
-    if (i === shown) return;
-    shown = i;
-    const t = textures[i];
-    topMat.map = bottomMat.map = t;
-    topMat.color.set(t ? 0xffffff : 0xe8c48c);
-    bottomMat.color.copy(topMat.color);
-    topMat.needsUpdate = bottomMat.needsUpdate = true;
-  };
-  srcs.forEach((src, i) => {
-    loader.load(src, (t) => {
-      t.colorSpace = SRGBColorSpace;
-      t.anisotropy = 4;
-      // Die Pizza füllt rund 88 % des Fotos: so weit hineinzoomen, dass sie die Scheibe ganz bedeckt
-      t.repeat.set(0.84, 0.84);
-      t.offset.set(0.08, 0.08);
-      textures[i] = t;
-      if (i === shown) {
-        shown = -1;
-        show(i);
-      }
-    });
-  });
+  const tilt = new Group();
+  const spin = new Group();
+  tilt.add(spin);
+  scene.add(tilt);
 
-  // Pizza aus 8 Stücken, damit sie am Schluss auseinanderfallen kann.
-  // holder: Position und Wenden · spinner: Drehung um die eigene Achse
-  const holder = new Group();
-  const spinner = new Group();
-  holder.add(spinner);
-  scene.add(holder);
-  const N = 8;
-  const step = (Math.PI * 2) / N;
-  const slices = Array.from({ length: N }, (_, i) => {
-    const geo = new CylinderGeometry(1, 1, 0.05, 8, 1, false, i * step, step);
-    const m = new Mesh(geo, [crustMat, topMat, bottomMat]);
-    const mid = i * step + step / 2;
-    spinner.add(m);
-    return { m, dx: Math.sin(mid), dz: Math.cos(mid), lift: 0.4 + ((i * 37) % 5) * 0.12, tw: (i % 2 ? 1 : -1) * (0.5 + (i % 3) * 0.2) };
-  });
+  const top = new MeshStandardMaterial({ roughness: 0.78, alphaTest: 0.5 });
+  const surface = new Mesh(new PlaneGeometry(2, 2), top);
+  surface.visible = false;
+  // Unterseite: etwas kleinerer, gebackener Boden, damit die Pizza beim Kippen Dicke hat
+  const base = new Mesh(
+    new CylinderGeometry(FILL * 0.95, FILL * 0.9, 0.06, 64),
+    new MeshStandardMaterial({ color: 0xb37a45, roughness: 0.9 }),
+  );
+  base.position.y = -0.031;
+  spin.add(surface, base);
 
-  // Weicher Schatten unter der Pizza
   const shadow = new Mesh(
     new PlaneGeometry(2.6, 2.6),
-    new MeshBasicMaterial({ map: blob('rgba(0,0,0,0.45)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false }),
+    new MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false }),
   );
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = -0.7;
+  shadow.position.y = -0.32;
   scene.add(shadow);
 
-  // Dampf steigt auf
-  const steamTex = blob('rgba(255,255,255,0.7)', 'rgba(255,255,255,0)');
-  const steam = Array.from({ length: 7 }, (_, i) => {
-    const s = new Sprite(new SpriteMaterial({ map: steamTex, transparent: true, depthWrite: false, opacity: 0 }));
-    scene.add(s);
-    return { s, x: (((i * 53) % 7) / 7 - 0.5) * 1.1, z: (((i * 29) % 5) / 5 - 0.5) * 0.8, off: i / 7 };
-  });
+  // Sorten laden: Bild → Textur und Relief (einmal pro Sorte, dann gemerkt)
+  const cache = new Map<number, Promise<{ tex: Texture; geo: PlaneGeometry }>>();
+  const prepare = (i: number) => {
+    let job = cache.get(i);
+    if (!job) {
+      job = loadImage(srcs[i]).then((img) => {
+        const tex = new Texture(img);
+        tex.colorSpace = SRGBColorSpace;
+        tex.anisotropy = 4;
+        tex.needsUpdate = true;
+        return { tex, geo: buildRelief(img) };
+      });
+      cache.set(i, job);
+    }
+    return job;
+  };
 
-  let p = 0;
-  let target = 0;
-  let born = performance.now();
+  let index = 0;
+  let swap = 0; // 0..1..0: Pizza kippt kurz weg und kommt mit der neuen Sorte zurück
+  let swapping = false;
+  const show = async (i: number) => {
+    const { tex, geo } = await prepare(i);
+    surface.geometry = geo;
+    top.map = tex;
+    top.needsUpdate = true;
+    surface.visible = true;
+    index = i;
+    onChange?.(i);
+    // Die nächste schon vorbereiten
+    if (srcs.length > 1) prepare((i + 1) % srcs.length);
+  };
+  show(0);
+
+  const next = () => {
+    if (swapping || srcs.length < 2) return;
+    swapping = true;
+    const target = (index + 1) % srcs.length;
+    prepare(target);
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = clamp((t - t0) / 700);
+      swap = Math.sin(k * Math.PI);
+      if (k >= 0.5 && index !== target) show(target);
+      if (k < 1) requestAnimationFrame(step);
+      else {
+        swap = 0;
+        swapping = false;
+      }
+    };
+    requestAnimationFrame(step);
+  };
+
+  // Drehen mit dem Finger, mit Schwung; Antippen (ohne Ziehen) zeigt die nächste Sorte.
+  // Senkrechtes Wischen scrollt weiterhin die Seite.
+  let angle = 0;
+  let speed = 0.25;
+  let dragging = false;
+  let lastX = 0;
+  let moved = 0;
+  let lastMove = 0;
+  canvas.style.touchAction = 'pan-y';
+  canvas.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    moved = 0;
+    lastX = e.clientX;
+    lastMove = performance.now();
+  });
+  addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    const now = performance.now();
+    lastX = e.clientX;
+    moved += Math.abs(dx);
+    angle += dx * 0.012;
+    speed = (dx * 0.012) / Math.max(0.016, (now - lastMove) / 1000);
+    lastMove = now;
+  });
+  addEventListener('pointerup', () => {
+    if (!dragging) return;
+    dragging = false;
+    if (moved < 6) next();
+  });
+  addEventListener('pointercancel', () => (dragging = false));
+
+  let scroll = 0;
+  const born = performance.now();
   let raf = 0;
   let last = performance.now();
   let running = false;
@@ -128,78 +268,44 @@ export function createPizzaScene(canvas: HTMLCanvasElement, srcs: string[]) {
     const h = canvas.clientHeight || 1;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // Abstand so wählen, dass die Pizza rund 84 % der Breite füllt
+    // Abstand so, dass die Pizza rund 90 % der Breite füllt
     const halfW = Math.tan((camera.fov * Math.PI) / 360) * camera.aspect;
-    const d = Math.max(5.2, 1 / 0.84 / halfW);
-    const a = (52 * Math.PI) / 180;
+    const d = Math.max(4, FILL / 0.9 / halfW);
+    const a = (40 * Math.PI) / 180;
     camera.position.set(0, Math.sin(a) * d, Math.cos(a) * d);
-    camera.lookAt(0, 0.1, 0);
+    camera.lookAt(0, -0.05, 0);
     camera.updateProjectionMatrix();
   };
   resize();
-  addEventListener('resize', resize);
+  new ResizeObserver(resize).observe(canvas);
 
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    // Dem Scrollen weich folgen
-    p += (target - p) * (1 - Math.exp(-dt * 7));
     const t = now / 1000;
-    const n = srcs.length;
-
-    // Beim Laden fliegt die Pizza von unten herein
-    const enter = ease(clamp((now - born) / 1300));
-    const rise = seg(p, 0, INTRO);
-    holder.position.y = -0.55 + rise * 0.6 - (1 - enter) * 3 + Math.sin(t * 1.3) * 0.04;
-    holder.scale.setScalar(0.82 + rise * 0.18);
-
-    // Wenden zwischen den Sorten: je eine halbe Umdrehung um die Querachse, Textur wechselt, wenn die Pizza auf der Kante steht
-    const len = (END - INTRO) / n;
-    let flip = 0;
-    let idx = 0;
-    for (let k = 1; k < n; k++) {
-      const b = INTRO + k * len;
-      const f = seg(p, b - len * 0.22, b + len * 0.22);
-      flip += f;
-      if (f >= 0.5) idx = k;
+    // Schwung klingt aus, bis wieder die ruhige Grunddrehung erreicht ist
+    if (!dragging) {
+      speed += (0.25 - speed) * (1 - Math.exp(-dt * 1.6));
+      angle += speed * dt;
     }
-    show(idx);
-    holder.rotation.x = flip * Math.PI;
-    holder.rotation.z = Math.sin(t * 0.7) * 0.05;
-    spinner.rotation.y = t * 0.25 + p * 7;
-
-    // Schluss: Stücke fliegen nach aussen und oben weg
-    const burst = seg(p, END, 0.98);
-    for (const s of slices) {
-      const r = burst * 2.6;
-      s.m.position.set(s.dx * r, burst * s.lift * 2, s.dz * r);
-      s.m.rotation.set(burst * s.tw, 0, burst * s.tw * 0.6);
-      // Gegen Ende schrumpfen, damit kein Stück (z. B. eines, das nach hinten fliegt) stehen bleibt
-      s.m.scale.setScalar(1 - seg(burst, 0.55, 1));
-    }
-
-    const sm = shadow.material as MeshBasicMaterial;
-    sm.opacity = (1 - burst) * enter * (0.75 - Math.abs(Math.sin(flip * Math.PI)) * 0.25);
-    shadow.scale.setScalar(holder.scale.x * (1 + (holder.position.y + 0.55) * 0.15));
-
-    // Dampf nur, solange die Pizza ganz und flach daliegt
-    const calm = (1 - burst) * enter * (1 - Math.abs(Math.sin(flip * Math.PI)));
-    for (const s of steam) {
-      const k = (t * 0.28 + s.off) % 1;
-      s.s.position.set(s.x + Math.sin(t + s.off * 9) * 0.12, holder.position.y + 0.15 + k * 1.7, s.z);
-      s.s.scale.setScalar(0.18 + k * 0.55);
-      (s.s.material as SpriteMaterial).opacity = Math.sin(k * Math.PI) * 0.28 * calm;
-    }
-
+    spin.rotation.y = angle;
+    // Beim Laden sanft von oben herein; beim Wegscrollen kippt sie etwas steiler
+    const enter = smooth(0, 1, (now - born) / 1100);
+    tilt.position.y = (1 - enter) * 0.8 + Math.sin(t * 1.1) * 0.02 - swap * 0.25;
+    tilt.rotation.x = scroll * 0.45 + swap * 0.35;
+    tilt.rotation.z = Math.sin(t * 0.6) * 0.03;
+    tilt.scale.setScalar((0.9 + enter * 0.1) * (1 - swap * 0.12));
+    (shadow.material as MeshBasicMaterial).opacity = enter * (1 - swap * 0.4);
     renderer.render(scene, camera);
   };
 
   return {
-    /** Ziel-Fortschritt 0..1 aus dem Scrollen */
-    setProgress(v: number) {
-      target = clamp(v);
+    /** 0 = Einstieg ganz sichtbar, 1 = weggescrollt */
+    setScroll(v: number) {
+      scroll = clamp(v);
     },
+    next,
     start() {
       if (running) return;
       running = true;
@@ -209,11 +315,6 @@ export function createPizzaScene(canvas: HTMLCanvasElement, srcs: string[]) {
     stop() {
       running = false;
       cancelAnimationFrame(raf);
-    },
-    /** Nur für Tests: sofort an eine Stelle springen */
-    jump(v: number) {
-      target = p = clamp(v);
-      born = 0;
     },
   };
 }
