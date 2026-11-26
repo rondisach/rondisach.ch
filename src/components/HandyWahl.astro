@@ -1,0 +1,68 @@
+---
+// Zwei Optionen für den Handy-Einstieg zum Vergleichen: «Relief» (3D-Pizza aus dem Foto) und «Garten» (kleiner 3D-Garten).
+// Umschalten mit ?handy=relief oder ?handy=garten; die Wahl wird im Browser gemerkt, oben erscheint dann eine Leiste.
+// Ohne Wahl sehen Besucher «Relief». Sobald entschieden ist, kommt die andere Option wieder weg.
+import HandyPizza from './HandyPizza.astro';
+import HandyGarten from './HandyGarten.astro';
+---
+
+<script is:inline>
+  (function () {
+    var v = null;
+    try {
+      var m = location.search.match(/[?&]handy=(relief|garten)/);
+      if (m) {
+        v = m[1];
+        localStorage.setItem('rondisachHandy2', v);
+      } else {
+        v = localStorage.getItem('rondisachHandy2');
+      }
+    } catch (e) {}
+    if (v === 'relief' || v === 'garten') {
+      document.documentElement.dataset.handy = v;
+      document.documentElement.classList.add('handyWahl');
+    }
+  })();
+</script>
+
+<HandyPizza />
+<HandyGarten />
+
+<nav class="hwBar" aria-label="Handy-Einstieg vergleichen">
+  <a href="?handy=relief" data-v="relief">Relief</a>
+  <a href="?handy=garten" data-v="garten">Garten</a>
+</nav>
+
+<style is:global>
+  .hwBar {
+    display: none;
+  }
+  @media (max-width: 760px) {
+    html.handyWahl .hwBar {
+      position: fixed;
+      z-index: 60;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      padding: 5px;
+      border-radius: 999px;
+      background: rgba(18, 18, 18, 0.88);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    .hwBar a {
+      padding: 8px 16px;
+      border-radius: 999px;
+      color: var(--cream);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    html[data-handy='relief'] .hwBar a[data-v='relief'],
+    html[data-handy='garten'] .hwBar a[data-v='garten'] {
+      background: var(--cream);
+      color: var(--ink);
+    }
+  }
+</style>

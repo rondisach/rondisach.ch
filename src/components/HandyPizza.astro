@@ -43,7 +43,8 @@ const erste = sorten[0];
     }
   })();
 
-  if (root && phone && !still && webgl) init(root).catch(() => root.classList.remove('live'));
+  const active = (document.documentElement.dataset.handy || 'relief') === 'relief';
+  if (root && active && phone && !still && webgl) init(root).catch(() => root.classList.remove('live'));
 
   async function init(root: HTMLElement) {
     const { createPizzaScene } = await import('../scripts/handy/pizzaScene');
@@ -93,6 +94,9 @@ const erste = sorten[0];
   @media (max-width: 760px) {
     /* Auf dem Handy ersetzt dieser Einstieg den grossen 3D-Garten */
     :global(.hero) {
+      display: none;
+    }
+    :global(html[data-handy='garten']) .hp {
       display: none;
     }
     .hp {
