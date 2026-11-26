@@ -28,6 +28,7 @@ import {
   Object3D,
   PlaneGeometry,
   QuadraticBezierCurve3,
+  Raycaster,
   BufferGeometry,
   ShaderMaterial,
   SphereGeometry,
@@ -287,20 +288,46 @@ function lathe(profile: [number, number][], segments: number, depth: number) {
   ).scale(1, 1, depth);
 }
 
-/** Kopf mit schmalerem Kinn, flacher Stirn und seitlich etwas schmaler – facettiert wie eine Low-Poly-Figur. */
+/** Form des Kopfes: schmaleres Kinn, flachere Stirn, seitlich etwas schmaler. */
+function headShape(v: Vector3, r: number, jaw: number) {
+  v.y *= 1.14;
+  v.x *= 0.9;
+  // Nach unten zum Kinn hin schmaler
+  const down = Math.min(1, Math.max(0, -v.y / (r * 1.14)));
+  v.x *= 1 - 0.3 * down * jaw;
+  v.z *= 1 - 0.1 * down;
+  if (v.z > 0) v.z *= 0.92;
+  // Kinn leicht nach vorne
+  if (v.y < -r * 0.6 && v.z > 0) v.z += r * 0.08;
+}
+
+/** Facettierter Kopf wie bei einer Low-Poly-Figur. */
 function headGeometry(r: number, jaw: number) {
-  return shape(new SphereGeometry(r, 8, 7), (v) => {
-    v.y *= 1.14;
-    v.x *= 0.9;
-    // Nach unten zum Kinn hin schmaler
-    const down = Math.min(1, Math.max(0, -v.y / (r * 1.14)));
-    v.x *= 1 - 0.34 * down * jaw;
-    v.z *= 1 - 0.16 * down;
-    if (v.z > 0) v.z *= 0.92;
-    // Kinn leicht nach vorne
-    if (v.y < -r * 0.6 && v.z > 0) v.z += r * 0.1;
+  return shape(new SphereGeometry(r, 10, 8), (v) => headShape(v, r, jaw));
+}
+
+/**
+ * Haare oder Bart als Hülle, die genau der Kopfform folgt.
+ * `grow(n)` bekommt die Richtung vom Kopfmittelpunkt (Länge 1) und sagt, wie weit die Hülle dort absteht;
+ * 0 heisst «keine Haare» – diese Ecken verschwinden im Kopf, so entsteht ein sauberer Haaransatz.
+ */
+function hairShell(r: number, jaw: number, grow: (n: Vector3) => number) {
+  const n = new Vector3();
+  // Feiner unterteilt als der Kopf, damit der Haaransatz sauber verläuft
+  return shape(new SphereGeometry(r, 16, 13), (v) => {
+    n.copy(v).divideScalar(r);
+    const k = grow(n);
+    headShape(v, r, jaw);
+    if (k > 0) {
+      v.multiplyScalar(1 + k);
+    } else {
+      v.multiplyScalar(0.8);
+    }
   });
 }
+
+/** Wie hoch der Haaransatz liegt: vorne an der Stirn hoch, über den Ohren mittel, im Nacken tief. */
+const hairline = (n: Vector3) => (n.z >= 0 ? 0.2 + 0.3 * n.z : 0.2 + 0.62 * n.z);
 
 type Outfit = 'tee' | 'shirt' | 'jacket' | 'sweater' | 'dress';
 type Hairstyle = 'short' | 'quiff' | 'long' | 'bun' | 'ponytail' | 'bald';
@@ -450,78 +477,116 @@ export function buildPerson({ rand, pose = 'stand', apron = false, hold = null, 
   const R = 0.12;
   const skull = new Mesh(headGeometry(R, jaw), skin);
   skull.castShadow = true;
-  // Nase als kleiner Keil, Ohren, Augen und Brauen
-  const nose = new Mesh(new ConeGeometry(0.019, 0.05, 4).scale(0.8, 1, 1), skin);
+  face.add(skull);
+  // Gesichtsteile direkt auf die Oberfläche setzen – so schwebt nichts und nichts versinkt, egal wie das Kinn geformt ist
+  const ray = new Raycaster();
+  const from = new Vector3();
+  const back = new Vector3(0, 0, -1);
+  const surface = (x: number, y: number) => {
+    ray.set(from.set(x, y, 1), back);
+    const hit = ray.intersectObject(skull)[0];
+    return hit ? hit.point.z : R * 0.85;
+  };
+  // Nase als kleiner Keil
+  const nose = new Mesh(new ConeGeometry(0.022, 0.056, 4).scale(0.8, 1, 1), skin);
   nose.rotation.x = Math.PI / 2 + 0.35;
-  nose.position.set(0, -0.012, 0.104);
-  face.add(skull, nose);
+  nose.position.set(0, -0.014, surface(0, -0.014) - 0.002);
+  // Mund: schmaler, dunkler Strich, manche lächeln leicht
+  const lips = flat(feminine ? 0x9c4a42 : 0x7a3e34);
+  const mouthY = -0.05;
+  const mouth = new Mesh(new BoxGeometry(0.034, 0.007, 0.006), lips);
+  mouth.position.set(0, mouthY, surface(0, mouthY) + 0.001);
+  face.add(nose, mouth);
+  const smile = look() < 0.5;
   for (const side of [-1, 1]) {
     const ear = new Mesh(new BoxGeometry(0.018, 0.045, 0.032), skin);
-    ear.position.set(side * 0.101, 0, -0.005);
-    const eye = new Mesh(new BoxGeometry(0.02, 0.008, 0.008), dark);
-    eye.position.set(side * 0.036, 0.016, 0.099);
-    const brow = new Mesh(new BoxGeometry(0.036, 0.009, 0.012), hairMat);
-    brow.position.set(side * 0.036, 0.036, 0.098);
-    brow.rotation.z = side * -0.12;
+    ear.position.set(side * 0.1, -0.004, -0.005);
+    // Augen und Brauen folgen der Rundung des Gesichts, damit sie von der Seite nicht abstehen
+    const eye = new Mesh(new BoxGeometry(0.021, 0.009, 0.006), dark);
+    eye.position.set(side * 0.037, 0.016, surface(side * 0.037, 0.016) + 0.001);
+    eye.rotation.y = side * 0.35;
+    const brow = new Mesh(new BoxGeometry(0.036, 0.009, 0.008), hairMat);
+    brow.position.set(side * 0.037, 0.038, surface(side * 0.037, 0.038) + 0.002);
+    brow.rotation.set(0, side * 0.35, side * -0.12);
     face.add(ear, eye, brow);
+    if (smile) {
+      // Mundwinkel leicht nach oben
+      const corner = new Mesh(new BoxGeometry(0.01, 0.006, 0.006), lips);
+      corner.position.set(side * 0.021, mouthY + 0.003, surface(side * 0.021, mouthY + 0.003) + 0.0005);
+      corner.rotation.set(0, side * 0.2, side * 0.6);
+      face.add(corner);
+    }
   }
   if (glasses) {
     // Sonnenbrille: zwei Gläser mit Steg
     const frame = flat(0x1c1a18, { roughness: 0.4 });
     for (const side of [-1, 1]) {
-      const lens = new Mesh(new BoxGeometry(0.036, 0.024, 0.008), frame);
-      lens.position.set(side * 0.036, 0.014, 0.104);
-      face.add(lens);
+      const lens = new Mesh(new BoxGeometry(0.036, 0.024, 0.006), frame);
+      lens.position.set(side * 0.037, 0.014, surface(side * 0.037, 0.014) + 0.004);
+      lens.rotation.y = side * 0.25;
+      // Bügel bis zum Ohr
+      const arm = new Mesh(new BoxGeometry(0.004, 0.005, 0.1), frame);
+      arm.position.set(side * 0.084, 0.018, 0.045);
+      arm.rotation.y = -side * 0.5;
+      face.add(lens, arm);
     }
     const bridge = new Mesh(new BoxGeometry(0.04, 0.006, 0.006), frame);
-    bridge.position.set(0, 0.02, 0.106);
+    bridge.position.set(0, 0.02, surface(0, 0.02) + 0.004);
     face.add(bridge);
   }
   if (beard) {
+    // Vollbart (Kiefer, Kinn, Koteletten und Schnauz) oder nur ein Kinnbart; der Mund bleibt frei
+    const full = look() < 0.6;
     const b = new Mesh(
-      shape(new SphereGeometry(R * 1.05, 8, 4, 0, Math.PI, Math.PI * 0.58, Math.PI * 0.42), (v) => {
-        v.y *= 1.14;
-        v.x *= 0.9;
-        const down = Math.min(1, Math.max(0, -v.y / (R * 1.2)));
-        v.x *= 1 - 0.34 * down * jaw;
-        v.z *= 0.95;
+      hairShell(R, jaw, (n) => {
+        if (n.z < -0.1) return 0;
+        const chin = n.y < -0.6 && n.z > 0.3;
+        const jawline = full && n.y < -0.55;
+        const sideburn = full && n.y < 0.15 && Math.abs(n.x) > 0.6;
+        return chin || jawline || sideburn ? 0.03 : 0;
       }),
       hairMat,
     );
     face.add(b);
+    if (full) {
+      const stache = new Mesh(new BoxGeometry(0.05, 0.012, 0.012), hairMat);
+      stache.position.set(0, mouthY + 0.013, surface(0, mouthY + 0.013) + 0.002);
+      face.add(stache);
+    }
   }
 
-  // Frisur: Kappe vorne höher (Stirn frei), dazu je nach Stil Tolle, lange Haare, Dutt oder Pferdeschwanz
-  if (hairstyle !== 'bald') {
-    const cap = new Mesh(new SphereGeometry(R * 1.07, 8, 4, 0, Math.PI * 2, 0, Math.PI * 0.5).scale(0.94, 1.18, 1.02), hairMat);
-    cap.position.set(0, 0.012, -0.01);
-    cap.rotation.x = -0.32;
-    face.add(cap);
-  } else {
-    // Kurzer Haarkranz hinten
-    const ring = new Mesh(new SphereGeometry(R * 1.04, 8, 2, Math.PI, Math.PI, Math.PI * 0.32, Math.PI * 0.25).scale(0.92, 1.14, 1), hairMat);
-    face.add(ring);
-  }
-  if (hairstyle === 'quiff') {
-    // Etwas Volumen vorne oben, leicht zur Seite gekämmt
-    const top = new Mesh(new BoxGeometry(0.15, 0.03, 0.085).rotateX(-0.12).rotateZ(0.08), hairMat);
-    top.position.set(0.006, 0.122, 0.02);
-    face.add(top);
+  // Frisur: Hülle über dem Kopf mit Haaransatz, je nach Stil mit Volumen, langen Haaren, Dutt oder Pferdeschwanz
+  const top = (n: Vector3) => Math.max(0, n.y);
+  let hair: BufferGeometry;
+  if (hairstyle === 'bald') {
+    // Kurzer Haarkranz über den Ohren und im Nacken
+    hair = hairShell(R, jaw, (n) => (n.z < 0.25 && n.y > -0.35 && n.y < 0.15 ? 0.03 : 0));
+  } else if (hairstyle === 'quiff') {
+    // Vorne oben mehr Volumen, leicht zur Seite gekämmt
+    hair = hairShell(R, jaw, (n) =>
+      n.y > hairline(n) ? 0.05 + 0.05 * top(n) + 0.16 * Math.max(0, n.y - 0.3) * Math.max(0, n.z + 0.1) + 0.02 * n.x : 0,
+    );
   } else if (hairstyle === 'long') {
-    // Fällt hinten bis auf die Schultern und rahmt seitlich das Gesicht
-    const back = new Mesh(new CylinderGeometry(R * 1.0, R * 1.06, 0.22, 8).scale(1, 1, 0.62), hairMat);
-    back.position.set(0, -0.05, -0.045);
-    face.add(back);
-  } else if (hairstyle === 'bun') {
+    // Bob: rahmt das Gesicht und endet auf Kinnhöhe, unten etwas ausgestellt
+    hair = hairShell(R, jaw, (n) =>
+      n.y > hairline(n) || (n.z < 0.35 && n.y > -0.6) ? 0.06 + 0.03 * top(n) + 0.1 * Math.max(0, -n.y) : 0,
+    );
+  } else {
+    // Kurz, oder eng anliegend bei Dutt und Pferdeschwanz
+    const tight = hairstyle === 'bun' || hairstyle === 'ponytail';
+    hair = hairShell(R, jaw, (n) => (n.y > hairline(n) ? (tight ? 0.035 : 0.05) + 0.04 * top(n) : 0));
+  }
+  face.add(new Mesh(hair, hairMat));
+  if (hairstyle === 'bun') {
     const bun = new Mesh(new DodecahedronGeometry(0.05), hairMat);
-    bun.position.set(0, 0.09, -0.1);
+    bun.position.set(0, 0.1, -0.1);
     face.add(bun);
   } else if (hairstyle === 'ponytail') {
     const knot = new Mesh(new DodecahedronGeometry(0.036), hairMat);
-    knot.position.set(0, 0.025, -0.115);
-    const tail = new Mesh(new CylinderGeometry(0.038, 0.02, 0.15, 6), hairMat);
-    tail.position.set(0, -0.055, -0.125);
-    tail.rotation.x = 0.12;
+    knot.position.set(0, 0.03, -0.13);
+    const tail = new Mesh(new CylinderGeometry(0.036, 0.018, 0.15, 6), hairMat);
+    tail.position.set(0, -0.05, -0.14);
+    tail.rotation.x = 0.15;
     face.add(knot, tail);
   }
   p.add(head);
