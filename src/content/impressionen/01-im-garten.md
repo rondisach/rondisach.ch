@@ -10,4 +10,8 @@ photos:
     alt: "Buffet und Mise en Place beim Pizza-Catering"
   - image: "/src/assets/uploads/event-edited-05.webp"
     alt: "Gäste beim Pizza Catering am Abend"
+  - image: "/src/assets/uploads/catering-event.webp"
+    alt: "Apéro, Getränke und Gäste bei einem rondisach Catering"
+  - image: "/src/assets/uploads/lemon-posset.webp"
+    alt: "Lemon Posset in Zitronenhälften mit Himbeeren"
 ---
