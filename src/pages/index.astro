@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
+import HandyPizza from '../components/HandyPizza.astro';
 import PizzaMenu from '../components/PizzaMenu.astro';
 import Faq from '../components/Faq.astro';
 import { upload } from '../lib/images';
@@ -49,6 +50,7 @@ const events = termine.events
   description="rondisach Pizza Catering: handgemachter Teig, Pizza à discrétion und Catering für private Feste und Firmenanlässe in Luzern und Umgebung."
   schema
 >
+  <HandyPizza />
   <Hero />
 
   <div class="wrap factbar" aria-label="Unsere wichtigsten Fakten">
