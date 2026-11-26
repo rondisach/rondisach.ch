@@ -69,30 +69,6 @@ content:
         fields:
           - { name: title, label: Titel, type: string }
           - { name: text, label: Text, type: text }
-      - name: diy
-        label: Ofen mieten (selber backen)
-        type: object
-        fields:
-          - { name: title, label: Titel, type: string }
-          - { name: lead, label: Einleitung, type: text }
-          - { name: includes, label: Inklusive, type: string, list: true }
-          - name: items
-            label: Preise
-            type: object
-            list: true
-            fields:
-              - { name: name, label: Name, type: string }
-              - { name: description, label: Beschreibung, type: string }
-              - { name: price, label: Preis (CHF), type: number }
-              - { name: unit, label: Einheit, type: string, description: "z. B. Tag, Stück, Ofen" }
-          - { name: minDough, label: Mindestmenge Teigballen (Formular), type: number }
-          - name: notes
-            label: Hinweise
-            type: object
-            list: true
-            fields:
-              - { name: title, label: Titel, type: string }
-              - { name: text, label: Text, type: text }
       - { name: fineprint, label: Kleingedrucktes, type: text }
 
   - name: pizzen
@@ -175,15 +151,6 @@ content:
           - { name: answer, label: Antwort, type: text }
           - { name: linkText, label: Link-Text (optional), type: string }
           - { name: link, label: Link (optional), type: string, description: "z. B. /buchung-storno.html" }
-      - name: ofen
-        label: Fragen zur Ofenmiete (Seite Ofen mieten)
-        type: object
-        list: true
-        fields:
-          - { name: question, label: Frage, type: string }
-          - { name: answer, label: Antwort, type: text }
-          - { name: linkText, label: Link-Text (optional), type: string }
-          - { name: link, label: Link (optional), type: string }
 
   - name: analytics
     label: Besucherstatistik

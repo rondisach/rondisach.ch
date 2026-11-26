@@ -198,7 +198,7 @@ h3 {
   white-space: nowrap;
 }
 
-/* Formulare (Catering-Anfrage und Ofenmiete) */
+/* Formulare (Catering-Anfrage) */
 .form {
   display: grid;
   grid-template-columns: 1fr 1fr;
