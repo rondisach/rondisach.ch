@@ -8,7 +8,6 @@ import {
   Points,
   PointsMaterial,
   SRGBColorSpace,
-  CapsuleGeometry,
   DoubleSide,
   TorusGeometry,
   CircleGeometry,
@@ -19,6 +18,7 @@ import {
   Group,
   IcosahedronGeometry,
   InstancedMesh,
+  LatheGeometry,
   Line,
   LineBasicMaterial,
   Matrix4,
@@ -31,6 +31,7 @@ import {
   BufferGeometry,
   ShaderMaterial,
   SphereGeometry,
+  Vector2,
   Vector3,
 } from 'three';
 import { buildVariantPizza, type PizzaKind } from './pizzas';
@@ -49,7 +50,7 @@ export const GARDEN = {
   cloth: 0xf3eee4,
   skin: [0xf1c6a1, 0xd9a47c, 0xb57b52, 0xf5d3b5, 0x8a5a3c],
   shirts: [0xb83c2e, 0xf3eee4, 0x3e5c76, 0xd9a441, 0x6d7f4f, 0x2c2925, 0xe0896b, 0x7a6aa0],
-  pants: [0x2c2925, 0x4a5568, 0x6b5a48, 0x3d4b5c],
+  pants: [0x2c2925, 0x4a5568, 0x6b5a48, 0x3d4b5c, 0x5a6f8c, 0xc8b89a],
   hair: [0x2b1d14, 0x5a3b22, 0x1a1a1a, 0x9c6b3c, 0xd2b48c],
   apron: 0x1f2c44,
   bulb: 0xffd38a,
@@ -265,98 +266,302 @@ interface PersonOptions {
   shirt?: number;
 }
 
-/** Gesichtslose Figur mit weichen Formen, ca. 1.75 m gross. */
+/** Jede Ecke einer Geometrie durch `fn` schicken – so entstehen kantige Gesichter, Schuhe und Hände aus einfachen Formen. */
+function shape<T extends BufferGeometry>(geo: T, fn: (v: Vector3) => void): T {
+  const pos = geo.attributes.position;
+  const v = new Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    fn(v);
+    pos.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** Drehkörper aus einem Profil (Radius, Höhe), vorne-hinten flacher als breit. */
+function lathe(profile: [number, number][], segments: number, depth: number) {
+  return new LatheGeometry(
+    profile.map(([r, y]) => new Vector2(r, y)),
+    segments,
+  ).scale(1, 1, depth);
+}
+
+/** Kopf mit schmalerem Kinn, flacher Stirn und seitlich etwas schmaler – facettiert wie eine Low-Poly-Figur. */
+function headGeometry(r: number, jaw: number) {
+  return shape(new SphereGeometry(r, 8, 7), (v) => {
+    v.y *= 1.14;
+    v.x *= 0.9;
+    // Nach unten zum Kinn hin schmaler
+    const down = Math.min(1, Math.max(0, -v.y / (r * 1.14)));
+    v.x *= 1 - 0.34 * down * jaw;
+    v.z *= 1 - 0.16 * down;
+    if (v.z > 0) v.z *= 0.92;
+    // Kinn leicht nach vorne
+    if (v.y < -r * 0.6 && v.z > 0) v.z += r * 0.1;
+  });
+}
+
+type Outfit = 'tee' | 'shirt' | 'jacket' | 'sweater' | 'dress';
+type Hairstyle = 'short' | 'quiff' | 'long' | 'bun' | 'ponytail' | 'bald';
+
+/**
+ * Low-Poly-Figur, ca. 1.75 m gross: kantiges Gesicht mit Nase, Ohren und Brauen, schlanke, zulaufende Glieder.
+ * Kleidung, Frisur, Statur, Bart und Brille sind bei jeder Person anders.
+ */
 export function buildPerson({ rand, pose = 'stand', apron = false, hold = null, shirt }: PersonOptions): Person {
   const p = new Group() as Person;
   const pick = (list: number[]) => list[Math.floor(rand() * list.length)];
-  const skin = smooth(pick(GARDEN.skin));
-  const shirtMat = smooth(shirt ?? pick(GARDEN.shirts));
-  const pantsMat = smooth(pick(GARDEN.pants));
-  const hairMat = smooth(pick(GARDEN.hair), { roughness: 0.6 });
-  const shoeMat = smooth(0x2a2522);
+  // Genau so viele Aufrufe von `rand` wie früher, damit der restliche Garten gleich bleibt.
+  // Alles Weitere fürs Aussehen kommt aus einem eigenen Zufall pro Person.
+  const skinColor = pick(GARDEN.skin);
+  const topColor = shirt ?? pick(GARDEN.shirts);
+  const pantsColor = pick(GARDEN.pants);
+  const hairColor = pick(GARDEN.hair);
+  const look = rng(Math.floor(rand() * 2 ** 31));
+  const phase = rand() * Math.PI * 2;
+  const pace = 0.75 + rand() * 0.5;
+  const choose = <T,>(list: readonly T[]) => list[Math.floor(look() * list.length)];
+
   const sit = pose === 'sit';
   const hip = sit ? 0.47 : 0.88;
+  const skin = flat(skinColor, { roughness: 0.8 });
+  const topMat = flat(topColor, { roughness: 0.85 });
+  const pantsMat = flat(pantsColor);
+  const hairMat = flat(look() < 0.12 ? 0x9a948c : hairColor, { roughness: 0.8 });
+  const shoeMat = flat(choose([0x2a2522, 0x3b2a20, 0x5a4636, 0xe9e4da]), { roughness: 0.7 });
+  const dark = flat(0x2b221d);
 
-  // Beine mit Schuhen
-  for (const side of [-1, 1]) {
-    if (sit) {
-      const thigh = new Mesh(new CapsuleGeometry(0.07, 0.34, 4, 10), pantsMat);
-      thigh.rotation.x = Math.PI / 2;
-      thigh.position.set(side * 0.1, hip, 0.2);
-      const shin = new Mesh(new CapsuleGeometry(0.06, 0.34, 4, 10), pantsMat);
-      shin.position.set(side * 0.1, 0.25, 0.42);
-      const shoe = new Mesh(new CapsuleGeometry(0.05, 0.1, 4, 8), shoeMat);
-      shoe.rotation.x = Math.PI / 2;
-      shoe.position.set(side * 0.1, 0.04, 0.47);
-      p.add(thigh, shin, shoe);
-    } else {
-      const leg = new Mesh(new CapsuleGeometry(0.07, 0.7, 4, 10), pantsMat);
-      leg.position.set(side * 0.1, 0.45, 0);
-      leg.castShadow = true;
-      const shoe = new Mesh(new CapsuleGeometry(0.05, 0.1, 4, 8), shoeMat);
-      shoe.rotation.x = Math.PI / 2;
-      shoe.position.set(side * 0.1, 0.04, 0.05);
-      p.add(leg, shoe);
+  // Aussehen auswürfeln
+  const feminine = look() < 0.5;
+  const hairstyle: Hairstyle = feminine
+    ? choose(['long', 'long', 'bun', 'ponytail', 'short'] as const)
+    : choose(['short', 'short', 'quiff', 'quiff', 'bald'] as const);
+  let outfit: Outfit = apron ? 'shirt' : choose(['tee', 'tee', 'shirt', 'jacket', 'sweater'] as const);
+  if (!apron && !sit && feminine && look() < 0.35) outfit = 'dress';
+  const shorts = !apron && outfit === 'tee' && look() < 0.4;
+  const beard = !feminine && look() < 0.35;
+  const glasses = look() < 0.18;
+  const build = 0.9 + look() * 0.22;
+  const jaw = feminine ? 1.15 : 0.75 + look() * 0.3;
+  const innerMat = flat(choose([0xf3eee4, 0xdfe6ee, 0xf3eee4]));
+  const shoulderX = 0.19 * build + 0.015;
+
+  // Beine: Oberschenkel, Unterschenkel und Schuh (vorne flacher und schmaler)
+  const shinMat = shorts || outfit === 'dress' ? skin : pantsMat;
+  const shoeGeo = shape(new BoxGeometry(0.09, 0.07, 0.21, 1, 1, 2), (v) => {
+    if (v.z > 0.02) {
+      v.x *= 0.82;
+      if (v.y > 0) v.y -= 0.028;
     }
+  });
+  for (const side of [-1, 1]) {
+    const x = side * 0.095 * build;
+    const thigh = new Mesh(new CylinderGeometry(0.078, 0.06, 0.44, 7), pantsMat);
+    const shin = new Mesh(new CylinderGeometry(0.058, 0.045, 0.42, 7), shinMat);
+    const shoe = new Mesh(shoeGeo, shoeMat);
+    if (sit) {
+      // Liegt waagrecht, das breite Ende an der Hüfte
+      thigh.rotation.x = -Math.PI / 2;
+      thigh.position.set(x, hip, 0.2);
+      shin.position.set(x, 0.25, 0.42);
+      shoe.position.set(x, 0.035, 0.47);
+    } else {
+      thigh.position.set(x, hip - 0.2, 0);
+      shin.position.set(x, 0.27, 0);
+      shoe.position.set(x, 0.035, 0.04);
+    }
+    thigh.castShadow = shin.castShadow = true;
+    if (outfit === 'dress') p.add(shin, shoe);
+    else p.add(thigh, shin, shoe);
   }
 
-  // Oberkörper mit runden Schultern
-  const torso = new Mesh(new CapsuleGeometry(0.18, 0.3, 6, 16), shirtMat);
-  torso.scale.set(1, 1, 0.72);
-  torso.position.y = hip + 0.34;
+  // Becken, Oberkörper mit abfallenden Schultern
+  const hips = new Mesh(new CylinderGeometry(0.15 * build, 0.145 * build, 0.17, 8).scale(1, 1, 0.66), outfit === 'dress' ? topMat : pantsMat);
+  hips.position.y = hip + 0.04;
+  p.add(hips);
+  const torso = new Mesh(
+    lathe(
+      [
+        [0.15, 0],
+        [0.155, 0.12],
+        [0.185, 0.34],
+        [0.2, 0.45],
+        [0.17, 0.51],
+        [0.07, 0.545],
+      ],
+      8,
+      0.62,
+    ).scale(build, 1, 1),
+    topMat,
+  );
+  torso.position.y = hip + 0.06;
   torso.castShadow = true;
   p.add(torso);
+  if (outfit === 'dress') {
+    const skirt = new Mesh(lathe([[0.15, 0], [0.2, -0.2], [0.25, -0.43], [0, -0.43]], 9, 0.75).scale(build, 1, 1), topMat);
+    skirt.position.y = hip + 0.1;
+    skirt.castShadow = true;
+    p.add(skirt);
+  }
+
+  // Kragen und Ausschnitt
+  const collar = new Mesh(new CylinderGeometry(0.062, 0.078, 0.035, 8), outfit === 'jacket' ? innerMat : topMat);
+  collar.position.y = hip + 0.595;
+  p.add(collar);
+  if (outfit === 'jacket') {
+    // Beim Sakko schaut vorne das Hemd heraus, manchmal mit Krawatte
+    const v = new Mesh(new CircleGeometry(0.055, 3).scale(0.75, 1.3, 1), innerMat);
+    v.rotation.z = -Math.PI / 2;
+    v.position.set(0, hip + 0.52, 0.122);
+    v.rotation.x = -0.3;
+    p.add(v);
+    if (outfit === 'jacket' && look() < 0.5) {
+      const tie = new Mesh(new CircleGeometry(0.03, 3).scale(0.6, 2.2, 1), flat(choose([0x2c2925, 0x7a2a22, 0x1f2c44])));
+      tie.rotation.z = -Math.PI / 2;
+      tie.rotation.x = -0.3;
+      tie.position.set(0, hip + 0.505, 0.127);
+      p.add(tie);
+    }
+  }
   if (apron) {
-    const a = new Mesh(new BoxGeometry(0.3, 0.72, 0.02), smooth(GARDEN.apron));
+    const apronMat = flat(GARDEN.apron);
+    const a = new Mesh(
+      shape(new BoxGeometry(0.3, 0.72, 0.02), (v) => {
+        if (v.y > 0.1) v.x *= 0.8;
+      }),
+      apronMat,
+    );
     a.position.set(0, hip + 0.2, 0.14);
-    const strap = new Mesh(new TorusGeometry(0.09, 0.012, 6, 16, Math.PI), smooth(GARDEN.apron));
+    const strap = new Mesh(new TorusGeometry(0.09, 0.012, 4, 10, Math.PI), apronMat);
     strap.position.set(0, hip + 0.56, 0.12);
     p.add(a, strap);
   }
 
-  // Hals, Kopf und Haare
-  const neck = new Mesh(new CylinderGeometry(0.05, 0.06, 0.1, 10), skin);
-  neck.position.y = hip + 0.68;
+  // Hals und Kopf
+  const neck = new Mesh(new CylinderGeometry(0.05, 0.06, 0.1, 6), skin);
+  neck.position.y = hip + 0.65;
   p.add(neck);
   const head = new Group();
-  head.position.y = hip + 0.83;
-  const skull = new Mesh(new SphereGeometry(0.115, 20, 14), skin);
-  skull.scale.set(0.92, 1.08, 1);
+  head.position.y = hip + 0.815;
+  const face = new Group();
+  face.scale.setScalar(0.95 + look() * 0.1);
+  head.add(face);
+  const R = 0.12;
+  const skull = new Mesh(headGeometry(R, jaw), skin);
   skull.castShadow = true;
-  const hair = new Mesh(new SphereGeometry(0.122, 20, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), hairMat);
-  hair.scale.set(0.95, 1.1, 1.04);
-  hair.position.set(0, 0.012, -0.012);
-  head.add(skull, hair);
-  if (rand() > 0.6) {
-    // Manche haben einen Dutt oder Pferdeschwanz
-    const bun = new Mesh(new SphereGeometry(0.05, 12, 10), hairMat);
-    bun.position.set(0, 0.06, -0.12);
-    head.add(bun);
+  // Nase als kleiner Keil, Ohren, Augen und Brauen
+  const nose = new Mesh(new ConeGeometry(0.019, 0.05, 4).scale(0.8, 1, 1), skin);
+  nose.rotation.x = Math.PI / 2 + 0.35;
+  nose.position.set(0, -0.012, 0.104);
+  face.add(skull, nose);
+  for (const side of [-1, 1]) {
+    const ear = new Mesh(new BoxGeometry(0.018, 0.045, 0.032), skin);
+    ear.position.set(side * 0.101, 0, -0.005);
+    const eye = new Mesh(new BoxGeometry(0.02, 0.008, 0.008), dark);
+    eye.position.set(side * 0.036, 0.016, 0.099);
+    const brow = new Mesh(new BoxGeometry(0.036, 0.009, 0.012), hairMat);
+    brow.position.set(side * 0.036, 0.036, 0.098);
+    brow.rotation.z = side * -0.12;
+    face.add(ear, eye, brow);
+  }
+  if (glasses) {
+    // Sonnenbrille: zwei Gläser mit Steg
+    const frame = flat(0x1c1a18, { roughness: 0.4 });
+    for (const side of [-1, 1]) {
+      const lens = new Mesh(new BoxGeometry(0.036, 0.024, 0.008), frame);
+      lens.position.set(side * 0.036, 0.014, 0.104);
+      face.add(lens);
+    }
+    const bridge = new Mesh(new BoxGeometry(0.04, 0.006, 0.006), frame);
+    bridge.position.set(0, 0.02, 0.106);
+    face.add(bridge);
+  }
+  if (beard) {
+    const b = new Mesh(
+      shape(new SphereGeometry(R * 1.05, 8, 4, 0, Math.PI, Math.PI * 0.58, Math.PI * 0.42), (v) => {
+        v.y *= 1.14;
+        v.x *= 0.9;
+        const down = Math.min(1, Math.max(0, -v.y / (R * 1.2)));
+        v.x *= 1 - 0.34 * down * jaw;
+        v.z *= 0.95;
+      }),
+      hairMat,
+    );
+    face.add(b);
+  }
+
+  // Frisur: Kappe vorne höher (Stirn frei), dazu je nach Stil Tolle, lange Haare, Dutt oder Pferdeschwanz
+  if (hairstyle !== 'bald') {
+    const cap = new Mesh(new SphereGeometry(R * 1.07, 8, 4, 0, Math.PI * 2, 0, Math.PI * 0.5).scale(0.94, 1.18, 1.02), hairMat);
+    cap.position.set(0, 0.012, -0.01);
+    cap.rotation.x = -0.32;
+    face.add(cap);
+  } else {
+    // Kurzer Haarkranz hinten
+    const ring = new Mesh(new SphereGeometry(R * 1.04, 8, 2, Math.PI, Math.PI, Math.PI * 0.32, Math.PI * 0.25).scale(0.92, 1.14, 1), hairMat);
+    face.add(ring);
+  }
+  if (hairstyle === 'quiff') {
+    // Etwas Volumen vorne oben, leicht zur Seite gekämmt
+    const top = new Mesh(new BoxGeometry(0.15, 0.03, 0.085).rotateX(-0.12).rotateZ(0.08), hairMat);
+    top.position.set(0.006, 0.122, 0.02);
+    face.add(top);
+  } else if (hairstyle === 'long') {
+    // Fällt hinten bis auf die Schultern und rahmt seitlich das Gesicht
+    const back = new Mesh(new CylinderGeometry(R * 1.0, R * 1.06, 0.22, 8).scale(1, 1, 0.62), hairMat);
+    back.position.set(0, -0.05, -0.045);
+    face.add(back);
+  } else if (hairstyle === 'bun') {
+    const bun = new Mesh(new DodecahedronGeometry(0.05), hairMat);
+    bun.position.set(0, 0.09, -0.1);
+    face.add(bun);
+  } else if (hairstyle === 'ponytail') {
+    const knot = new Mesh(new DodecahedronGeometry(0.036), hairMat);
+    knot.position.set(0, 0.025, -0.115);
+    const tail = new Mesh(new CylinderGeometry(0.038, 0.02, 0.15, 6), hairMat);
+    tail.position.set(0, -0.055, -0.125);
+    tail.rotation.x = 0.12;
+    face.add(knot, tail);
   }
   p.add(head);
 
   // Arme mit Schulter- und Ellbogengelenk, damit Essen und Trinken natürlich aussehen
-  const upperGeo = new CapsuleGeometry(0.046, 0.21, 4, 10);
-  upperGeo.translate(0, -0.14, 0);
-  const foreGeo = new CapsuleGeometry(0.042, 0.21, 4, 10);
-  foreGeo.translate(0, -0.14, 0);
-  const handGeo = new SphereGeometry(0.045, 12, 10);
+  const shortSleeves = outfit === 'tee' || outfit === 'dress';
+  const upperGeo = new CylinderGeometry(0.052, 0.043, 0.29, 6).translate(0, -0.135, 0);
+  const sleeveGeo = new CylinderGeometry(0.056, 0.053, 0.14, 6).translate(0, -0.055, 0);
+  const foreGeo = new CylinderGeometry(0.043, 0.033, 0.27, 6).translate(0, -0.135, 0);
+  const cuffGeo = new CylinderGeometry(0.036, 0.036, 0.025, 6);
+  const handGeo = shape(new BoxGeometry(0.05, 0.085, 0.03), (v) => {
+    if (v.y < 0) v.x *= 0.75;
+  });
   const joints = [-1, 1].map((side) => {
     const shoulder = new Object3D();
-    shoulder.position.set(side * 0.22, hip + 0.56, 0);
-    const upper = new Mesh(upperGeo, shirtMat);
+    shoulder.position.set(side * shoulderX, hip + 0.56, 0);
+    const upper = new Mesh(upperGeo, shortSleeves ? skin : topMat);
     upper.castShadow = true;
+    shoulder.add(upper);
+    if (shortSleeves) shoulder.add(new Mesh(sleeveGeo, topMat));
     const elbow = new Object3D();
     elbow.position.y = -0.28;
-    const fore = new Mesh(foreGeo, shirtMat);
+    const fore = new Mesh(foreGeo, shortSleeves ? skin : topMat);
     fore.castShadow = true;
     const hand = new Mesh(handGeo, skin);
-    hand.position.y = -0.29;
+    hand.position.y = -0.3;
     elbow.add(fore, hand);
-    shoulder.add(upper, elbow);
+    if (outfit === 'jacket') {
+      // Hemdmanschette schaut unter dem Ärmel hervor
+      const cuff = new Mesh(cuffGeo, innerMat);
+      cuff.position.y = -0.26;
+      elbow.add(cuff);
+    }
+    shoulder.add(elbow);
     p.add(shoulder);
     return { shoulder, elbow };
   });
+
+  // Stehende Gäste sind unterschiedlich gross
+  if (!sit && !apron) p.scale.setScalar(0.94 + look() * 0.12);
 
   let glass: Object3D | undefined;
   if (hold) {
@@ -372,8 +577,8 @@ export function buildPerson({ rand, pose = 'stand', apron = false, hold = null, 
     foreL: joints[0].elbow,
     foreR: joints[1].elbow,
     head,
-    phase: rand() * Math.PI * 2,
-    pace: 0.75 + rand() * 0.5,
+    phase,
+    pace,
     sit,
     glass,
     action: hold === 'slice' ? 'eat' : hold === 'glass' ? 'drink' : 'talk',
