@@ -4,6 +4,8 @@ export interface Album {
   date?: string;
   guests?: number;
   description?: string;
+  quote?: string;
+  quoteBy?: string;
   photos: { image: string; alt?: string }[];
 }
 

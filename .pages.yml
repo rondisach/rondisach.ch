@@ -109,7 +109,9 @@ content:
       - { name: title, label: Titel, type: string, required: true }
       - { name: date, label: Datum, type: date }
       - { name: guests, label: Anzahl Gäste, type: number }
-      - { name: description, label: Kurzbeschreibung, type: text }
+      - { name: description, label: Geschichte zum Anlass (2–3 Sätze), type: text }
+      - { name: quote, label: Zitat von Gastgeber/in (ohne Anführungszeichen), type: text }
+      - { name: quoteBy, label: Zitat von (z. B. «Sandra, Gastgeberin»), type: string }
       - name: photos
         label: Fotos
         type: object

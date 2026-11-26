@@ -3,8 +3,7 @@ import { Image, getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import { albums, formatMonth } from '../lib/albums';
 import { upload } from '../lib/images';
-import cateringEvent from '../assets/uploads/catering-event.webp';
-import dessert from '../assets/uploads/lemon-posset.webp';
+import rezensionen from '../data/rezensionen.json';
 
 const prepared = await Promise.all(
   albums.map(async (album) => ({
@@ -18,69 +17,79 @@ const prepared = await Promise.all(
     ),
   })),
 );
+
+const photoCount = prepared.reduce((sum, a) => sum + a.photos.length, 0);
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Layout title="Impressionen | rondisach Pizza Catering" description="Bilder von vergangenen Anlässen mit rondisach Pizza Catering in Luzern und Umgebung.">
   <header class="wrap pageHead">
     <div class="kicker">impressionen</div>
-    <h1 class="title">so war's bei euch.</h1>
     {
       prepared.length > 0 ? (
-        <p class="lead">So sieht Pizza-Catering mit uns aus: Wir bauen vor Ort auf, bereiten frisch zu und backen laufend für eure Gäste. Hier findet ihr Eindrücke von vergangenen Anlässen.</p>
+        <>
+          <h1 class="statement">Kein Anlass ist wie der andere. Was immer gleich bleibt: frischer Teig, ein heisser Ofen und Pizza, bis alle satt sind.</h1>
+          <p class="facts">
+            <span>{prepared.length} {prepared.length === 1 ? 'Anlass' : 'Anlässe'}</span>
+            <span>{photoCount} Bilder</span>
+            {rezensionen.count > 0 && <span>{rezensionen.rating.toFixed(1)} auf Google · {rezensionen.count} Bewertungen</span>}
+          </p>
+        </>
       ) : (
-        <p class="lead">Hier zeigen wir bald Bilder von unseren Anlässen – vom Aufbau über den ersten Teig bis zur letzten Pizza. Wir sind gerade dabei, die schönsten Momente zusammenzustellen. Schaut also bald wieder vorbei!</p>
+        <>
+          <h1 class="title">so war's bei euch.</h1>
+          <p class="lead">Hier zeigen wir bald Bilder von unseren Anlässen – vom Aufbau über den ersten Teig bis zur letzten Pizza. Wir sind gerade dabei, die schönsten Momente zusammenzustellen. Schaut also bald wieder vorbei!</p>
+        </>
       )
     }
   </header>
 
-  <div class="wrap">
-    <div class="feature">
-      <Image class="featureImg" src={cateringEvent} alt="Apéro, Getränke und Gäste bei einem rondisach Catering" widths={[480, 800, 1100]} sizes="(max-width: 920px) 100vw, 520px" />
-      <div>
-        <div class="kicker">rundum · nur auf anfrage</div>
-        <h2 class="featureTitle">etwas dazu?</h2>
-        <p class="lead">Bei früheren Anlässen durfte es auch mehr als Pizza sein. Heute liegt unser Fokus auf Pizza à discrétion. Apéro, Beilagen, Dessert oder Getränke sind ausschliesslich auf Anfrage und je nach Kapazität möglich.</p>
-        <ul class="chips">
-          <li>Pizza im Mittelpunkt</li><li>Ergänzungen auf Anfrage</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
   <div class="wrap albums" hidden={prepared.length === 0}>
     {
-      prepared.map((album) => (
-        <section class="album" id={album.slug} aria-labelledby={`${album.slug}-title`}>
-          <div class="albumHead">
-            <h2 id={`${album.slug}-title`}>{album.title}</h2>
-            <p class="meta">
-              {[album.month, album.guests ? `${album.guests} Gäste` : null, `${album.photos.length} Bilder`].filter(Boolean).join(' · ')}
-            </p>
-            {album.description && <p class="lead">{album.description}</p>}
-          </div>
-          <ul class="grid">
-            {album.photos.map((p, i) => (
-              <li>
-                <button type="button" class="thumb" data-full={p.full} data-alt={p.alt ?? ''} aria-label={`Bild ${i + 1} gross anzeigen${p.alt ? `: ${p.alt}` : ''}`}>
-                  <Image src={p.src!} alt={p.alt ?? ''} widths={[360, 640, 900]} sizes="(max-width: 620px) 50vw, (max-width: 920px) 33vw, 300px" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))
+      prepared.map((album, n) => {
+        const [hero, ...rest] = album.photos;
+        return (
+          <>
+            <section class:list={['album', { flip: n % 2 === 1 }]} id={album.slug} aria-labelledby={`${album.slug}-title`}>
+              <div class="refMain">
+                {hero && (
+                  <button type="button" class="thumb refHero" data-full={hero.full} data-alt={hero.alt ?? ''} aria-label={`Bild 1 gross anzeigen${hero.alt ? `: ${hero.alt}` : ''}`}>
+                    <Image src={hero.src!} alt={hero.alt ?? ''} widths={[640, 960, 1300]} sizes="(max-width: 920px) 100vw, 680px" />
+                  </button>
+                )}
+                <div class="refText">
+                  <span class="refNo" aria-hidden="true">{pad(n + 1)}</span>
+                  <h2 id={`${album.slug}-title`}>
+                    {album.title}
+                    {album.guests ? <span class="guests"> – {album.guests} Gäste</span> : null}
+                  </h2>
+                  {album.month && <p class="meta">{album.month}</p>}
+                  {album.description && <p class="story">{album.description}</p>}
+                  {album.quote && (
+                    <blockquote class="refQuote">
+                      <p>«{album.quote}»</p>
+                      {album.quoteBy && <cite>{album.quoteBy}</cite>}
+                    </blockquote>
+                  )}
+                  <p class="count">{album.photos.length} Bilder</p>
+                </div>
+              </div>
+              {rest.length > 0 && (
+                <ul class="strip" style={`--cols: ${Math.ceil(rest.length / Math.ceil(rest.length / 4))}`}>
+                  {rest.map((p, i) => (
+                    <li>
+                      <button type="button" class="thumb" data-full={p.full} data-alt={p.alt ?? ''} aria-label={`Bild ${i + 2} gross anzeigen${p.alt ? `: ${p.alt}` : ''}`}>
+                        <Image src={p.src!} alt={p.alt ?? ''} widths={[360, 640]} sizes="(max-width: 620px) 50vw, 280px" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </>
+        );
+      })
     }
-  </div>
-
-  <div class="wrap">
-    <div class="feature feature--reverse">
-      <div>
-        <div class="kicker">einblick · dessert auf anfrage</div>
-        <h2 class="featureTitle">etwas süsses zum schluss.</h2>
-        <p class="lead">Ein süsser Rückblick: unser Lemon Posset von einem vergangenen Anlass. Ob wir euer Pizza-Catering mit einem Dessert ergänzen können, klären wir gerne auf Anfrage.</p>
-      </div>
-      <Image class="featureImg" src={dessert} alt="Lemon Posset in Zitronenhälften mit Himbeeren" widths={[480, 800, 1100]} sizes="(max-width: 920px) 100vw, 600px" />
-    </div>
   </div>
 
   <div class="wrap cta">
@@ -131,6 +140,30 @@ const prepared = await Promise.all(
     if (e.key === 'ArrowRight') show(index + 1);
   });
 
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Bilder öffnen sich beim Hineinscrollen wie ein Vorhang, Texte gleiten nach oben.
+  if (!calm && 'IntersectionObserver' in window) {
+    const items = document.querySelectorAll<HTMLElement>('.refHero, .strip li, .refText');
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '0px 0px -12% 0px' },
+    );
+    items.forEach((el) => {
+      // Bilder einer Reihe nacheinander öffnen
+      const li = el.closest('li');
+      if (li) el.style.setProperty('--d', `${Array.from(li.parentElement!.children).indexOf(li) * 90}ms`);
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+  }
+
   // Wischen auf dem Handy
   let startX = 0;
   dialog.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX), { passive: true });
@@ -142,118 +175,195 @@ const prepared = await Promise.all(
 
 <style>
   .pageHead {
-    padding-block: clamp(48px, 8vw, 96px) clamp(32px, 5vw, 56px);
+    padding-block: clamp(48px, 8vw, 104px) clamp(40px, 6vw, 72px);
   }
   .pageHead .lead {
     margin-top: 20px;
   }
-  .feature {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: clamp(24px, 4vw, 48px);
-    align-items: center;
-    margin-bottom: clamp(56px, 8vw, 96px);
+  /* Grosser Satz statt Einleitung */
+  .statement {
+    max-width: 21em;
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.3vw, 58px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
   }
-  .feature--reverse {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    margin: clamp(56px, 8vw, 96px) 0 0;
-  }
-  .featureImg {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-  }
-  .featureTitle {
-    font-size: clamp(32px, 4vw, 52px);
-    line-height: 0.95;
-    margin: 10px 0 16px;
-  }
-  .chips {
+  .facts {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 20px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .chips li {
-    border: 1.5px solid var(--ink);
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  @media (max-width: 920px) {
-    .feature,
-    .feature--reverse {
-      grid-template-columns: 1fr;
-    }
-    .feature--reverse .featureImg {
-      order: -1;
-    }
-  }
-  .albums {
-    display: grid;
-    gap: clamp(56px, 8vw, 96px);
-  }
-  .album {
-    border-top: 2px solid var(--ink);
-    padding-top: 24px;
-  }
-  .albumHead {
-    margin-bottom: 24px;
-  }
-  .albumHead h2 {
-    font-size: clamp(30px, 4vw, 48px);
-    line-height: 1;
-  }
-  .meta {
-    margin: 8px 0 12px;
-    font-size: 13px;
+    gap: 8px 28px;
+    margin: clamp(24px, 3vw, 36px) 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted);
   }
-  .grid {
+
+  .albums {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    gap: clamp(72px, 10vw, 128px);
   }
-  .thumb {
+
+  /* Ein Anlass: grosses Bild und Text nebeneinander, jedes zweite Mal gespiegelt */
+  .refMain {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 72px);
+    align-items: center;
+  }
+  .flip .refHero {
+    order: 2;
+  }
+  .refHero {
     display: block;
     width: 100%;
     aspect-ratio: 4 / 3;
+  }
+  .refNo {
+    display: block;
+    margin-bottom: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+  }
+  .refText h2 {
+    font-size: clamp(30px, 3.6vw, 48px);
+    line-height: 1;
+    margin: 0;
+  }
+  .guests {
+    color: var(--muted);
+  }
+  .meta {
+    margin: 12px 0 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .story {
+    margin: 18px 0 0;
+    max-width: 34em;
+  }
+  .refQuote {
+    margin: 24px 0 0;
+    padding-left: 18px;
+    border-left: 2px solid var(--accent);
+  }
+  .refQuote p {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .refQuote cite {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    font-style: normal;
+    color: var(--muted);
+  }
+  .count {
+    margin: 24px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Weitere Bilder in vollen Reihen: Bilder der letzten Reihe werden breiter statt Lücken zu lassen */
+  .strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: clamp(16px, 2vw, 24px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .strip li {
+    flex: 1 1 calc((100% - (var(--cols) - 1) * 12px) / var(--cols));
+  }
+  .strip .thumb {
+    height: clamp(150px, 17vw, 220px);
+  }
+
+  .thumb {
+    display: block;
+    width: 100%;
     padding: 0;
     border: 0;
     border-radius: var(--radius-sm);
     overflow: hidden;
-    cursor: zoom-in;
+    cursor: pointer;
     background: var(--panel);
   }
   .thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.4s ease;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .thumb:hover img {
-    transform: scale(1.04);
+
+  /* Vorhang: Bild startet beschnitten und leicht vergrössert, öffnet sich dann */
+  .reveal.refHero,
+  .strip li.reveal {
+    clip-path: inset(14% 10% 14% 10% round var(--radius-sm));
+    transition: clip-path 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0ms);
+  }
+  .reveal.refHero img,
+  .strip li.reveal img {
+    transform: scale(1.18);
+    transition: transform 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0ms);
+  }
+  .reveal.is-in.refHero,
+  .strip li.reveal.is-in {
+    clip-path: inset(0 0 0 0 round var(--radius-sm));
+  }
+  .reveal.is-in.refHero img,
+  .strip li.reveal.is-in img {
+    transform: none;
+  }
+  .refText.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.9s ease 0.15s,
+      transform 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s;
+  }
+  .refText.reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (max-width: 920px) {
+    .refMain {
+      grid-template-columns: 1fr;
+    }
+    .flip .refHero {
+      order: 0;
+    }
   }
   @media (max-width: 620px) {
-    .grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
+    .strip {
+      gap: 8px;
+    }
+    .strip li {
+      flex-basis: calc(50% - 4px);
+    }
+    .strip .thumb {
+      height: 34vw;
     }
     .thumb {
-      aspect-ratio: 1;
-      border-radius: 10px;
+      border-radius: 12px;
     }
   }
+
   .cta {
     display: flex;
     flex-wrap: wrap;
